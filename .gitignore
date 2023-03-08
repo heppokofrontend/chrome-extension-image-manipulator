@@ -1,0 +1,3 @@
+node_modules
+package/src/*
+!package/src/.gitkeep

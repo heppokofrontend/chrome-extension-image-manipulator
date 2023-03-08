@@ -1,0 +1,32 @@
+{
+  "name": "chrome-extension-image-controller",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc --watch",
+    "build": "tsc --build",
+    "postbuild": "yarn minify:content && yarn minify:worker",
+    "minify:content": "uglifyjs ./package/content_scripts.js -o ./package/content_scripts.js",
+    "minify:worker": "uglifyjs ./package/worker.js -o ./package/worker.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heppokofrontend/chrome-extension-image-controller.git"
+  },
+  "keywords": [],
+  "author": "heppokofrontend",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/heppokofrontend/chrome-extension-image-controller/issues"
+  },
+  "homepage": "https://github.com/heppokofrontend/chrome-extension-image-controller#readme",
+  "devDependencies": {
+    "@types/chrome": "^0.0.197",
+    "eslint": "^8.34.0",
+    "eslint-config-prettier": "^8.6.0",
+    "prettier": "^2.8.4",
+    "typescript": "^4.9.5",
+    "uglify-js": "^3.17.3"
+  }
+}
