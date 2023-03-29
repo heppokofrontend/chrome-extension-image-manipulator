@@ -961,18 +961,18 @@ const resolveTarget = (target: EventTarget | null) => {
     return childrenImages[0];
   }
 
+  const imagesFromParent = target.parentElement?.querySelectorAll('img');
+
+  if (imagesFromParent?.length === 1) {
+    return imagesFromParent[0];
+  }
+
   const focusableOrSemanticContextsImages = target
     .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
     ?.querySelectorAll('img');
 
   if (focusableOrSemanticContextsImages?.length === 1) {
     return focusableOrSemanticContextsImages[0];
-  }
-
-  const imagesFromParent = target.parentElement?.querySelectorAll('img');
-
-  if (imagesFromParent?.length === 1) {
-    return imagesFromParent[0];
   }
 
   const { backgroundImage } = getComputedStyle(target);
