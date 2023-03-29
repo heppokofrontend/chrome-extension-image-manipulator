@@ -1,0 +1,77 @@
+{
+  "extName": {
+    "message": "Image Viewer"
+  },
+  "extDesc": {
+    "message": "You can flip, rotate, enlarge, and view information about the image from a image context menu allows."
+  },
+  "readOnly_url": {
+    "message": "URL"
+  },
+  "readOnly_alt": {
+    "message": "Alt text"
+  },
+  "readOnly_fileSize": {
+    "message": "File size"
+  },
+  "error_fileSize": {
+    "message": "Unable to read"
+  },
+  "readOnly_naturalWidth": {
+    "message": "Natural width"
+  },
+  "readOnly_naturalHeight": {
+    "message": "Natural height"
+  },
+  "readOnly_aspect": {
+    "message": "Asoect ratio"
+  },
+  "editable_scale": {
+    "message": "Scale"
+  },
+  "editable_rotate": {
+    "message": "Rotate"
+  },
+  "editable_reverse": {
+    "message": "Reverse"
+  },
+  "editable_render": {
+    "message": "Rendering mode"
+  },
+  "editable_background": {
+    "message": "Background"
+  },
+  "editable_background_bright": {
+    "message": "Bright"
+  },
+  "editable_background_dark": {
+    "message": "Dark"
+  },
+  "editable_background_custom": {
+    "message": "Custom"
+  },
+  "button_close": {
+    "message": "Close"
+  },
+  "context_zoom": {
+    "message": "Zoom"
+  },
+  "context_rotate": {
+    "message": "Rotate"
+  },
+  "context_reverse": {
+    "message": "Reverse"
+  },
+  "context_dialog": {
+    "message": "View the details"
+  },
+  "context_resetMenus": {
+    "message": "Reset"
+  },
+  "context_reset": {
+    "message": "Only this image"
+  },
+  "context_resetAll": {
+    "message": "All images"
+  }
+}

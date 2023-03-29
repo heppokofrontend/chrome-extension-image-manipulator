@@ -1,232 +1,72 @@
-type RenderingMode = 'crisp-edges' | 'pixelated' | 'smooth' | 'high-quality';
-type StyleData = {
-  scale: number;
-  rotate: string;
-  reverse: boolean;
-  render: RenderingMode;
-  input: {
-    rotate: HTMLInputElement | null;
-    scale: HTMLInputElement | null;
-    reverse: HTMLInputElement | null;
-    render: HTMLSelectElement | null;
-  };
+let currentImageElement: HTMLImageElement | null = null;
+const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
+const defaultState: StyleData = {
+  isInDialog: false,
+  clonedImage: null,
+  scale: 100,
+  oldScale: 100,
+  rotate: 0,
+  reverse: false,
+  render: 'crisp-edges',
+  fileSize: 'loading...',
 };
-type State = {
-  imageElement: HTMLImageElement | null;
-  content: HTMLDivElement | null;
-  contentShadowRoot: ShadowRoot | null;
-  map: Map<HTMLImageElement, StyleData>;
-  spaceElement: HTMLElement;
-  contentStyle: HTMLStyleElement;
-};
+const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageData } = (() => {
+  const getImageData = (key: HTMLImageElement) => {
+    if (!imageDataMap.has(key)) {
+      imageDataMap.set(key, { ...defaultState });
+    }
 
-{
-  const renderingModeList: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
-  const defaultState: StyleData = {
-    scale: 100,
-    rotate: '0deg',
-    reverse: false,
-    render: 'crisp-edges',
-    input: {
-      rotate: null,
-      scale: null,
-      reverse: null,
-      render: null,
-    },
+    return { ...imageDataMap.get(key) } as StyleData;
   };
-  const state: State = {
-    imageElement: null,
-    content: null,
-    contentShadowRoot: null,
-    map: new Map(),
-    spaceElement: document.createElement('image-space-element'),
-    contentStyle: (() => {
-      const style = document.createElement('style');
+  const dialog = (() => {
+    const element = document.createElement('dialog');
 
-      style.textContent = `
-        img {
-          position: absolute !important;
-          inset: 0 !important;
-          margin: auto !important;
-        }
-        image-space-element {
-          display: block !important;
-          position: relative !important;
-        }
-      `;
+    element.role = 'dialog';
+    element.ariaModal = 'true';
+    element.ariaLabel = 'Image Viewer';
+    element.addEventListener('keydown', (e) => {
+      if (e.key === 'ESC') {
+        e.preventDefault();
+        e.stopPropagation();
+        dialog.close();
+      }
+    });
 
-      return style;
-    })(),
-  };
-  const dialog = document.createElement('dialog');
-  const attributeNamePrefix = 'data-image-control-';
-
-  const resolveTarget = (target: EventTarget | null) => {
-    if (target === null || !(target instanceof HTMLElement)) {
-      return null;
-    }
-
-    if (state.imageElement instanceof HTMLImageElement && dialog.contains(target)) {
-      return state.imageElement;
-    }
-
-    if (target instanceof HTMLImageElement) {
-      return target;
-    }
-
-    const childrenImages = target.querySelectorAll('img');
-
-    if (childrenImages.length === 1) {
-      return childrenImages[0];
-    }
-
-    const imagesFromParent = target.parentElement?.querySelectorAll('img');
-
-    if (imagesFromParent?.length === 1) {
-      return imagesFromParent[0];
-    }
-
-    return null;
-  };
-
-  const setAttribute = ({
-    type,
-    value,
-    isToggle = false,
-  }: {
-    type: string;
-    value: string | number;
-    isToggle?: boolean;
-  }) => {
-    const { imageElement: img } = state;
-
-    if (img === null) {
+    return element;
+  })();
+  const setImageData = (img: HTMLImageElement, options: Options) => {
+    if (!img) {
       return;
     }
 
-    if (value === '' || (isToggle && img.hasAttribute(`${attributeNamePrefix}${type}`))) {
-      img.removeAttribute(`${attributeNamePrefix}${type}`);
-    } else {
-      img.setAttribute(`${attributeNamePrefix}${type}`, `${type}(${value})`);
-    }
-  };
+    const baseImageData = getImageData(img);
+    const oldScale = baseImageData.scale;
+    const imageData = {
+      ...baseImageData,
+      ...options,
+      oldScale,
+    } as StyleData;
 
-  const transform = (
-    {
-      menuItemId,
-    }: {
-      menuItemId: string;
-    },
-    fromDialogUI?: boolean,
-  ) => {
-    const { imageElement: img, spaceElement } = state;
+    imageDataMap.set(img, {
+      ...imageData,
+    });
 
-    if (!(img instanceof HTMLImageElement)) {
-      return true;
-    }
+    // TODO: ダイアログの外でいじったのを中に伝搬させる。内から外は対応しない。
+    const { isInDialog } = imageData;
+    const rotate = `rotateZ(${imageData.rotate}deg)`;
+    const reverse = imageData.reverse ? 'rotateY(180deg)' : '';
+    const scale = isInDialog ? '' : `scale(${imageData.scale / 100})`;
 
-    const imgState = state.map.get(img);
-    const oldScale = imgState?.scale ?? 1;
-    const isInDialog = state.contentShadowRoot?.contains(img);
-
-    switch (menuItemId) {
-      case 'reset':
-        spaceElement.removeAttribute('style');
-
-        return reset(img);
-
-      case 'reset-all': {
-        const nodeList = document.querySelectorAll<HTMLImageElement>(
-          '[data-image-control-default-style]',
-        );
-
-        nodeList.forEach((img) => {
-          reset(img);
-        });
-
-        spaceElement.removeAttribute('style');
-
-        return true;
-      }
-
-      case 'reverse':
-        if (imgState) {
-          imgState.reverse = !imgState.reverse;
-        }
-
-        setAttribute({
-          type: 'rotateY',
-          value: '180deg',
-          isToggle: true,
-        });
-        break;
-
-      case 'dialog':
-        openDialog(img);
-
-        return true;
-
-      default: {
-        if (imgState) {
-          if (menuItemId.startsWith('render:')) {
-            const argument = menuItemId.replace('render:', '');
-            const value = renderingModeList.find((item) => item === argument);
-
-            if (value) {
-              imgState.render = value;
-              setAttribute({ type: 'render', value: imgState.render });
-            }
-          } else if (menuItemId.endsWith('%')) {
-            imgState.scale = Number(menuItemId.replace(/[^0-9.]/g, ''));
-
-            if (isInDialog) {
-              // width, height で計算
-              setAttribute({ type: 'scale', value: imgState.scale });
-            } else {
-              // transform で計算
-              setAttribute({ type: 'scale', value: imgState.scale / 100 });
-            }
-          } else if (menuItemId.endsWith('deg')) {
-            imgState.rotate = menuItemId;
-            setAttribute({ type: 'rotateZ', value: imgState.rotate });
-          }
-        }
-
-        break;
-      }
-    }
-
-    const transformValues = [...img.attributes]
-      .map(({ name, value }) => {
-        console.log(value);
-
-        if (
-          name !== 'data-image-control-default-style' &&
-          name.startsWith(attributeNamePrefix) &&
-          (!isInDialog || !name.startsWith(`${attributeNamePrefix}scale`)) &&
-          !name.startsWith(`${attributeNamePrefix}render`)
-        ) {
-          return value;
-        }
-
-        return '';
-      })
-      .filter(Boolean);
-
-    img.style.transform = transformValues.join(' ');
+    img.style.transform = `${rotate} ${reverse} ${scale}`;
 
     if (isInDialog) {
-      if (!imgState) {
-        return;
-      }
-
-      const getSize = (scale: number) => {
+      const getSize = (img: HTMLImageElement, scale: number) => {
         const width = img.naturalWidth * (scale / 100);
         const height = img.naturalHeight * (scale / 100);
         const diagonal = Math.hypot(width, height);
         const min = diagonal + 20;
-        const contentWidth = (state.content?.clientWidth ?? 0) * 2 - width;
-        const contentHeight = (state.content?.clientHeight ?? 0) * 2 - height;
+        const contentWidth = (canvas.clientWidth ?? 0) * 2 - width;
+        const contentHeight = (canvas.clientHeight ?? 0) * 2 - height;
 
         return {
           width,
@@ -237,713 +77,1033 @@ type State = {
           },
         };
       };
-
-      const { scale, render } = imgState;
-      const { width, height, spaceSize } = getSize(scale);
-      const olsSpaceSize = getSize(oldScale).spaceSize;
+      const { scale, oldScale, render } = imageData;
+      const { width, height, spaceSize } = getSize(img, scale);
+      const olsSpaceSize = getSize(img, oldScale).spaceSize;
 
       img.style.width = '';
       img.style.height = '';
       img.style.imageRendering = '';
       img.style.cssText = `
-          ${img.getAttribute('style')}
-          width: ${width}px !important;
-          height: ${height}px !important;
-          image-rendering: ${render} !important;
-        `;
+        ${img.getAttribute('style')}
+        width: ${width}px !important;
+        height: ${height}px !important;
+        image-rendering: ${render} !important;
+      `;
 
-      state.spaceElement.style.cssText = `
-          width: ${spaceSize.width}px !important;
-          height: ${spaceSize.height}px !important;
-        `;
+      spaceElement.style.cssText = `
+        width: ${spaceSize.width}px !important;
+        height: ${spaceSize.height}px !important;
+      `;
 
-      if (state.content && state.imageElement) {
-        const diffWidth = (olsSpaceSize.width - spaceSize.width) / 2;
-        const diffHeight = (olsSpaceSize.height - spaceSize.height) / 2;
-        const { scrollTop, scrollLeft } = state.content;
+      const diffWidth = (olsSpaceSize.width - spaceSize.width) / 2;
+      const diffHeight = (olsSpaceSize.height - spaceSize.height) / 2;
+      const { scrollTop, scrollLeft } = canvas;
 
-        if (menuItemId.endsWith('%')) {
-          state.content.scroll({
-            top: scrollTop - diffHeight,
-            left: scrollLeft - diffWidth,
-          });
-        }
-      }
+      canvas.scroll({
+        top: scrollTop - diffHeight,
+        left: scrollLeft - diffWidth,
+      });
+
+      setInputValues(imageData);
     }
-
-    if (dialog.open && fromDialogUI !== true) {
-      openDialog(img);
-    }
-
-    return true;
   };
+  const { details, formControls } = (() => {
+    const element = document.createElement('div');
 
-  const getSrcSet = (srcsetValue: string) => {
-    if (!srcsetValue.trim()) {
-      return '';
-    }
+    element.id = 'details';
+    element.insertAdjacentHTML(
+      'afterbegin',
+      `
+      <p class="close">
+        <button type="button">${chrome.i18n.getMessage('button_close')}</button>
+      </p>
 
-    const srcset = srcsetValue.split(',').map((src) => src.trim());
+      <div id="readonly">
+        <p class="row">
+          <label for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
+          <span class="control">
+            <input
+              id="url"
+              value=""
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
+          <label for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
+          <span class="control">
+            <input
+              id="alt"
+              value=""
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
+          <label for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
+          <span class="control">
+            <input
+              id="size"
+              value=""
+              class="right"
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
+          <label for="natural-width">${chrome.i18n.getMessage('readOnly_naturalWidth')}</label>
+          <span class="control">
+            <input
+              id="natural-width"
+              value=""
+              class="right"
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
+          <label for="natural-height">${chrome.i18n.getMessage('readOnly_naturalHeight')}</label>
+          <span class="control">
+            <input
+              id="natural-height"
+              value=""
+              class="right"
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
+          <label for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
+          <span class="control">
+            <input
+              id="aspect"
+              value=""
+              class="right"
+              readonly
+            />
+          </span>
+        </p>
 
-    return srcset
-      .map((value) => {
-        const array = value.split(/\s/);
-        const ratio = array.pop();
-        const url = array.join('');
+        ${
+          /*
+        <p class="row">
+          <label for="srcset-${ratio}">srcset ${ratio}</label>
+          <span class="control">
+            <input
+              id="srcset-${ratio}"
+              value=""
+              readonly
+            />
+          </span>
+        </p>
+        */
+          ''
+        }
+      </div>
 
-        return `
-        <tr>
-          <th><label for="${attributeNamePrefix}info-srcset-${ratio}">srcset ${ratio}</label></th>
-          <td>
-            <span>
+      <div id="editable">
+        <p class="row">
+          <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
+          <span class="control">
+            <input
+              type="number"
+              name="scale"
+              id="scale"
+              value=""
+              step="1"
+              min="1"
+              class="right"
+            />
+            <span class="unit">%</span>
+          </span>
+        </p>
+
+        <p class="row">
+          <label for="rotate">${chrome.i18n.getMessage('editable_rotate')}</label>
+          <span class="control">
+            <input
+              type="number"
+              name="rotate"
+              id="rotate"
+              value=""
+              step="1"
+              min="-360"
+              max="360"
+              class="right"
+            />
+            <span class="unit">deg</span>
+          </span>
+        </p>
+
+        <p class="row">
+          <label for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
+          <span class="control">
+            <span class="checkbox">
               <input
-                id="${attributeNamePrefix}info-srcset-${ratio}"
-                value="${url}"
-                readonly
+                id="reverse"
+                type="checkbox"
               />
             </span>
-          </td>
-        </tr>
-      `;
-      })
-      .join('');
-  };
+          </span>
+        </p>
+        <p class="row">
+          <label for="render">${chrome.i18n.getMessage('editable_render')}</label>
+          <span class="control">
+            <select
+              id="render"
+            >
+            ${['crisp-edges', 'pixelated', 'smooth', 'high-quality'].map((value) => {
+              return `<option>${value}</option>`;
+            })}
+            </select>
+          </span>
+        </p>
 
-  const getTransformUI = () => {
-    const imgState = state.imageElement ? state.map.get(state.imageElement) : null;
+        <div class="group" id="color" role="group" aria-labelledby="background-label">
+          <p id="background-label" class="legend">${chrome.i18n.getMessage(
+            'editable_background',
+          )}</p>
+          <div class="control">
+            <p class="button">
+              <input type="color" aria-label="${chrome.i18n.getMessage(
+                'editable_background_custom',
+              )}" id="background-custom" value="#202124" />
+            </p>
+            <p class="button">
+              <button type="button" id="background-bright">${chrome.i18n.getMessage(
+                'editable_background_bright',
+              )}</button>
+            </p>
+            <p class="button">
+              <button type="button" id="background-dark">${chrome.i18n.getMessage(
+                'editable_background_dark',
+              )}</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+    );
 
-    if (!imgState) {
-      return '';
+    element.querySelector('button')?.addEventListener('click', () => {
+      dialog.close();
+    });
+
+    const url = element.querySelector<HTMLInputElement>('#url')!;
+    const alt = element.querySelector<HTMLInputElement>('#alt')!;
+    const size = element.querySelector<HTMLInputElement>('#size')!;
+    const naturalWidth = element.querySelector<HTMLInputElement>('#natural-width')!;
+    const naturalHeight = element.querySelector<HTMLInputElement>('#natural-height')!;
+    const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
+    // const srcset = element.querySelector<HTMLInputElement>('#srcset')!;
+    const scale = element.querySelector<HTMLInputElement>('#scale')!;
+    const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
+    const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
+    const render = element.querySelector<HTMLSelectElement>('#render')!;
+
+    const updateState = (options: Options) => {
+      if (currentImageElement) {
+        setImageData(currentImageElement, {
+          ...options,
+        });
+      }
+    };
+
+    scale.addEventListener('input', () => {
+      updateState({
+        scale: Number(scale.value) ?? defaultState.scale,
+      });
+    });
+
+    rotate.addEventListener('input', () => {
+      updateState({
+        rotate: Number(rotate.value) ?? defaultState.rotate,
+      });
+    });
+
+    reverse.addEventListener('input', () => {
+      updateState({
+        reverse: reverse.checked,
+      });
+    });
+
+    // bgcolor
+    const custom = element.querySelector<HTMLInputElement>('#background-custom');
+    const bright = element.querySelector<HTMLButtonElement>('#background-bright');
+    const dark = element.querySelector<HTMLButtonElement>('#background-dark');
+    const inputEvent = new Event('input');
+
+    if (custom) {
+      bright?.addEventListener('click', () => {
+        custom.value = '#fafafa';
+        custom.dispatchEvent(inputEvent);
+      });
+      dark?.addEventListener('click', () => {
+        custom.value = '#202124';
+        custom.dispatchEvent(inputEvent);
+      });
+
+      custom.addEventListener('input', () => {
+        canvas.style.cssText = `--canvas-background: ${custom.value}`;
+      });
     }
 
-    return [
-      {
-        name: 'scale',
-        unit: '%',
-        min: 1,
-        step: 1,
-        value: imgState.scale,
-        valueForState: `scale(${imgState.scale / 100})`,
+    const resolveRenderMode = (value: string): RenderingMode => {
+      const types: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
+      const isInvalid = (value: string): value is RenderingMode =>
+        types.some((type) => type === value);
+
+      if (isInvalid(value)) {
+        return value;
+      }
+
+      return defaultState.render;
+    };
+
+    render.addEventListener('change', () => {
+      updateState({
+        render: resolveRenderMode(render.value),
+      });
+    });
+
+    return {
+      details: element,
+      formControls: {
+        url,
+        alt,
+        size,
+        naturalWidth,
+        naturalHeight,
+        aspect,
+        // srcset,
+        scale,
+        rotate,
+        reverse,
+        render,
       },
-      {
-        name: 'rotate',
-        unit: 'deg',
-        step: 1,
-        min: -360,
-        max: 360,
-        value: `${imgState.rotate.replace(/[^0-9]/g, '')}`,
-        valueForState: `rotateZ(${imgState.rotate})`,
-      },
-    ]
-      .map(({ name, unit, step, min, max, value, valueForState }) => {
-        return `
-        <tr>
-          <th><label for="${attributeNamePrefix}info-change-${name}">Change ${name}</label></th>
-          <td>
-            <span>
-              <input
-                type="number"
-                name="${name}"
-                id="${attributeNamePrefix}info-change-${name}"
-                value="${value}"
-                data-value="${valueForState}"
-                ${(step && `step="${step}"`) ?? ''}
-                ${(min && `min="${min}"`) ?? ''}
-                ${(max && `max="${max}"`) ?? ''}
-                class="right"
-              />
-              ${unit}
-            </span>
-          </td>
-        </tr>
-      `;
-      })
-      .join('');
-  };
-
-  const openDialog = (() => {
-    const content = document.createElement('div');
-    const contentShadowRoot = content.attachShadow({ mode: 'closed' });
-    const informationTable = document.createElement('table');
-    const wheelEventHandler = (e: WheelEvent) => {
-      const img = state.imageElement;
-      const isRotate = e.shiftKey;
-      const imgState = img ? state.map.get(img) : null;
-
-      e.preventDefault();
-
-      if (!imgState) {
-        return;
-      }
-
-      const scaleInput = imgState.input.scale;
-      const rotateInput = imgState.input.rotate;
-
-      if (!scaleInput || !rotateInput) {
-        return;
-      }
-
-      let scaleValue = imgState.scale;
-      let rotateValue = parseInt(imgState.rotate, 10);
-
-      if (isRotate) {
-        const rotate = (direction: 'right' | 'left') => {
-          if (direction === 'right') {
-            rotateValue += 10;
-          } else {
-            rotateValue -= 10;
-          }
-
-          if (360 <= rotateValue) {
-            rotateValue -= 360;
-          }
-
-          if (rotateValue < 0) {
-            rotateValue += 360;
-          }
-
-          const menuItemId = `${rotateValue}deg`;
-
-          rotateInput.value = String(rotateValue);
-          rotateInput.dataset.value = menuItemId;
-          transform({ menuItemId }, true);
-        };
-
-        rotate(e.deltaY < 0 ? 'right' : 'left');
-
-        return;
-      }
-
-      const zoom = (type: 'in' | 'out') => {
-        if (type === 'in') {
-          if (scaleValue === 1) {
-            scaleValue = 10;
-          } else {
-            scaleValue += 10;
-          }
-        } else {
-          scaleValue -= 10;
-
-          if (scaleValue <= 0) {
-            scaleValue = 1;
-          }
-        }
-
-        const menuItemId = `${scaleValue}%`;
-
-        scaleInput.value = String(scaleValue);
-        scaleInput.dataset.value = menuItemId;
-        transform({ menuItemId }, true);
-      };
-
-      zoom(e.deltaY < 0 ? 'in' : 'out');
-    };
-    const getNewImage = (originalImage: HTMLImageElement) => {
-      const img = document.createElement('img');
-
-      for (const { name, value } of originalImage.attributes) {
-        if (
-          name === 'src' ||
-          name === 'alt' ||
-          name === 'style' ||
-          name.startsWith(attributeNamePrefix)
-        ) {
-          img.setAttribute(name, value);
-        }
-      }
-
-      return img;
-    };
-
-    const createDialog = () => {
-      const style = document.createElement('style');
-      const information = document.createElement('div');
-      const informationShadowRoot = information.attachShadow({ mode: 'closed' });
-      const informationStyle = document.createElement('style');
-
-      state.content = content;
-      state.contentShadowRoot = contentShadowRoot;
-
-      dialog.id = `${attributeNamePrefix}style`;
-      dialog.tabIndex = 0;
-      content.id = `${attributeNamePrefix}style-content`;
-      information.id = `${attributeNamePrefix}style-information`;
-      style.textContent = `
-        #${attributeNamePrefix}style {
-          position: fixed !important;
-          inset: 0px !important;
-          margin: auto !important;
-          padding: 0 !important;
-          width: 100%;
-          height: 100%;
-          max-width: calc(100% - 20px) !important;
-          max-height: calc(100% - 20px) !important;
-          color: #fff !important;
-          background: #282828 !important;
-          visibility: visible !important;
-          overflow: hidden !important;
-          opacity: 1 !important;
-          box-sizing: border-box !important;
-        }
-        #${attributeNamePrefix}style:not([open]) {
-          display: none !important;
-        }
-        #${attributeNamePrefix}style-content,
-        #${attributeNamePrefix}style-information {
-          height: 100% !important;
-        }
-        #${attributeNamePrefix}style-content {
-          display: grid !important;
-          place-items: center !important;
-          max-height: 80% !important;
-          overflow: scroll !important;
-          cursor: move !important;
-        }
-        #${attributeNamePrefix}style-information {
-          padding: 10px !important;
-          background: #535353 !important;
-          border: 2px solid #424242 !important;
-          box-sizing: border-box !important;
-          max-height: 20%;
-          overflow: auto !important;
-        }
-
-        @media (orientation: landscape) {
-          #${attributeNamePrefix}style {
-            display: grid !important;
-            grid-template-columns: 1fr minmax(330px, 400px);
-          }
-
-          #${attributeNamePrefix}style-content {
-            max-height: none !important;
-          }
-
-          #${attributeNamePrefix}style-information {
-            max-height: none;
-          }
-        }
-      `;
-
-      informationStyle.textContent = `
-        input,
-        select {
-          padding: 10px 4px;
-          flex-grow: 1;
-          color: inherit;
-          font-size: inherit;
-          line-height: inherit;
-          background: transparent;
-          border: 0;
-          outline: none;
-        }
-        input[type="checkbox"] {
-          height: 19px;
-          margin: 10px 0 10px 10px;
-        }
-        select {
-          width: 100%;
-        }
-        option  {
-          color: #333;
-        }
-        ::-webkit-outer-spin-button,
-        ::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-        p:has(button) {
-          margin: 0 0 1em;
-          text-align: right;
-        }
-        button {
-          padding: 10px;
-        }
-        table {
-          width: 100%;
-          font-size: 1rem;
-        }
-        th,
-        td {
-          text-align: left;
-          padding: 4px 0;
-        }
-        th {
-          padding-right: 10px;
-          font-weight: normal;
-        }
-        td > span {
-          display: flex;
-          align-items: baseline;
-          padding-right: 10px;
-          background: #464646;
-          border-bottom: 1px solid #eee;
-        }
-        td > span:focus-within {
-          outline: 2px solid #fff;
-        }
-        .right {
-          text-align: right;
-        }
-      `;
-
-      dialog.appendChild(content);
-      dialog.appendChild(information);
-      informationShadowRoot.appendChild(informationStyle);
-      informationStyle.insertAdjacentHTML(
-        'afterend',
-        `
-          <p>
-            <button type="button">Close</button>
-          </p>
-        `,
-      );
-      informationShadowRoot.appendChild(informationTable);
-      informationShadowRoot.querySelector('button')?.addEventListener('click', () => {
-        contentShadowRoot.textContent = '';
-        dialog.close();
-      });
-      dialog.addEventListener('keydown', ({ key }) => {
-        if (key === 'ESC') {
-          contentShadowRoot.textContent = '';
-          dialog.close();
-        }
-      });
-
-      const moveState = {
-        clientY: 0,
-        clientX: 0,
-        startY: 0,
-        startX: 0,
-      };
-      const moveHandler = (e: MouseEvent) => {
-        state.content?.scroll({
-          top: moveState.startY + moveState.clientY - e.clientY,
-          left: moveState.startX + moveState.clientX - e.clientX,
-        });
-      };
-
-      content.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        moveState.clientY = e.clientY;
-        moveState.clientX = e.clientX;
-        moveState.startX = state.content?.scrollLeft ?? 0;
-        moveState.startY = state.content?.scrollTop ?? 0;
-        window.addEventListener('mousemove', moveHandler);
-      });
-
-      window.addEventListener('mouseup', () => {
-        window.removeEventListener('mousemove', moveHandler);
-      });
-
-      window.addEventListener('mouseleave', () => {
-        window.removeEventListener('mousemove', moveHandler);
-      });
-
-      document.head.append(style);
-      document.body.append(dialog);
-    };
-
-    createDialog();
-
-    return async (img: HTMLImageElement) => {
-      if (!img) {
-        return;
-      }
-
-      const isInDialog = state.contentShadowRoot?.contains(img);
-      const cloneImage = isInDialog ? img : getNewImage(img);
-      const imgState = state.map.get(img);
-      const getFileSize = (src: string) =>
-        new Promise((resolve) => {
-          fetch(src, { method: 'HEAD' })
-            .then(({ headers }) => resolve(headers.get('Content-Length')))
-            .catch(() => {
-              resolve('unreadable');
-            });
-        });
-      const imgLoad = async (src: string) => {
-        return new Promise((resolve) => {
-          const image = new Image();
-
-          image.src = src;
-          image.onload = () => {
-            resolve(0);
-          };
-        });
-      };
-
-      await imgLoad(img.src);
-
-      if (!imgState) {
-        return;
-      }
-
-      dialog.focus();
-      informationTable.textContent = '';
-      informationTable.insertAdjacentHTML(
-        'afterbegin',
-        `
-          <col style="width: 30%" />
-          <col />
-          <tbody>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-url">URL</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-url"
-                    value="${img.src || img.currentSrc}"
-                    readonly
-                  />
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-size">File size</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-size"
-                    value="${await getFileSize(img.src)}"
-                    class="right"
-                    readonly
-                  />
-                  byte
-              </span>
-
-              </td>
-            </tr>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-w">Natural width</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-w"
-                    value="${img.naturalWidth}"
-                    class="right"
-                    readonly
-                  />
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-h">Natural height</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-h"
-                    value="${img.naturalHeight}"
-                    class="right"
-                    readonly
-                  />
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-alt">Alt text</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-alt"
-                    value="${img.alt}"
-                    readonly
-                  />
-                </span>
-              </td>
-            </tr>
-            ${getSrcSet(img.srcset)}
-            ${getTransformUI()}
-            <tr>
-              <th><label for="${attributeNamePrefix}info-reverse">Reverse</label></th>
-              <td>
-                <span>
-                  <input
-                    id="${attributeNamePrefix}info-reverse"
-                    type="checkbox"
-                    ${imgState.reverse ? 'checked' : ''}
-                  />
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <th><label for="${attributeNamePrefix}info-render">Rendering Mode</label></th>
-              <td>
-                <span>
-                  <select
-                    id="${attributeNamePrefix}info-render"
-                  >
-                  ${['crisp-edges', 'pixelated', 'smooth', 'high-quality'].map((value) => {
-                    return `
-                        <option ${imgState.render === value ? 'selected' : ''}>${value}</option>
-                      `;
-                  })}
-                  </select>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        `,
-      );
-
-      contentShadowRoot.textContent = '';
-      contentShadowRoot.append(state.contentStyle);
-      state.spaceElement.textContent = '';
-      state.spaceElement.append(cloneImage);
-      contentShadowRoot.append(state.spaceElement);
-
-      const readonlies = informationTable.querySelectorAll<HTMLInputElement>('[readonly]');
-      const wheelHandler: EventListener = (e) => e.stopPropagation();
-      const isImageStateProp = (name: string): name is keyof typeof imgState => name in imgState;
-
-      readonlies.forEach((input) => {
-        input.addEventListener('focus', () => input.select());
-      });
-      informationTable.querySelectorAll('[type="number"]').forEach((input) => {
-        input.addEventListener('wheel', wheelHandler);
-      });
-      informationTable
-        .querySelectorAll<HTMLInputElement>(
-          `#${attributeNamePrefix}info-change-scale, #${attributeNamePrefix}info-change-rotate`,
-        )
-        .forEach((input) => {
-          input.addEventListener('keydown', (e) => {
-            e.stopPropagation();
-          });
-
-          if (isImageStateProp(input.name)) {
-            switch (input.name) {
-              case 'rotate':
-                imgState.input.rotate = input;
-
-                input.addEventListener('input', () => {
-                  const menuItemId = `${input.value}deg`;
-
-                  input.dataset.value = menuItemId;
-                  transform({ menuItemId }, true);
-                });
-
-                break;
-              case 'scale':
-                imgState.input.scale = input;
-
-                input.addEventListener('input', () => {
-                  const menuItemId = `${input.value}%`;
-
-                  transform({ menuItemId }, true);
-                });
-
-                break;
-
-              default:
-                break;
-            }
-          }
-        });
-
-      const reverseInput = informationTable.querySelector<HTMLInputElement>(
-        `#${attributeNamePrefix}info-reverse`,
-      );
-
-      imgState.input.reverse = reverseInput;
-      reverseInput?.addEventListener('change', () => {
-        transform({ menuItemId: 'reverse' }, true);
-      });
-
-      const renderingModeSelect = informationTable.querySelector<HTMLSelectElement>(
-        `#${attributeNamePrefix}info-render`,
-      );
-
-      imgState.input.render = renderingModeSelect;
-      renderingModeSelect?.addEventListener('change', () => {
-        transform({ menuItemId: `render:${renderingModeSelect.value}` }, true);
-      });
-
-      content.removeEventListener('wheel', wheelEventHandler);
-      content.addEventListener('wheel', wheelEventHandler);
-
-      if (!dialog.open) {
-        dialog.showModal();
-
-        if (!state.map.has(cloneImage)) {
-          state.map.set(cloneImage, {
-            ...defaultState,
-            rotate: imgState.rotate,
-            reverse: imgState.reverse,
-          });
-        }
-
-        // ズーム初期化
-        if (imgState.scale === 100 && state.content) {
-          const fitHeight = (state.content.offsetHeight - 60) / img.naturalHeight;
-          const fitWidth = (state.content.offsetWidth - 60) / img.naturalWidth;
-          const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
-
-          if (result < 100) {
-            imgState.scale = result;
-          }
-        }
-
-        state.imageElement = cloneImage;
-        transform({ menuItemId: `${imgState.scale}%` });
-
-        if (state.content) {
-          const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = state.content;
-
-          state.content.scroll({
-            top: (scrollHeight - offsetHeight) / 2,
-            left: (scrollWidth - offsetWidth) / 2,
-          });
-        }
-      }
     };
   })();
-
-  const reset = (img: HTMLImageElement) => {
-    const transformNames = [...img.attributes]
-      .map(({ name }) => {
-        if (name.startsWith(attributeNamePrefix)) {
-          return name;
-        }
-
-        return '';
-      })
-      .filter(Boolean);
-
-    img.style.cssText = img.dataset.imageControlDefaultStyle || '';
-    state.map.set(img, { ...defaultState });
-    transformNames.forEach((name) => img.removeAttribute(name));
-    transform({ menuItemId: `100%` });
-
-    return true;
+  const dialogContains = (image: HTMLImageElement) => {
+    return image ? spaceElement.contains(image) : false;
   };
-
-  chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
-    transform({ menuItemId }, false);
-    sendResponse(true);
-
-    return true;
-  });
-
-  window.addEventListener('contextmenu', ({ target }) => {
-    const img = resolveTarget(target);
-
-    if (!(img instanceof HTMLImageElement)) {
-      state.imageElement = null;
-      console.log('Chrome Extension Image Controller: No image');
-
+  const setInputValues = (imageData: StyleData) => {
+    if (!imageData.isInDialog || !currentImageElement) {
       return;
     }
 
-    if (img) {
-      state.imageElement = img;
+    formControls.url.value = currentImageElement.src;
+    // alt 以外のアクセシブルネームをサポートするかどうか
+    formControls.alt.value = currentImageElement.alt;
+    formControls.size.value = imageData.fileSize;
+    formControls.naturalWidth.value = `${currentImageElement.naturalWidth} px`;
+    formControls.naturalHeight.value = `${currentImageElement.naturalHeight} px`;
 
-      if (!state.map.has(img)) {
-        state.map.set(img, { ...defaultState });
+    const getAspectRatio = (width: number, height: number) => {
+      const getGCD = (a: number, b: number): number => {
+        if (b === 0) {
+          return a;
+        }
+
+        return getGCD(b, a % b);
+      };
+
+      const gcd = getGCD(width, height);
+      const ratio = `${width / gcd} : ${height / gcd}`;
+
+      return ratio;
+    };
+
+    formControls.aspect.value = getAspectRatio(
+      currentImageElement.naturalWidth,
+      currentImageElement.naturalHeight,
+    );
+
+    // formControls.srcset.value = hhhhhhh
+    formControls.scale.value = String(imageData.scale);
+    formControls.rotate.value = String(imageData.rotate);
+    formControls.reverse.checked = imageData.reverse;
+    formControls.render.value = imageData.render;
+  };
+
+  const { canvas, spaceElement } = (() => {
+    const outer = document.createElement('div');
+    const inner = document.createElement('div');
+    const moveState = {
+      clientY: 0,
+      clientX: 0,
+      startY: 0,
+      startX: 0,
+    };
+    const moveHandler = (e: MouseEvent) => {
+      outer.scroll({
+        top: moveState.startY + moveState.clientY - e.clientY,
+        left: moveState.startX + moveState.clientX - e.clientX,
+      });
+    };
+
+    outer.style.cssText = '--canvas-background: #202124';
+    outer.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) {
+        return;
       }
 
-      if (typeof img.dataset.imageControlDefaultStyle !== 'string') {
-        img.dataset.imageControlDefaultStyle = img.getAttribute('style') || '';
+      e.preventDefault();
+
+      moveState.clientY = e.clientY;
+      moveState.clientX = e.clientX;
+      moveState.startX = outer.scrollLeft ?? 0;
+      moveState.startY = outer.scrollTop ?? 0;
+      window.addEventListener('mousemove', moveHandler);
+    });
+
+    outer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      if (!currentImageElement) {
+        return;
+      }
+
+      const imageData = getImageData(currentImageElement);
+      const mode = e.shiftKey ? 'rotate' : 'zoom';
+
+      if (mode === 'rotate') {
+        switch (e.deltaY < 0 ? 'right' : 'left') {
+          case 'right':
+            imageData.rotate += 10;
+
+            if (360 <= imageData.rotate) {
+              imageData.rotate -= 360;
+            }
+
+            break;
+
+          case 'left':
+            imageData.rotate -= 10;
+
+            if (imageData.rotate < 0) {
+              imageData.rotate += 360;
+            }
+            break;
+        }
+      } else {
+        const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
+
+        switch (e.deltaY < 0 ? 'in' : 'out') {
+          case 'in':
+            if (imageData.scale === 1) {
+              imageData.scale = diff;
+            } else {
+              imageData.scale += diff;
+            }
+            break;
+
+          case 'out':
+            imageData.scale -= diff;
+
+            if (imageData.scale <= 0) {
+              imageData.scale = 1;
+            }
+            break;
+        }
+      }
+
+      setImageData(currentImageElement, {
+        ...imageData,
+      });
+    });
+
+    window.addEventListener('mouseup', () => {
+      window.removeEventListener('mousemove', moveHandler);
+    });
+
+    window.addEventListener('mouseleave', () => {
+      window.removeEventListener('mousemove', moveHandler);
+    });
+
+    outer.id = 'canvas';
+    inner.id = 'canvas-inner';
+    outer.append(inner);
+
+    return {
+      canvas: outer,
+      spaceElement: inner,
+    };
+  })();
+  const style = (() => {
+    const element = document.createElement('style');
+    const convertToCSSText = (
+      css: Record<string, Record<string, string | number>>,
+      mediaQuery: string = '',
+    ) => {
+      let cssText = mediaQuery === '' ? '' : `${mediaQuery} {`;
+
+      for (const [selector, styleObject] of Object.entries(css)) {
+        let values = '';
+
+        for (const [propertyName, value] of Object.entries(styleObject)) {
+          values += `${propertyName}: ${value}; `;
+        }
+
+        cssText += ` ${selector} {${values}}`;
+      }
+
+      return `${cssText.trim()}${mediaQuery === '' ? '' : '}'}`;
+    };
+
+    element.dataset.from = 'chrome-extension-image-viewer';
+    element.textContent = convertToCSSText({
+      ':host': {
+        display: 'block !important',
+        position: 'fixed !important',
+        left: '0 !important',
+        top: '0 !important',
+      },
+      '*': {
+        'box-sizing': 'border-box',
+        padding: 0,
+        margin: 0,
+      },
+      ':focus': {
+        outline: 'none',
+      },
+      ':focus-visible': {
+        'box-shadow': '0 0 0 2px #fff',
+      },
+      img: {
+        position: 'absolute',
+        inset: '0',
+        margin: 'auto',
+      },
+      '.close': {
+        'text-align': 'right',
+        margin: '0 0 20px',
+      },
+      '.close button': {
+        padding: '10px',
+        background: '#42ccc0',
+        border: 0,
+        'border-radius': '6px',
+        'min-width': '100px',
+        'font-size': 'inherit',
+      },
+      dialog: {
+        'font-size': '14px',
+        position: 'fixed',
+        inset: '0px',
+        margin: 'auto',
+        padding: '0',
+        width: '90%',
+        height: '90%',
+        'max-width': 'calc(100% - 20px)',
+        'max-height': 'calc(100% - 20px)',
+        color: '#fff',
+        background: '#282828',
+        visibility: 'visible',
+        overflow: 'hidden',
+        opacity: '1',
+        'box-sizing': 'border-box',
+        border: 0,
+        'border-radius': '4px',
+        'box-shadow': '0 0 10px 0 rgb(0 0 0 / 80%)',
+      },
+      'dialog::backdrop': {
+        background: 'rgb(0 0 0 / 40%)',
+      },
+      'dialog:not([open])': {
+        display: 'none !important',
+      },
+      '#canvas, #details': {
+        height: '100%',
+      },
+      '#canvas': {
+        display: 'grid',
+        'place-items': 'center',
+        'max-height': '80%',
+        overflow: 'hidden',
+        cursor: 'move',
+        background: 'var(--canvas-background)',
+      },
+      '#canvas-inner': {
+        display: 'block',
+        position: 'relative',
+      },
+      '#details': {
+        padding: '20px 14px',
+        background: '#292a2d',
+        border: '2px solid #424242',
+        'box-sizing': 'border-box',
+        'max-height': '20%',
+        overflow: 'auto',
+      },
+      '#details .row, #details .group': {
+        display: 'grid',
+        'grid-template-columns': '140px 1fr',
+      },
+      '#details .row label, #details .group .legend': {
+        display: 'grid',
+        'align-items': 'center',
+        padding: '0 8px',
+      },
+      '#details .row .control': {
+        display: 'grid',
+        'align-items': 'center',
+        'grid-template-columns': '1fr auto',
+        'padding-right': '8px',
+      },
+      '#details .group .control': {
+        display: 'grid',
+        gap: '20px',
+      },
+      '#details input, #details select, #details .unit': {
+        background: 'transparent',
+      },
+      '#details input, #details select': {
+        padding: '8px 6px 8px 4px',
+        color: 'inherit',
+        'font-size': 'inherit',
+        'line-height': 'inherit',
+        border: '0',
+        outline: 'none',
+        background: 'transparent',
+        'border-radius': '4px',
+      },
+      '#details input': {
+        'grid-column': '1 / 2',
+      },
+      '#details input:last-child, #details select:last-child': {
+        'grid-column': '1 / 3',
+      },
+      '#details .unit': {
+        padding: '8px 4px',
+        'grid-column': '2 / 3',
+        'min-width': '2.5em',
+      },
+      '#details input[type="checkbox"]': {
+        inset: '0',
+        position: 'absolute',
+        opacity: '0',
+        'z-index': 1,
+      },
+      '#details select': {
+        width: '100%',
+      },
+      '#details option': {
+        color: '#fff',
+        background: '#515254',
+      },
+      '::-webkit-outer-spin-button, ::-webkit-inner-spin-button': {
+        '-webkit-appearance': 'none',
+        margin: 0,
+      },
+      '#readonly': {
+        background: '#515254',
+        'border-radius': '4px',
+        margin: '0 0 20px',
+      },
+      '#readonly p:not(:first-child)': {
+        'border-top': '1px solid #3f4042',
+      },
+      '#readonly .unit': {
+        'padding-left': 0,
+      },
+      '#editable input:not([type="checkbox"]), #editable select': {
+        background: '#1d1d1e',
+      },
+      '#editable .row:not(:first-child), #editable .group:not(:first-child)': {
+        margin: '12px 0 0',
+      },
+
+      '.checkbox': {
+        position: 'relative',
+        display: 'block',
+        padding: '0 80px 0 6px',
+        'min-height': '37px',
+      },
+      '.checkbox::before, .checkbox::after': {
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        bottom: '0',
+        display: 'block',
+        margin: 'auto 0',
+        content: '""',
+      },
+      '.checkbox::before': {
+        'z-index': '1',
+        width: '32px',
+        height: '32px',
+        background: '#f0f3f4',
+        'border-radius': '50%',
+        'box-shadow': '0 0 3px rgb(0 0 0 / 60%)',
+        transition: '0.2s right ease-out',
+      },
+      '.checkbox::after': {
+        width: '72px',
+        height: '32px',
+        background: '#42ccc0',
+        'border-radius': '20px',
+        'box-shadow': '0 0 3px rgb(0 0 0 / 60%) inset',
+        transition: '0.2s background-color ease-out',
+      },
+      '.checkbox:has(input:not(:checked))::before': {
+        right: '39px',
+      },
+      '.checkbox:has(input:not(:checked))::after': {
+        'background-color': '#cbd7db',
+      },
+      '.checkbox:has(input:focus-visible)::after': {
+        'box-shadow': '0 0 3px rgb(0 0 0 / 60%) inset, 0 0 0 2px #fff',
+      },
+      '.right': {
+        'text-align': 'right',
+      },
+
+      '#details #color': {
+        padding: '20px 0 0',
+        'border-top': '1px solid #6a6a6a',
+        margin: '20px 0 0',
+      },
+      '#details #color .control': {
+        'grid-template-columns': 'auto auto 1fr',
+      },
+      '#details #color #background-bright, #details #color #background-dark, #details #color #background-custom':
+        {
+          width: '44px',
+          height: '44px',
+          display: 'block',
+          color: 'transparent',
+          'user-select': 'none',
+          overflow: 'hidden',
+          padding: 0,
+          'border-radius': '4px',
+        },
+      '#details #color #background-bright, #details #color #background-dark': {
+        border: '2px solid #000',
+      },
+      '#details #color #background-bright': {
+        background: '#fff',
+      },
+      '#details #color #background-dark': {
+        background: '#202124',
+      },
+      '#details #color #background-custom': {
+        border: '4px double #6a6a6a',
+      },
+      '#details #color #background-custom::-webkit-color-swatch-wrapper': {
+        padding: 0,
+      },
+      '#details #color #background-custom::-webkit-color-swatch': {
+        border: 0,
+      },
+    });
+    element.textContent += convertToCSSText(
+      {
+        dialog: {
+          display: 'grid !important',
+          'grid-template-columns': '1fr 450px',
+        },
+        '#canvas': {
+          'max-height': 'none !important',
+        },
+        '#details': {
+          'max-height': 'none',
+        },
+      },
+      '@media (orientation: landscape)',
+    );
+
+    return element;
+  })();
+  const imageViewer = document.createElement('image-viewer');
+  const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
+  const zoomAndScrollInit = (targetImage: HTMLImageElement, scaleValue?: number) => {
+    const scale = scaleValue ?? getImageData(targetImage).scale;
+
+    if (scale === 100) {
+      const fitHeight = (canvas.offsetHeight - 60) / targetImage.naturalHeight;
+      const fitWidth = (canvas.offsetWidth - 60) / targetImage.naturalWidth;
+      const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
+
+      if (result < 100) {
+        setImageData(targetImage, {
+          scale: result,
+        });
       }
     }
-  });
-}
+
+    const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;
+
+    canvas.scroll({
+      top: (scrollHeight - offsetHeight) / 2,
+      left: (scrollWidth - offsetWidth) / 2,
+    });
+  };
+  const resizeSupport = () => {
+    let setTimeoutId = -1;
+    const wheelEvent = new Event('wheel');
+
+    window.addEventListener('resize', () => {
+      clearTimeout(setTimeoutId);
+
+      setTimeoutId = setTimeout(() => {
+        if (dialog.open && currentImageElement) {
+          canvas.dispatchEvent(wheelEvent);
+          zoomAndScrollInit(currentImageElement);
+        }
+      }, 300);
+    });
+  };
+
+  dialog.append(canvas);
+  dialog.append(details);
+  shadowRoot.appendChild(style);
+  shadowRoot.appendChild(dialog);
+  document.body.appendChild(imageViewer);
+  resizeSupport();
+
+  return {
+    imageViewer,
+    dialog,
+    showDialog: async () => {
+      if (dialog.open) {
+        return;
+      }
+
+      return await new Promise<void>(async (resolve) => {
+        if (!currentImageElement) {
+          return;
+        }
+
+        const imageData = getImageData(currentImageElement);
+
+        if (!imageData.isInDialog) {
+          if (imageData.clonedImage === null) {
+            const clonedImage = new Image();
+
+            clonedImage.alt = currentImageElement.alt;
+            clonedImage.src = currentImageElement.src;
+            clonedImage.width = currentImageElement.width;
+            clonedImage.height = currentImageElement.height;
+
+            await new Promise<void>((done) => {
+              clonedImage.onload = () => done();
+            });
+
+            new Promise<void>((done) => {
+              fetch(clonedImage.src, { method: 'HEAD' })
+                .then(({ headers }) => {
+                  const size = headers.get('Content-Length');
+
+                  setImageData(clonedImage, {
+                    fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+                  });
+                })
+                .catch(() => {
+                  setImageData(clonedImage, {
+                    fileSize: chrome.i18n.getMessage('error_fileSize'),
+                  });
+                })
+                .finally(() => {
+                  zoomAndScrollInit(clonedImage, imageData.scale);
+                  done();
+                });
+            });
+
+            // ダイアログ用の画像は別で管理する
+            setImageData(clonedImage, {
+              ...imageData,
+              isInDialog: true,
+            });
+
+            setImageData(currentImageElement, {
+              clonedImage,
+            });
+
+            currentImageElement = clonedImage;
+          } else {
+            currentImageElement = imageData.clonedImage;
+            resolve();
+          }
+        }
+
+        spaceElement.textContent = '';
+        spaceElement.append(currentImageElement);
+        dialog.showModal();
+
+        zoomAndScrollInit(currentImageElement, imageData.scale);
+        setInputValues(imageData);
+        resolve();
+      });
+    },
+    dialogContains,
+    getImageData,
+    setImageData,
+  };
+})();
+
+const resolveTarget = (target: EventTarget | null) => {
+  if (target === null || !(target instanceof HTMLElement)) {
+    return null;
+  }
+
+  if (currentImageElement instanceof HTMLImageElement && target === imageViewer) {
+    return currentImageElement;
+  }
+
+  if (target instanceof HTMLImageElement) {
+    return target;
+  }
+
+  const childrenImages = target.querySelectorAll('img');
+
+  if (childrenImages.length === 1) {
+    return childrenImages[0];
+  }
+
+  const focusableOrSemanticContextsImages = target
+    .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
+    ?.querySelectorAll('img');
+
+  if (focusableOrSemanticContextsImages?.length === 1) {
+    return focusableOrSemanticContextsImages[0];
+  }
+
+  const imagesFromParent = target.parentElement?.querySelectorAll('img');
+
+  if (imagesFromParent?.length === 1) {
+    return imagesFromParent[0];
+  }
+
+  const { backgroundImage } = getComputedStyle(target);
+
+  if (backgroundImage === 'none') {
+    return null;
+  }
+
+  const pseudoImage = new Image();
+
+  pseudoImage.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
+
+  return pseudoImage;
+};
+
+chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
+  const targetElement = currentImageElement;
+
+  sendResponse(true);
+
+  if (menuItemId === 'reset-all') {
+    const nodeList = [
+      ...(targetElement ? [targetElement] : []),
+      ...document.querySelectorAll<HTMLImageElement>('[data-image-viewer-default-style]'),
+    ];
+
+    nodeList.forEach((image) => {
+      const imageData = getImageData(image);
+
+      setImageData(image, {
+        ...defaultState,
+        oldScale: imageData.oldScale,
+        fileSize: imageData.fileSize,
+      });
+
+      if (!imageData.isInDialog && imageData.clonedImage) {
+        const clonedImageData = getImageData(imageData.clonedImage);
+
+        setImageData(imageData.clonedImage, {
+          ...defaultState,
+          isInDialog: true,
+          oldScale: clonedImageData.oldScale,
+          fileSize: clonedImageData.fileSize,
+        });
+      }
+
+      if (typeof image.dataset.imageViewerDefaultStyle === 'string') {
+        image.setAttribute('style', image.dataset.imageViewerDefaultStyle);
+      }
+    });
+
+    return true;
+  }
+
+  if (!targetElement) {
+    return true;
+  }
+
+  const imageData = getImageData(targetElement);
+  const { isInDialog } = imageData;
+
+  if (menuItemId.endsWith('%')) {
+    setImageData(targetElement, {
+      scale: Number(menuItemId.replace(/[^0-9.]/g, '')),
+    });
+  } else if (menuItemId.endsWith('deg')) {
+    setImageData(targetElement, {
+      rotate: Number(menuItemId.replace(/[^0-9.]/g, '')),
+    });
+  } else {
+    switch (menuItemId) {
+      case 'reset': {
+        if (isInDialog) {
+          targetElement.removeAttribute('style');
+
+          setImageData(targetElement, {
+            ...defaultState,
+            isInDialog,
+            oldScale: imageData.oldScale,
+            fileSize: imageData.fileSize,
+          });
+        } else {
+          if (typeof targetElement.dataset.imageViewerDefaultStyle === 'string') {
+            targetElement.setAttribute('style', targetElement.dataset.imageViewerDefaultStyle);
+          }
+        }
+
+        break;
+      }
+
+      case 'reverse':
+        setImageData(targetElement, {
+          reverse: !imageData.reverse,
+        });
+
+        break;
+
+      case 'dialog': {
+        const show = async () => {
+          await showDialog();
+        };
+
+        show();
+
+        break;
+      }
+    }
+  }
+
+  return true;
+});
+
+window.addEventListener('contextmenu', ({ target }) => {
+  const targetImage = resolveTarget(target);
+
+  if (!(targetImage instanceof HTMLImageElement)) {
+    currentImageElement = null;
+    console.log('Chrome Extension Image Viewer: No image');
+
+    return;
+  }
+
+  if (targetImage) {
+    const isInDialog = dialogContains(targetImage);
+
+    if (!isInDialog) {
+      if (typeof targetImage.dataset.imageViewerDefaultStyle !== 'string') {
+        targetImage.dataset.imageViewerDefaultStyle = targetImage.getAttribute('style') || '';
+      }
+
+      currentImageElement = targetImage;
+    }
+  }
+});

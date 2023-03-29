@@ -1,0 +1,77 @@
+{
+  "extName": {
+    "message": "Webページ上の画像をいい感じに確認できるやつ"
+  },
+  "extDesc": {
+    "message": "画像のコンテキストメニューから画像の反転、回転、拡大、情報の確認などが行えます。"
+  },
+  "readOnly_url": {
+    "message": "URL"
+  },
+  "readOnly_alt": {
+    "message": "代替テキスト"
+  },
+  "readOnly_fileSize": {
+    "message": "ファイルサイズ"
+  },
+  "error_fileSize": {
+    "message": "読み込めません"
+  },
+  "readOnly_naturalWidth": {
+    "message": "元々の横幅"
+  },
+  "readOnly_naturalHeight": {
+    "message": "元々の高さ"
+  },
+  "readOnly_aspect": {
+    "message": "アスペクト比"
+  },
+  "editable_scale": {
+    "message": "倍率"
+  },
+  "editable_rotate": {
+    "message": "傾き"
+  },
+  "editable_reverse": {
+    "message": "反転"
+  },
+  "editable_render": {
+    "message": "描画モード"
+  },
+  "editable_background": {
+    "message": "背景色"
+  },
+  "editable_background_bright": {
+    "message": "明るい色"
+  },
+  "editable_background_dark": {
+    "message": "暗い色"
+  },
+  "editable_background_custom": {
+    "message": "カスタム"
+  },
+  "button_close": {
+    "message": "閉じる"
+  },
+  "context_zoom": {
+    "message": "拡大"
+  },
+  "context_rotate": {
+    "message": "回転"
+  },
+  "context_reverse": {
+    "message": "左右反転"
+  },
+  "context_dialog": {
+    "message": "詳細を表示"
+  },
+  "context_resetMenus": {
+    "message": "リセット"
+  },
+  "context_reset": {
+    "message": "この画像を元に戻す"
+  },
+  "context_resetAll": {
+    "message": "すべての画像を元に戻す"
+  }
+}
