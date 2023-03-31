@@ -121,7 +121,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
       <div id="readonly">
         <p class="row">
-          <label for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
+          <label class="label" for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
           <span class="control">
             <input
               id="url"
@@ -131,7 +131,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
+          <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
           <span class="control">
             <input
               id="alt"
@@ -141,7 +141,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
+          <label class="label" for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
           <span class="control">
             <input
               id="size"
@@ -152,7 +152,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="natural-width">${chrome.i18n.getMessage('readOnly_naturalWidth')}</label>
+          <label class="label" for="natural-width">${chrome.i18n.getMessage(
+            'readOnly_naturalWidth',
+          )}</label>
           <span class="control">
             <input
               id="natural-width"
@@ -163,7 +165,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="natural-height">${chrome.i18n.getMessage('readOnly_naturalHeight')}</label>
+          <label class="label" for="natural-height">${chrome.i18n.getMessage(
+            'readOnly_naturalHeight',
+          )}</label>
           <span class="control">
             <input
               id="natural-height"
@@ -174,7 +178,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
+          <label class="label" for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
           <span class="control">
             <input
               id="aspect"
@@ -188,7 +192,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         ${
           /*
         <p class="row">
-          <label for="srcset-${ratio}">srcset ${ratio}</label>
+          <label class="label" for="srcset-${ratio}">srcset ${ratio}</label>
           <span class="control">
             <input
               id="srcset-${ratio}"
@@ -203,41 +207,52 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       </div>
 
       <div id="editable">
-        <p class="row">
-          <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
-          <span class="control">
-            <input
-              type="number"
-              name="scale"
-              id="scale"
-              value=""
-              step="1"
-              min="1"
-              class="right"
-            />
+        <div class="row" role="group" aria-labelledby="scale-legend">
+          <p class="label" id="scale-legend">
+            <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
+          </p>
+          <p class="control">
+            <span class="field">
+              <button type="button" id="scale-fit">FIT</button>
+              <button type="button" id="scale-100">100%</button>
+              <input
+                type="number"
+                name="scale"
+                id="scale"
+                value=""
+                step="1"
+                min="1"
+                class="right"
+              />
+            </span>
             <span class="unit">%</span>
-          </span>
-        </p>
+          </p>
+        </div>
+
+        <div class="row" role="group" aria-labelledby="rotate-legend">
+          <p class="label" id="rotate-legend">
+            <label for="rotate">${chrome.i18n.getMessage('editable_rotate')}</label>
+          </p>
+          <p class="control">
+            <span class="field">
+              <button type="button" id="rotate-reset">RESET</button>
+              <input
+                type="number"
+                name="rotate"
+                id="rotate"
+                value=""
+                step="1"
+                min="-360"
+                max="360"
+                class="right"
+              />
+              <span class="unit">deg</span>
+            </span>
+          </p>
+        </div>
 
         <p class="row">
-          <label for="rotate">${chrome.i18n.getMessage('editable_rotate')}</label>
-          <span class="control">
-            <input
-              type="number"
-              name="rotate"
-              id="rotate"
-              value=""
-              step="1"
-              min="-360"
-              max="360"
-              class="right"
-            />
-            <span class="unit">deg</span>
-          </span>
-        </p>
-
-        <p class="row">
-          <label for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
+          <label class="label" for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
           <span class="control">
             <span class="checkbox">
               <input
@@ -248,7 +263,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label for="render">${chrome.i18n.getMessage('editable_render')}</label>
+          <label class="label" for="render">${chrome.i18n.getMessage('editable_render')}</label>
           <span class="control">
             <select
               id="render"
@@ -298,7 +313,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
     // const srcset = element.querySelector<HTMLInputElement>('#srcset')!;
     const scale = element.querySelector<HTMLInputElement>('#scale')!;
+    const scaleFit = element.querySelector<HTMLInputElement>('#scale-fit')!;
+    const scale100 = element.querySelector<HTMLInputElement>('#scale-100')!;
     const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
+    const rotateReset = element.querySelector<HTMLInputElement>('#rotate-reset')!;
     const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
     const render = element.querySelector<HTMLSelectElement>('#render')!;
 
@@ -316,9 +334,30 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       });
     });
 
+    scaleFit.addEventListener('click', () => {
+      if (currentImageElement) {
+        updateState({
+          scale: 100,
+        });
+        zoomAndScrollInit(currentImageElement, 100);
+      }
+    });
+
+    scale100.addEventListener('click', () => {
+      updateState({
+        scale: 100,
+      });
+    });
+
     rotate.addEventListener('input', () => {
       updateState({
         rotate: Number(rotate.value) ?? defaultState.rotate,
+      });
+    });
+
+    rotateReset.addEventListener('click', () => {
+      updateState({
+        rotate: 0,
       });
     });
 
@@ -346,6 +385,16 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
       custom.addEventListener('input', () => {
         canvas.style.cssText = `--canvas-background: ${custom.value}`;
+        chrome.storage.local.set({
+          background: custom.value,
+        });
+      });
+
+      chrome.storage.local.get('background', ({ background }) => {
+        if (background) {
+          custom.value = background;
+          custom.dispatchEvent(inputEvent);
+        }
       });
     }
 
@@ -636,11 +685,21 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'max-height': '20%',
         overflow: 'auto',
       },
+      '#details input, #details select': {
+        padding: '8px 6px 8px 4px',
+        color: 'inherit',
+        'font-size': 'inherit',
+        'line-height': 'inherit',
+        border: '0',
+        outline: 'none',
+        background: 'transparent',
+        'border-radius': '4px',
+      },
       '#details .row, #details .group': {
         display: 'grid',
         'grid-template-columns': '140px 1fr',
       },
-      '#details .row label, #details .group .legend': {
+      '#details .row .label, #details .group .legend': {
         display: 'grid',
         'align-items': 'center',
         padding: '0 8px',
@@ -651,22 +710,34 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'grid-template-columns': '1fr auto',
         'padding-right': '8px',
       },
+      '#details .row .field': {
+        display: 'flex',
+        background: '#1d1d1e',
+        'border-radius': '4px',
+      },
+      '#details .row .field button': {
+        'font-size': '11px',
+        'font-family': 'monospace',
+        'min-width': '40px',
+        padding: '2px 0 0',
+        margin: '4px 0 4px 4px',
+        'border-radius': '4px',
+        background: '#f0f0f0',
+        border: '2px solid #1d1d1e',
+      },
+      '#details .row .field button:last-of-type': {
+        'margin-right': '4px',
+      },
+      '#details .row .field button:hover': {
+        opacity: '0.8',
+      },
+      '#details .row .field input': {
+        padding: '8px 6px 8px 4px',
+        width: '100%',
+      },
       '#details .group .control': {
         display: 'grid',
         gap: '20px',
-      },
-      '#details input, #details select, #details .unit': {
-        background: 'transparent',
-      },
-      '#details input, #details select': {
-        padding: '8px 6px 8px 4px',
-        color: 'inherit',
-        'font-size': 'inherit',
-        'line-height': 'inherit',
-        border: '0',
-        outline: 'none',
-        background: 'transparent',
-        'border-radius': '4px',
       },
       '#details input': {
         'grid-column': '1 / 2',
@@ -717,8 +788,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '.checkbox': {
         position: 'relative',
         display: 'block',
-        padding: '0 80px 0 6px',
+        width: '80px',
         'min-height': '37px',
+        'margin-left': 'auto',
       },
       '.checkbox::before, .checkbox::after': {
         position: 'absolute',
@@ -825,7 +897,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       const fitWidth = (canvas.offsetWidth - 60) / targetImage.naturalWidth;
       const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
 
-      if (result < 100) {
+      if (result <= 100) {
         setImageData(targetImage, {
           scale: result,
         });
@@ -943,49 +1015,64 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 })();
 
 const resolveTarget = (target: EventTarget | null) => {
-  if (target === null || !(target instanceof HTMLElement)) {
-    return null;
+  const getElement = () => {
+    if (target === null || !(target instanceof HTMLElement)) {
+      return null;
+    }
+
+    if (currentImageElement instanceof HTMLImageElement && target === imageViewer) {
+      return currentImageElement;
+    }
+
+    if (target instanceof HTMLImageElement) {
+      return target;
+    }
+
+    const childrenImages = target.querySelectorAll('img, svg');
+
+    if (childrenImages.length === 1) {
+      return childrenImages[0];
+    }
+
+    const imagesFromParent = target.parentElement?.querySelectorAll('img, svg');
+
+    if (imagesFromParent?.length === 1) {
+      return imagesFromParent[0];
+    }
+
+    const focusableOrSemanticContextsImages = target
+      .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
+      ?.querySelectorAll('img, svg');
+
+    if (focusableOrSemanticContextsImages?.length === 1) {
+      return focusableOrSemanticContextsImages[0];
+    }
+
+    const { backgroundImage } = getComputedStyle(target);
+
+    if (backgroundImage === 'none') {
+      return null;
+    }
+
+    const pseudoImage = new Image();
+
+    pseudoImage.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
+
+    return pseudoImage;
+  };
+
+  const img = getElement();
+
+  if (img instanceof SVGElement) {
+    const svgData = new XMLSerializer().serializeToString(img);
+    const pseudoImage = document.createElement('img');
+
+    pseudoImage.src =
+      'data:image/svg+xml;base64,' + btoa(decodeURIComponent(encodeURIComponent(svgData)));
+    return pseudoImage;
   }
 
-  if (currentImageElement instanceof HTMLImageElement && target === imageViewer) {
-    return currentImageElement;
-  }
-
-  if (target instanceof HTMLImageElement) {
-    return target;
-  }
-
-  const childrenImages = target.querySelectorAll('img');
-
-  if (childrenImages.length === 1) {
-    return childrenImages[0];
-  }
-
-  const imagesFromParent = target.parentElement?.querySelectorAll('img');
-
-  if (imagesFromParent?.length === 1) {
-    return imagesFromParent[0];
-  }
-
-  const focusableOrSemanticContextsImages = target
-    .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
-    ?.querySelectorAll('img');
-
-  if (focusableOrSemanticContextsImages?.length === 1) {
-    return focusableOrSemanticContextsImages[0];
-  }
-
-  const { backgroundImage } = getComputedStyle(target);
-
-  if (backgroundImage === 'none') {
-    return null;
-  }
-
-  const pseudoImage = new Image();
-
-  pseudoImage.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
-
-  return pseudoImage;
+  return img;
 };
 
 chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {

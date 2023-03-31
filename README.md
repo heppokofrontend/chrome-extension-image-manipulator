@@ -20,8 +20,6 @@ Install it on your Google Chrome from here.
 2. Choose [Image Viewer]
 3. Click menus
 
-- SVG images may not work with some formats, but will be supported in the future.
-
 ### 💡 The "View the details" function
 
 In the detailed confirmation dialog, you can check the original size of the image, the file size and more.
