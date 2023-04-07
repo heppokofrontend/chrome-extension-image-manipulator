@@ -624,6 +624,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         inset: '0',
         margin: 'auto',
       },
+      button: {
+        color: '#111',
+      },
       '.close': {
         'text-align': 'right',
         margin: '0 0 20px',
