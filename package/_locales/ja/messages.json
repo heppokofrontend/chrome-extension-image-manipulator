@@ -14,8 +14,14 @@
   "readOnly_fileSize": {
     "message": "ファイルサイズ"
   },
+  "readOnly_fileType": {
+    "message": "画像種別"
+  },
   "error_fileSize": {
-    "message": "読み込めません"
+    "message": "読み込めませんでした"
+  },
+  "error_fileType": {
+    "message": "読み込めませんでした"
   },
   "readOnly_naturalWidth": {
     "message": "元々の横幅"
@@ -35,6 +41,9 @@
   "editable_reverse": {
     "message": "反転"
   },
+  "editable_border": {
+    "message": "枠線"
+  },
   "editable_render": {
     "message": "描画モード"
   },
@@ -49,6 +58,36 @@
   },
   "editable_background_custom": {
     "message": "カスタム"
+  },
+  "image_list_title": {
+    "message": "画像一覧"
+  },
+  "image_list_reload": {
+    "message": "再読み込み"
+  },
+  "image_list_prev": {
+    "message": "前の画像"
+  },
+  "image_list_next": {
+    "message": "次の画像"
+  },
+  "image_list_no_alt": {
+    "message": "代替テキストなし"
+  },
+  "image_list_info": {
+    "message": "選択中の画像："
+  },
+  "image_list_description": {
+    "message": "方向キーで他の画像に切り替えららえます"
+  },
+  "search_in_page": {
+    "message": "元ページ内のこの画像を見る"
+  },
+  "searched_image_error": {
+    "message": "Error: 現在はページ内から削除されてしまったようです"
+  },
+  "searched_image_message": {
+    "message": "現在閲覧していた画像はこちらです："
   },
   "button_close": {
     "message": "閉じる"

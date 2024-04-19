@@ -1,5 +1,433 @@
 let currentImageElement: HTMLImageElement | null = null;
+let hasBorder = false;
+const IMAGE_LIST_COLS = 8;
+const SPINNER = `
+<div id="spinner">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="224" height="224" style="shape-rendering: auto; display: block; background: transparent;" xmlns:xlink="http://www.w3.org/1999/xlink"><g><g transform="rotate(0 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.99s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(3.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.98s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(7.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.97s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(10.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.96s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(14.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.95s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(18 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.94s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(21.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.93s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(25.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.92s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(28.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.91s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(32.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.9s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(36 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.89s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(39.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.88s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(43.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.87s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(46.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.86s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(50.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.85s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(54 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.84s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(57.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.83s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(61.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.82s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(64.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.81s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(68.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.8s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(72 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.79s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(75.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.78s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(79.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.77s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(82.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.76s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(86.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.75s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(90 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.74s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(93.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.73s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(97.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.72s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(100.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.71s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(104.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.7s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(108 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.69s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(111.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.68s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(115.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.67s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(118.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.66s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(122.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.65s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(126 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.64s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(129.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.63s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(133.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.62s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(136.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.61s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(140.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.6s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(144 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.59s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(147.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.58s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(151.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.57s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(154.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.56s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(158.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.55s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(162 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.54s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(165.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.53s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(169.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.52s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(172.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.51s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(176.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.5s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(180 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.49s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(183.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.48s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(187.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.47s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(190.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.46s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(194.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.45s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(198 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.44s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(201.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.43s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(205.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.42s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(208.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.41s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(212.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.4s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(216 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.39s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(219.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.38s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(223.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.37s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(226.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.36s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(230.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.35s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(234 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.34s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(237.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.33s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(241.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.32s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(244.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.31s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(248.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.3s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(252 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.29s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(255.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.28s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(259.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.27s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(262.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.26s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(266.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.25s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(270 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.24s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(273.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.23s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(277.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.22s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(280.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.21s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(284.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.2s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(288 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.19s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(291.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.18s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(295.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.17s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(298.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.16s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(302.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.15s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(306 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.14s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(309.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.13s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(313.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.12s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(316.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.11s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(320.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.1s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(324 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.09s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(327.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.08s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(331.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.07s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(334.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.06s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(338.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.05s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(342 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.04s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(345.6 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.03s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(349.2 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.02s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(352.8 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="-0.01s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g transform="rotate(356.4 50 50)">
+  <rect x="47" y="19.5" rx="3" ry="0.5" width="6" height="1" fill="#ffffff">
+    <animate attributeName="opacity" values="1;0" keyTimes="0;1" dur="1s" begin="0s" repeatCount="indefinite"></animate>
+  </rect>
+</g><g></g></g><!-- [ldio] generated by https://loading.io --></svg>
+</div>`;
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
+const convertedSvgMap: Map<SVGElement, HTMLImageElement> = new Map();
+const convertedImgToSVGMap: Map<HTMLImageElement, SVGElement> = new Map();
+const convertSVGToImg = (img: SVGElement) => {
+  const pseudoImage = (() => {
+    const pseudo = convertedSvgMap.get(img);
+
+    if (pseudo) {
+      return pseudo;
+    }
+
+    const element = document.createElement('img');
+    convertedSvgMap.set(img, element);
+    convertedImgToSVGMap.set(element, img);
+    return element;
+  })();
+
+  img.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  const svgData = img.outerHTML;
+  pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(svgData);
+  return pseudoImage;
+};
 const defaultState: StyleData = {
   isInDialog: false,
   clonedImage: null,
@@ -9,6 +437,7 @@ const defaultState: StyleData = {
   reverse: false,
   render: 'crisp-edges',
   fileSize: 'loading...',
+  fileType: 'loading...',
 };
 const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageData } = (() => {
   const getImageData = (key: HTMLImageElement) => {
@@ -34,7 +463,11 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
     return element;
   })();
-  const setImageData = (img: HTMLImageElement, options: Options) => {
+  const setImageData = (
+    img: HTMLImageElement,
+    options: Options,
+    noNeedInitScreen: boolean = false,
+  ) => {
     if (!img) {
       return;
     }
@@ -51,13 +484,23 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       ...imageData,
     });
 
+    if (noNeedInitScreen) {
+      return;
+    }
+
     // TODO: ダイアログの外でいじったのを中に伝搬させる。内から外は対応しない。
     const { isInDialog } = imageData;
     const rotate = `rotateZ(${imageData.rotate}deg)`;
     const reverse = imageData.reverse ? 'rotateY(180deg)' : '';
-    const scale = isInDialog ? '' : `scale(${imageData.scale / 100})`;
+    const scale = `scale(${imageData.scale / 100})`;
 
-    img.style.transform = `${rotate} ${reverse} ${scale}`;
+    img.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
+
+    if (hasBorder) {
+      img.classList.add('has-border');
+    } else {
+      img.classList.remove('has-border');
+    }
 
     if (isInDialog) {
       const getSize = (img: HTMLImageElement, scale: number) => {
@@ -69,16 +512,15 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         const contentHeight = (canvas.clientHeight ?? 0) * 2 - height;
 
         return {
-          width,
-          height,
           spaceSize: {
             width: Math.max(min, contentWidth),
             height: Math.max(min, contentHeight),
           },
         };
       };
+
       const { scale, oldScale, render } = imageData;
-      const { width, height, spaceSize } = getSize(img, scale);
+      const { spaceSize } = getSize(img, scale);
       const olsSpaceSize = getSize(img, oldScale).spaceSize;
 
       img.style.width = '';
@@ -86,8 +528,8 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       img.style.imageRendering = '';
       img.style.cssText = `
         ${img.getAttribute('style')}
-        width: ${width}px !important;
-        height: ${height}px !important;
+        width: ${img.naturalWidth * (scale / 100)}px !important;
+        height: ${img.naturalHeight * (scale / 100)}px !important;
         image-rendering: ${render} !important;
       `;
 
@@ -121,6 +563,16 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
       <div id="readonly">
         <p class="row">
+          <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
+          <span class="control">
+            <input
+              id="alt"
+              value=""
+              readonly
+            />
+          </span>
+        </p>
+        <p class="row">
           <label class="label" for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
           <span class="control">
             <input
@@ -131,11 +583,12 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </span>
         </p>
         <p class="row">
-          <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
+          <label class="label" for="type">${chrome.i18n.getMessage('readOnly_fileType')}</label>
           <span class="control">
             <input
-              id="alt"
+              id="type"
               value=""
+              class="right"
               readonly
             />
           </span>
@@ -207,6 +660,32 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       </div>
 
       <div id="editable">
+        <div class="checkbox-group">
+          <p class="row">
+            <label class="label" for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
+            <span class="control">
+              <span class="checkbox">
+                <input
+                  id="reverse"
+                  type="checkbox"
+                />
+              </span>
+            </span>
+          </p>
+
+          <p class="row">
+            <label class="label" for="border">${chrome.i18n.getMessage('editable_border')}</label>
+            <span class="control">
+              <span class="checkbox shared">
+                <input
+                  id="border"
+                  type="checkbox"
+                />
+              </span>
+            </span>
+          </p>
+        </div>
+
         <div class="row" role="group" aria-labelledby="scale-legend">
           <p class="label" id="scale-legend">
             <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
@@ -252,17 +731,6 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         </div>
 
         <p class="row">
-          <label class="label" for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
-          <span class="control">
-            <span class="checkbox">
-              <input
-                id="reverse"
-                type="checkbox"
-              />
-            </span>
-          </span>
-        </p>
-        <p class="row">
           <label class="label" for="render">${chrome.i18n.getMessage('editable_render')}</label>
           <span class="control">
             <select
@@ -298,6 +766,41 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           </div>
         </div>
       </div>
+
+      <div id="image-list-section" role="group" aria-labelledby="image-list-label">
+        <div id="image-list-header">
+          <p id="image-list-label" class="legend">${chrome.i18n.getMessage('image_list_title')}</p>
+
+          <div id="image-list-buttons">
+            <p><button type="button" id="image-list-reload">${chrome.i18n.getMessage(
+              'image_list_reload',
+            )}</button></p>
+            <p><button type="button" id="image-list-prev">${chrome.i18n.getMessage(
+              'image_list_prev',
+            )}</button></p>
+            <p><button type="button" id="image-list-next">${chrome.i18n.getMessage(
+              'image_list_next',
+            )}</button></p>
+          </div>
+        </div>
+
+        <div id="image-list-wrapper" title="${chrome.i18n.getMessage('image_list_description')}">
+          <ul id="image-list"></ul>
+        </div>
+
+        <p id="image-list-info">
+          ${chrome.i18n.getMessage('image_list_info')}
+          <span id="image-list-info-text" aria-live="polite"></span>
+        </p>
+      </div>
+
+      <div class="group">
+        <p>
+          <button id="search">
+            🔍 ${chrome.i18n.getMessage('search_in_page')}
+          </button>
+        </p>
+      </div>
     `,
     );
 
@@ -308,6 +811,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     const url = element.querySelector<HTMLInputElement>('#url')!;
     const alt = element.querySelector<HTMLInputElement>('#alt')!;
     const size = element.querySelector<HTMLInputElement>('#size')!;
+    const type = element.querySelector<HTMLInputElement>('#type')!;
     const naturalWidth = element.querySelector<HTMLInputElement>('#natural-width')!;
     const naturalHeight = element.querySelector<HTMLInputElement>('#natural-height')!;
     const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
@@ -318,7 +822,16 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
     const rotateReset = element.querySelector<HTMLInputElement>('#rotate-reset')!;
     const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
+    const border = element.querySelector<HTMLInputElement>('#border')!;
     const render = element.querySelector<HTMLSelectElement>('#render')!;
+    const imageListButtons = {
+      reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
+      prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
+      next: element.querySelector<HTMLButtonElement>('#image-list-next')!,
+    };
+    const imageList = element.querySelector<HTMLElement>('#image-list')!;
+    const imageListInfo = element.querySelector<HTMLElement>('#image-list-info-text')!;
+    const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
 
     const updateState = (options: Options) => {
       if (currentImageElement) {
@@ -339,7 +852,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         updateState({
           scale: 100,
         });
-        zoomAndScrollInit(currentImageElement, 100);
+        zoomAndScrollInit(currentImageElement, 'fit');
       }
     });
 
@@ -367,6 +880,151 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       });
     });
 
+    border.addEventListener('input', () => {
+      hasBorder = border.checked;
+      updateState({});
+    });
+
+    imageListButtons.reload.addEventListener('click', () => {
+      createImageList();
+    });
+    imageListButtons.next.addEventListener('click', () => {
+      const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
+      const target = current?.closest('li')?.nextElementSibling?.firstElementChild;
+
+      if (target instanceof HTMLButtonElement) {
+        target?.click();
+
+        return;
+      }
+
+      const roopTarget =
+        current?.closest('ul')?.firstElementChild?.firstElementChild ??
+        imageList.querySelector('button');
+
+      if (roopTarget instanceof HTMLButtonElement) {
+        roopTarget?.click();
+      }
+    });
+    imageListButtons.prev.addEventListener('click', () => {
+      const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
+      const target = current?.closest('li')?.previousElementSibling?.firstElementChild;
+
+      if (target instanceof HTMLButtonElement) {
+        target?.click();
+
+        return;
+      }
+
+      const roopTarget =
+        current?.closest('ul')?.lastElementChild?.firstElementChild ??
+        imageList.querySelector('button');
+
+      if (roopTarget instanceof HTMLButtonElement) {
+        roopTarget?.click();
+      }
+    });
+
+    searchButton.addEventListener('click', () => {
+      if (!currentImageElement) {
+        return;
+      }
+
+      const data = getImageData(currentImageElement);
+
+      if (data.isInDialog) {
+        if (data.origin) {
+          const origin = (() => {
+            if (document.body.contains(data.origin)) {
+              return data.origin;
+            }
+
+            if (data.origin instanceof HTMLImageElement) {
+              return convertedImgToSVGMap.get(data.origin);
+            }
+          })();
+
+          if (!origin) {
+            alert(chrome.i18n.getMessage('searched_image_error'));
+
+            return;
+          }
+
+          const point = document.createElement('span');
+          const style = document.createElement('style');
+          const uniqueString = `heppokofrontent-chrome-extension-image-controler-blink-${Date.now().toString(
+            36,
+          )}`;
+
+          style.textContent = `
+            @keyframes ${uniqueString} {
+              0% {
+                opacity: 1;
+              }
+              50% {
+                opacity: 0.2;
+              }
+              100% {
+                opacity: 1;
+              }
+            }
+
+            .${uniqueString} {
+              animation: ${uniqueString} 333ms ease-in-out 3;
+            }
+          `;
+
+          point.tabIndex = 0;
+          point.textContent = chrome.i18n.getMessage('searched_image_message');
+          point.style.cssText =
+            'all: unset; position: absolute; z-index: -1; width: 0; height: 0; overflow: hidden; display: block;';
+          point.addEventListener('blur', () => {
+            point.remove();
+            style.remove();
+            origin.classList.remove(uniqueString);
+          });
+
+          document.head.append(style);
+          origin.before(point);
+          dialog.close();
+
+          const rect = origin.getBoundingClientRect();
+          const isVisible =
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+          if (isVisible) {
+            point.focus({
+              preventScroll: true,
+            });
+            origin.classList.add(uniqueString);
+          } else {
+            origin.scrollIntoView();
+            window.addEventListener('scrollend', () => {
+              point.focus({
+                preventScroll: true,
+              });
+              origin.classList.add(uniqueString);
+            });
+          }
+        }
+      }
+    });
+
+    const stopPropagation = (e: Event) => e.stopPropagation();
+    scale.addEventListener('wheel', stopPropagation);
+    rotate.addEventListener('wheel', stopPropagation);
+    imageList.addEventListener('wheel', stopPropagation);
+    imageList.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+
+      if (e.key.startsWith('Arrow')) {
+        e.preventDefault();
+      }
+    });
+
     // bgcolor
     const custom = element.querySelector<HTMLInputElement>('#background-custom');
     const bright = element.querySelector<HTMLButtonElement>('#background-bright');
@@ -384,7 +1042,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       });
 
       custom.addEventListener('input', () => {
-        canvas.style.cssText = `--canvas-background: ${custom.value}`;
+        dialog.style.cssText = `--canvas-background: ${custom.value}`;
         chrome.storage.local.set({
           background: custom.value,
         });
@@ -422,6 +1080,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         url,
         alt,
         size,
+        type,
         naturalWidth,
         naturalHeight,
         aspect,
@@ -429,7 +1088,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         scale,
         rotate,
         reverse,
+        border,
         render,
+        imageList,
+        imageListInfo,
       },
     };
   })();
@@ -445,6 +1107,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     // alt 以外のアクセシブルネームをサポートするかどうか
     formControls.alt.value = currentImageElement.alt;
     formControls.size.value = imageData.fileSize;
+    formControls.type.value = imageData.fileType;
     formControls.naturalWidth.value = `${currentImageElement.naturalWidth} px`;
     formControls.naturalHeight.value = `${currentImageElement.naturalHeight} px`;
 
@@ -472,6 +1135,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     formControls.scale.value = String(imageData.scale);
     formControls.rotate.value = String(imageData.rotate);
     formControls.reverse.checked = imageData.reverse;
+    formControls.border.checked = hasBorder;
     formControls.render.value = imageData.render;
   };
 
@@ -491,7 +1155,6 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       });
     };
 
-    outer.style.cssText = '--canvas-background: #202124';
     outer.addEventListener('mousedown', (e) => {
       if (e.button !== 0) {
         return;
@@ -658,6 +1321,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         border: 0,
         'border-radius': '4px',
         'box-shadow': '0 0 10px 0 rgb(0 0 0 / 80%)',
+        '--canvas-background': '#202124',
       },
       'dialog::backdrop': {
         background: 'rgb(0 0 0 / 40%)',
@@ -671,7 +1335,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '#canvas': {
         display: 'grid',
         'place-items': 'center',
-        'max-height': '80%',
+        'max-height': '70%',
         overflow: 'hidden',
         cursor: 'move',
         background: 'var(--canvas-background)',
@@ -679,13 +1343,44 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '#canvas-inner': {
         display: 'block',
         position: 'relative',
+        transition: 'opacity 100ms ease-in, visibility 100ms ease-in',
+      },
+      '#canvas-inner.loading': {
+        opacity: 0,
+        visibility: 'hidden',
+        transition: 'none',
+      },
+      '#canvas img': {
+        border: '1px solid transparent',
+        'box-sizing': 'content-box',
+      },
+      '#canvas img.has-border': {
+        outline: '1px solid #fff',
+        'border-color': '#000',
+      },
+      '#spinner': {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '70%',
+        'pointer-events': 'none',
+      },
+      '#spinner > svg': {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+      },
+      '#canvas:has(#canvas-inner:not(.loading)) + #spinner': {
+        opacity: 0,
       },
       '#details': {
         padding: '20px 14px',
         background: '#292a2d',
         border: '2px solid #424242',
         'box-sizing': 'border-box',
-        'max-height': '20%',
+        'max-height': '30%',
         overflow: 'auto',
       },
       '#details input, #details select': {
@@ -698,7 +1393,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         background: 'transparent',
         'border-radius': '4px',
       },
-      '#details .row, #details .group': {
+      '#readonly .row, #editable .row, #editable .group': {
         display: 'grid',
         'grid-template-columns': '140px 1fr',
       },
@@ -737,6 +1432,23 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '#details .row .field input': {
         padding: '8px 6px 8px 4px',
         width: '100%',
+      },
+      '#details .checkbox-group': {
+        padding: '0 0 20px',
+        'border-bottom': '1px solid #6a6a6a',
+        display: 'grid',
+        'grid-template-columns': '1fr 1fr',
+      },
+      '#details .checkbox-group .row:not(:host)': {
+        'grid-template-columns': '80px 1fr',
+      },
+      '#details .checkbox-group .row:first-child': {
+        'border-right': '1px solid #6a6a6a',
+        'padding-right': '20px',
+      },
+      '#details .checkbox-group .row:last-child': {
+        margin: 0,
+        'padding-left': '10px',
       },
       '#details .group .control': {
         display: 'grid',
@@ -784,10 +1496,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '#editable input:not([type="checkbox"]), #editable select': {
         background: '#1d1d1e',
       },
-      '#editable .row:not(:first-child), #editable .group:not(:first-child)': {
+      '#editable .row:not(:first-child)': {
         margin: '12px 0 0',
       },
-
       '.checkbox': {
         position: 'relative',
         display: 'block',
@@ -821,6 +1532,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'box-shadow': '0 0 3px rgb(0 0 0 / 60%) inset',
         transition: '0.2s background-color ease-out',
       },
+      '.checkbox.shared::after': {
+        background: '#fdec00',
+      },
       '.checkbox:has(input:not(:checked))::before': {
         right: '39px',
       },
@@ -833,8 +1547,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '.right': {
         'text-align': 'right',
       },
-
-      '#details #color': {
+      '#details .group': {
         padding: '20px 0 0',
         'border-top': '1px solid #6a6a6a',
         margin: '20px 0 0',
@@ -871,6 +1584,105 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       '#details #color #background-custom::-webkit-color-swatch': {
         border: 0,
       },
+      '#image-list-section': {
+        display: 'grid',
+        'grid-template-rows': 'auto minmax(180px,1fr)',
+        padding: '0 8px',
+      },
+      '#image-list-header': {
+        display: 'grid',
+        'grid-template-columns': '132px 1fr',
+        padding: '40px 0 9px',
+        'align-items': 'center',
+      },
+      '#image-list-buttons': {
+        display: 'grid',
+        'grid-template-columns': '3fr 2fr 2fr',
+        gap: '4px',
+      },
+      '#image-list-buttons button': {
+        width: '100%',
+        'font-size': '11px',
+        'font-family': 'monospace',
+        'min-width': '40px',
+        padding: '5px 0 4px',
+        'border-radius': '4px',
+        background: '#f0f0f0',
+        border: '2px solid #1d1d1e',
+      },
+      '#image-list-wrapper': {
+        border: '1px solid #3f4042',
+        'border-radius': '4px',
+        background: '#515254',
+        position: 'relative',
+      },
+      '#image-list': {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        padding: '8px',
+        width: '100%',
+        'max-height': '100%',
+        display: 'flex',
+        'flex-wrap': 'wrap',
+        overflow: 'auto',
+        'align-items': 'flex-start',
+        transition: 'opacity 200ms ease-in, visibility 200ms ease-in',
+      },
+      '#image-list.invisible': {
+        opacity: 0,
+        visibility: 'hidden',
+        transition: 'none',
+      },
+      '.image-list-item': {
+        all: 'unset',
+        'max-width': `${100 / IMAGE_LIST_COLS}%`,
+        'min-width': `${100 / IMAGE_LIST_COLS}%`,
+        padding: '2px',
+        'box-sizing': 'border-box',
+        'aspect-ratio': '1/1',
+      },
+      '.image-list-item-button': {
+        all: 'unset',
+        display: 'block',
+        width: '100%',
+        height: '100%',
+        border: '2px solid transparent',
+        'aspect-ratio': '1/1',
+        'border-radius': '4px',
+        'box-sizing': 'border-box',
+        outline: 'revert',
+        background: '#666769',
+      },
+      '.image-list-item img, .image-list-item svg': {
+        position: 'static',
+        width: '100%',
+        height: 'auto',
+        'aspect-ratio': '1/1',
+        'object-fit': 'cover',
+      },
+      '.image-list-item-button[aria-current="true"]': {
+        background: 'var(--canvas-background)',
+        'border-color': '#42ccc0',
+      },
+      '.image-list-item-button[aria-current="true"] img, .image-list-item-button[aria-current="true"] svg':
+        {
+          opacity: '0.2',
+        },
+      '#image-list-info': {
+        'text-align': 'right',
+        padding: '6px 0',
+      },
+      '#search': {
+        width: '100%',
+        'font-size': '12px',
+        'font-family': 'monospace',
+        padding: '7px 0 6px',
+        margin: '4px 0 4px 4px',
+        'border-radius': '4px',
+        background: '#f0f0f0',
+        border: '2px solid #1d1d1e',
+      },
     });
     element.textContent += convertToCSSText(
       {
@@ -881,8 +1693,14 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         '#canvas': {
           'max-height': 'none !important',
         },
+        '#spinner': {
+          width: 'calc(100% - 450px)',
+          height: '100%',
+        },
         '#details': {
           'max-height': 'none',
+          display: 'grid',
+          'grid-template-rows': 'auto auto auto 1fr',
         },
       },
       '@media (orientation: landscape)',
@@ -892,20 +1710,40 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
   })();
   const imageViewer = document.createElement('image-viewer');
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
-  const zoomAndScrollInit = (targetImage: HTMLImageElement, scaleValue?: number) => {
-    const scale = scaleValue ?? getImageData(targetImage).scale;
+  const zoomAndScrollInit = (
+    targetImage: HTMLImageElement,
+    scaleValue?: number | 'init' | 'fit',
+  ) => {
+    const scale = (() => {
+      const baseScale = scaleValue ?? getImageData(targetImage).scale;
 
-    if (scale === 100) {
-      const fitHeight = (canvas.offsetHeight - 60) / targetImage.naturalHeight;
-      const fitWidth = (canvas.offsetWidth - 60) / targetImage.naturalWidth;
-      const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
+      if (typeof baseScale === 'string') {
+        const fitHeight = (canvas.offsetHeight - 100) / targetImage.naturalHeight;
+        const fitWidth = (canvas.offsetWidth - 100) / targetImage.naturalWidth;
+        const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
 
-      if (result <= 100) {
-        setImageData(targetImage, {
-          scale: result,
-        });
+        const isResizedRatioOverHalfAreaWhenInit =
+          baseScale === 'init' &&
+          100 <= result &&
+          ((fitHeight <= fitWidth &&
+            canvas.offsetHeight / 2 < targetImage.naturalHeight * result) ||
+            (fitWidth <= fitHeight && canvas.offsetWidth / 2 < targetImage.naturalWidth * result));
+
+        if (isResizedRatioOverHalfAreaWhenInit) {
+          const fitHeight = (canvas.offsetHeight * 0.5) / targetImage.naturalHeight;
+          const fitWidth = (canvas.offsetWidth * 0.5) / targetImage.naturalWidth;
+          return Math.floor(Math.min(fitHeight, fitWidth) * 100);
+        }
+
+        return result;
       }
-    }
+
+      return baseScale;
+    })();
+
+    setImageData(targetImage, {
+      scale,
+    });
 
     const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;
 
@@ -929,20 +1767,279 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       }, 300);
     });
   };
+  const createImageList = (() => {
+    // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
+    let imagesCache: {
+      src: string;
+      alt: string;
+      isError: boolean;
+      originalElement: SVGElement | HTMLImageElement;
+    }[] = [];
+
+    return (noRecreate: boolean = false) => {
+      const fragment = document.createDocumentFragment();
+      const images = noRecreate
+        ? imagesCache
+        : [...document.querySelectorAll<HTMLImageElement | SVGElement>('img, svg')]
+            .map((originalElement) => {
+              if (originalElement instanceof HTMLImageElement) {
+                const result = {
+                  src: originalElement.src,
+                  alt: originalElement.alt.trim(),
+                  isError: false,
+                  originalElement,
+                };
+
+                // support lazyload by script
+                originalElement.addEventListener('load', async () => {
+                  const clonedImage = document.createElement('img');
+                  result.src = originalElement.src;
+                  result.alt = originalElement.alt;
+                  clonedImage.src = originalElement.src;
+                  clonedImage.alt = originalElement.alt;
+
+                  setImageData(
+                    originalElement,
+                    {
+                      clonedImage,
+                    },
+                    true,
+                  );
+                  await getFileSize(clonedImage);
+                  setImageData(
+                    clonedImage,
+                    {
+                      isInDialog: true,
+                      origin: originalElement,
+                    },
+                    true,
+                  );
+                });
+                originalElement.addEventListener('error', () => {
+                  result.isError = true;
+                });
+
+                return result;
+              }
+
+              const pseudoImage = convertedSvgMap.get(originalElement);
+
+              if (pseudoImage) {
+                return {
+                  src: pseudoImage.src,
+                  alt: pseudoImage.alt,
+                  isError: false,
+                  originalElement,
+                };
+              }
+
+              const svg = convertSVGToImg(originalElement);
+              const src = svg.src;
+              const alt =
+                svg.getAttribute('aria-label') ??
+                svg.querySelector('title')?.textContent?.trim() ??
+                '';
+
+              return {
+                src,
+                alt,
+                isError: false,
+                originalElement,
+              };
+            })
+            .filter((current, index, self) => {
+              return self.findIndex((element) => element.src === current.src) == index;
+            });
+
+      const onkeydown = (e: KeyboardEvent) => {
+        const self = e.currentTarget;
+
+        if (self instanceof HTMLButtonElement) {
+          const buttons = [
+            ...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? []),
+          ];
+          const index = buttons.indexOf(self);
+
+          switch (e.key) {
+            case 'ArrowRight':
+              (buttons[index + 1] || buttons[0]).click();
+              break;
+            case 'ArrowLeft':
+              (buttons[index - 1] || buttons[buttons.length - 1]).click();
+              break;
+            case 'ArrowUp': {
+              (
+                buttons[index - IMAGE_LIST_COLS] ||
+                buttons[Math.floor(buttons.length / IMAGE_LIST_COLS) * IMAGE_LIST_COLS + index] ||
+                buttons[
+                  Math.floor(
+                    (buttons.length - (buttons.length % IMAGE_LIST_COLS)) / IMAGE_LIST_COLS,
+                  ) *
+                    IMAGE_LIST_COLS +
+                    index -
+                    IMAGE_LIST_COLS
+                ]
+              ).click();
+              break;
+            }
+            case 'ArrowDown': {
+              const rest = index % IMAGE_LIST_COLS;
+              (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0]).click();
+              break;
+            }
+          }
+        }
+      };
+      const listItems = images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
+        if (isError) {
+          return [];
+        }
+
+        const listItem = document.createElement('li');
+        const button = document.createElement('button');
+
+        button.tabIndex = -1;
+        button.addEventListener('click', () => {
+          if (originalElement instanceof HTMLImageElement) {
+            currentImageElement = originalElement;
+          } else {
+            const svg = convertedSvgMap.get(originalElement);
+
+            if (svg) {
+              currentImageElement = svg;
+            }
+          }
+
+          if (!currentImageElement) {
+            return;
+          }
+
+          if (button.getAttribute('aria-current') !== 'true') {
+            showDialog({ noCreateImageList: true });
+          }
+        });
+        button.addEventListener('keydown', onkeydown);
+
+        listItem.className = 'image-list-item';
+        button.className = 'image-list-item-button';
+
+        if (currentImageElement?.src === src) {
+          button.setAttribute('aria-current', 'true');
+          button.tabIndex = 0;
+        }
+
+        button.insertAdjacentHTML('afterbegin', `<img />`);
+
+        const img = button.firstElementChild as HTMLImageElement;
+
+        img.src = src;
+        img.onerror = () => {
+          listItem.remove();
+          self[index].isError = true;
+        };
+
+        // alt がない時、image_list_no_alt を alt に指定するとここの alt が拾われてしまうため、aria-label を使用する
+        if (alt) {
+          img.alt = alt;
+        } else {
+          img.setAttribute('aria-label', chrome.i18n.getMessage('image_list_no_alt'));
+        }
+
+        listItem.append(button);
+
+        return listItem;
+      });
+
+      fragment.append(...listItems);
+      formControls.imageList.textContent = '';
+      formControls.imageList.append(fragment);
+
+      const buttons = [...formControls.imageList.querySelectorAll('button')];
+      const current = buttons.find((button) => button.getAttribute('aria-current') === 'true');
+      const currentIndex = current ? buttons.indexOf(current) : -1;
+      const viewCurrentIndex = () => {
+        formControls.imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
+      };
+
+      if (noRecreate) {
+        viewCurrentIndex();
+      } else {
+        imagesCache = images;
+        formControls.imageList.classList.add('invisible');
+
+        setTimeout(() => {
+          formControls.imageList.classList.remove('invisible');
+          viewCurrentIndex();
+          current?.scrollIntoView(false);
+        }, 300);
+      }
+    };
+  })();
 
   dialog.append(canvas);
   dialog.append(details);
+  canvas.insertAdjacentHTML('afterend', SPINNER);
   shadowRoot.appendChild(style);
   shadowRoot.appendChild(dialog);
   document.body.appendChild(imageViewer);
+
+  window.addEventListener('load', () => {
+    // for front-end frameworks
+    if (!document.body.contains(imageViewer)) {
+      document.body.appendChild(imageViewer);
+    }
+  });
+
   resizeSupport();
+
+  const getFileSize = (image: HTMLImageElement) => {
+    return new Promise<void>((done) => {
+      const isSVG = image.src.startsWith('data:image/svg+xml');
+
+      if (isSVG) {
+        const size = new Blob([image.src]).size;
+
+        setImageData(image, {
+          fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+          fileType: 'image/svg+xml (in HTML)',
+        });
+
+        done();
+        return;
+      }
+
+      const { protocol } = new URL(image.src);
+
+      fetch(image.src.replace(protocol, location.protocol), { method: 'HEAD' })
+        .then(({ headers }) => {
+          const size = headers.get('Content-Length');
+          const type = headers.get('Content-Type');
+
+          setImageData(image, {
+            fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+            fileType: type ?? chrome.i18n.getMessage('error_fileType'),
+          });
+        })
+        .catch(() => {
+          setImageData(image, {
+            fileSize: chrome.i18n.getMessage('error_fileSize'),
+            fileType: chrome.i18n.getMessage('error_fileType'),
+          });
+        })
+        .finally(() => {
+          done();
+        });
+    });
+  };
 
   return {
     imageViewer,
     dialog,
-    showDialog: async () => {
-      if (dialog.open) {
-        return;
+    showDialog: async (option?: { noCreateImageList?: boolean }) => {
+      const noCreateImageList = option?.noCreateImageList ?? false;
+
+      if (!dialog.open) {
+        dialog.showModal();
       }
 
       return await new Promise<void>(async (resolve) => {
@@ -951,9 +2048,22 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         }
 
         const imageData = getImageData(currentImageElement);
+        const initialScale = (() => {
+          if (
+            !('clonedImage' in imageData) ||
+            !(imageData.clonedImage instanceof HTMLImageElement)
+          ) {
+            return null;
+          }
+
+          return getImageData(imageData.clonedImage).scale;
+        })();
 
         if (!imageData.isInDialog) {
           if (imageData.clonedImage === null) {
+            dialog.setAttribute('aria-busy', 'true');
+            spaceElement.classList.add('loading');
+
             const clonedImage = new Image();
 
             clonedImage.alt = currentImageElement.alt;
@@ -961,34 +2071,23 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
             clonedImage.width = currentImageElement.width;
             clonedImage.height = currentImageElement.height;
 
-            await new Promise<void>((done) => {
-              clonedImage.onload = () => done();
+            const isError = await new Promise<boolean>((done) => {
+              clonedImage.onload = () => done(false);
+              clonedImage.onerror = () => done(true);
             });
 
-            new Promise<void>((done) => {
-              fetch(clonedImage.src, { method: 'HEAD' })
-                .then(({ headers }) => {
-                  const size = headers.get('Content-Length');
-
-                  setImageData(clonedImage, {
-                    fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
-                  });
-                })
-                .catch(() => {
-                  setImageData(clonedImage, {
-                    fileSize: chrome.i18n.getMessage('error_fileSize'),
-                  });
-                })
-                .finally(() => {
-                  zoomAndScrollInit(clonedImage, imageData.scale);
-                  done();
-                });
-            });
+            if (isError) {
+              console.log('Chrome Extension Image Viewer: 404 ERROR', currentImageElement);
+              dialog.removeAttribute('aria-busy');
+              spaceElement.classList.remove('loading');
+              return;
+            }
 
             // ダイアログ用の画像は別で管理する
             setImageData(clonedImage, {
               ...imageData,
               isInDialog: true,
+              origin: currentImageElement,
             });
 
             setImageData(currentImageElement, {
@@ -996,6 +2095,13 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
             });
 
             currentImageElement = clonedImage;
+
+            // 容量の解決
+            await getFileSize(clonedImage).finally(() => {
+              dialog.removeAttribute('aria-busy');
+              spaceElement.classList.remove('loading');
+              zoomAndScrollInit(clonedImage, imageData.scale);
+            });
           } else {
             currentImageElement = imageData.clonedImage;
             resolve();
@@ -1004,9 +2110,16 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
         spaceElement.textContent = '';
         spaceElement.append(currentImageElement);
-        dialog.showModal();
 
-        zoomAndScrollInit(currentImageElement, imageData.scale);
+        createImageList(noCreateImageList);
+
+        if (dialog.open) {
+          formControls.imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+        } else {
+          dialog.showModal();
+        }
+
+        zoomAndScrollInit(currentImageElement, initialScale || 'init');
         setInputValues(imageData);
         resolve();
       });
@@ -1019,7 +2132,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
 const resolveTarget = (target: EventTarget | null) => {
   const getElement = () => {
-    if (target === null || !(target instanceof HTMLElement)) {
+    if (target === null || (!(target instanceof HTMLElement) && !(target instanceof SVGElement))) {
       return null;
     }
 
@@ -1027,7 +2140,13 @@ const resolveTarget = (target: EventTarget | null) => {
       return currentImageElement;
     }
 
-    if (target instanceof HTMLImageElement) {
+    if (target instanceof HTMLImageElement || target instanceof SVGElement) {
+      const svg = target.closest('svg');
+
+      if (svg) {
+        return svg;
+      }
+
       return target;
     }
 
@@ -1066,16 +2185,14 @@ const resolveTarget = (target: EventTarget | null) => {
 
   const img = getElement();
 
+  if (img instanceof HTMLImageElement) {
+    return img;
+  }
   if (img instanceof SVGElement) {
-    const svgData = new XMLSerializer().serializeToString(img);
-    const pseudoImage = document.createElement('img');
-
-    pseudoImage.src =
-      'data:image/svg+xml;base64,' + btoa(decodeURIComponent(encodeURIComponent(svgData)));
-    return pseudoImage;
+    return convertSVGToImg(img);
   }
 
-  return img;
+  return null;
 };
 
 chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {

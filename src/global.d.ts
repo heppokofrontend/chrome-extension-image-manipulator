@@ -7,7 +7,9 @@ type StyleData =
       rotate: number;
       reverse: boolean;
       fileSize: string;
+      fileType: string;
       render: RenderingMode;
+      origin?: HTMLElement | SVGElement;
     }
   | {
       isInDialog: false;
@@ -17,6 +19,7 @@ type StyleData =
       rotate: number;
       reverse: boolean;
       fileSize: string;
+      fileType: string;
       render: RenderingMode;
     };
 type Options = {
@@ -28,4 +31,6 @@ type Options = {
   reverse?: StyleData['reverse'];
   render?: StyleData['render'];
   fileSize?: StyleData['fileSize'];
+  fileType?: StyleData['fileType'];
+  origin?: HTMLElement | SVGElement;
 };

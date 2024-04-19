@@ -14,7 +14,13 @@
   "readOnly_fileSize": {
     "message": "File size"
   },
+  "readOnly_fileType": {
+    "message": "File type"
+  },
   "error_fileSize": {
+    "message": "Unable to read"
+  },
+  "error_fileType": {
     "message": "Unable to read"
   },
   "readOnly_naturalWidth": {
@@ -35,6 +41,9 @@
   "editable_reverse": {
     "message": "Reverse"
   },
+  "editable_border": {
+    "message": "Border"
+  },
   "editable_render": {
     "message": "Rendering mode"
   },
@@ -49,6 +58,36 @@
   },
   "editable_background_custom": {
     "message": "Custom"
+  },
+  "image_list_title": {
+    "message": "Image List"
+  },
+  "image_list_reload": {
+    "message": "Reload"
+  },
+  "image_list_prev": {
+    "message": "Prev"
+  },
+  "image_list_next": {
+    "message": "Next"
+  },
+  "image_list_no_alt": {
+    "message": "No alt text"
+  },
+  "image_list_info": {
+    "message": "The selected image: "
+  },
+  "image_list_description": {
+    "message": "Switch to other images using arrow keys"
+  },
+  "search_in_page": {
+    "message": "View this image on the original page"
+  },
+  "searched_image_error": {
+    "message": "Error: It seems that the page has been deleted from the website."
+  },
+  "searched_image_message": {
+    "message": "The image you were currently viewing is here:"
   },
   "button_close": {
     "message": "Close"

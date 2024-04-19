@@ -29,3 +29,7 @@ You can also easily manipulate the image with the following operations
 - `Drag`: Move the image
 - `Mouse wheel`: zoom in/out
 - `Shift key + mouse wheel`: Rotate
+
+#### Image List
+
+After selecting an image (when an item is focused), you can navigate using array keys.
