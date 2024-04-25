@@ -506,15 +506,13 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       const getSize = (img: HTMLImageElement, scale: number) => {
         const width = img.naturalWidth * (scale / 100);
         const height = img.naturalHeight * (scale / 100);
-        const diagonal = Math.hypot(width, height);
-        const min = diagonal + 20;
-        const contentWidth = (canvas.clientWidth ?? 0) * 2 - width;
-        const contentHeight = (canvas.clientHeight ?? 0) * 2 - height;
+        const contentWidth = ((canvas.clientWidth ?? 0) + width / 2) * 2 - 10;
+        const contentHeight = ((canvas.clientHeight ?? 0) + height / 2) * 2 - 10;
 
         return {
           spaceSize: {
-            width: Math.max(min, contentWidth),
-            height: Math.max(min, contentHeight),
+            width: contentWidth,
+            height: contentHeight,
           },
         };
       };
@@ -1382,6 +1380,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'box-sizing': 'border-box',
         'max-height': '30%',
         overflow: 'auto',
+        'scroll-behavior': 'smooth',
       },
       '#details input, #details select': {
         padding: '8px 6px 8px 4px',
@@ -1628,6 +1627,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         overflow: 'auto',
         'align-items': 'flex-start',
         transition: 'opacity 200ms ease-in, visibility 200ms ease-in',
+        'scroll-behavior': 'smooth',
       },
       '#image-list.invisible': {
         opacity: 0,
