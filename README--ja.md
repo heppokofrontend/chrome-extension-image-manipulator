@@ -1,4 +1,4 @@
-# Web ページ上の画像をいい感じに確認できるやつ
+# 画像をいい感じに Web ページ上で確認できるやつ
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-viewer/maintainability)
 

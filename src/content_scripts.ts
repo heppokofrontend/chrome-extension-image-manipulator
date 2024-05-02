@@ -1,6 +1,7 @@
 let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
 const IMAGE_LIST_COLS = 8;
+const IMAGE_LIST_GAP = 4;
 const SPINNER = `
 <div id="spinner">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="224" height="224" style="shape-rendering: auto; display: block; background: transparent;" xmlns:xlink="http://www.w3.org/1999/xlink"><g><g transform="rotate(0 50 50)">
@@ -1268,6 +1269,8 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         position: 'fixed !important',
         left: '0 !important',
         top: '0 !important',
+        '--outline': '2px solid #42ccc0',
+        '--outline-offset': '2px',
       },
       '*': {
         'box-sizing': 'border-box',
@@ -1278,7 +1281,8 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         outline: 'none',
       },
       ':focus-visible': {
-        'box-shadow': '0 0 0 2px #fff',
+        outline: 'var(--outline)',
+        'outline-offset': 'var(--outline-offset)',
       },
       img: {
         position: 'absolute',
@@ -1388,9 +1392,18 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'font-size': 'inherit',
         'line-height': 'inherit',
         border: '0',
-        outline: 'none',
         background: 'transparent',
         'border-radius': '4px',
+      },
+      '#details input[readonly], #details select[readonly]': {
+        outline: 'none',
+        'border-radius': '0',
+        'padding-bottom': '4px',
+        'border-bottom': '1px solid transparent',
+        'margin-bottom': '3px',
+      },
+      '#details input[readonly]:focus-visible, #details select[readonly]:focus-visible': {
+        'border-bottom-color': '#cbd7db',
       },
       '#readonly .row, #editable .row, #editable .group': {
         display: 'grid',
@@ -1541,7 +1554,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'background-color': '#cbd7db',
       },
       '.checkbox:has(input:focus-visible)::after': {
-        'box-shadow': '0 0 3px rgb(0 0 0 / 60%) inset, 0 0 0 2px #fff',
+        // 'box-shadow': '0 0 3px rgb(0 0 0 / 60%) inset, 0 0 0 2px #fff',
+        outline: 'var(--outline)',
+        'outline-offset': 'var(--outline-offset)',
       },
       '.right': {
         'text-align': 'right',
@@ -1638,7 +1653,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         all: 'unset',
         'max-width': `${100 / IMAGE_LIST_COLS}%`,
         'min-width': `${100 / IMAGE_LIST_COLS}%`,
-        padding: '2px',
+        padding: `${IMAGE_LIST_GAP / 2}px`,
         'box-sizing': 'border-box',
         'aspect-ratio': '1/1',
       },
@@ -1651,8 +1666,12 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'aspect-ratio': '1/1',
         'border-radius': '4px',
         'box-sizing': 'border-box',
-        outline: 'revert',
+        outline: 'inherit',
         background: '#666769',
+      },
+      '.image-list-item-button:focus-visible': {
+        outline: 'var(--outline)',
+        'outline-offset': 'var(--outline-offset)',
       },
       '.image-list-item img, .image-list-item svg': {
         position: 'static',
@@ -1854,13 +1873,27 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       const onkeydown = (e: KeyboardEvent) => {
         const self = e.currentTarget;
 
+        if (e.altKey || e.ctrlKey) {
+          return;
+        }
+
         if (self instanceof HTMLButtonElement) {
           const buttons = [
             ...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? []),
           ];
           const index = buttons.indexOf(self);
 
+          if (e.key.startsWith('Arrow')) {
+            e.preventDefault();
+          }
+
           switch (e.key) {
+            case 'Home':
+              buttons[0].click();
+              break;
+            case 'End':
+              buttons[buttons.length - 1].click();
+              break;
             case 'ArrowRight':
               (buttons[index + 1] || buttons[0]).click();
               break;
@@ -1963,6 +1996,32 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
       if (noRecreate) {
         viewCurrentIndex();
+
+        if (current) {
+          // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
+          const imageListRect = formControls.imageList.getBoundingClientRect();
+          const targetRect = current.getBoundingClientRect();
+          const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
+          const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
+
+          if (isNotVisibleTop) {
+            setTimeout(() => {
+              formControls.imageList.scrollBy(
+                0,
+                targetRect.top - imageListRect.top - IMAGE_LIST_GAP,
+              );
+            }, 0);
+          } else if (isNotVisibleBottom) {
+            setTimeout(() => {
+              formControls.imageList.scrollBy(
+                0,
+                targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP,
+              );
+            }, 0);
+          }
+        }
+
+        current?.focus();
       } else {
         imagesCache = images;
         formControls.imageList.classList.add('invisible');
