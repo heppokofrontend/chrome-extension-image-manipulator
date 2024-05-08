@@ -1,6 +1,6 @@
 # 画像の拡大・反転・回転ができるやつ
 
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-manipulator/maintainability)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/3b3889627209bc19abd9/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-manipulator/maintainability)
 
 ![](./images/main.png)
 
