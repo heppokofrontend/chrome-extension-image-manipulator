@@ -453,7 +453,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
     element.role = 'dialog';
     element.ariaModal = 'true';
-    element.ariaLabel = 'Image Viewer';
+    element.ariaLabel = chrome.i18n.getMessage('extName');
     element.addEventListener('keydown', (e) => {
       if (e.key === 'ESC') {
         e.preventDefault();
@@ -1262,7 +1262,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       return `${cssText.trim()}${mediaQuery === '' ? '' : '}'}`;
     };
 
-    element.dataset.from = 'chrome-extension-image-viewer';
+    element.dataset.from = 'chrome-extension-image-manipulator';
     element.textContent = convertToCSSText({
       ':host': {
         display: 'block !important',
@@ -1727,7 +1727,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
     return element;
   })();
-  const imageViewer = document.createElement('image-viewer');
+  const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
   const zoomAndScrollInit = (
     targetImage: HTMLImageElement,
@@ -2136,7 +2136,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
             });
 
             if (isError) {
-              console.log('Chrome Extension Image Viewer: 404 ERROR', currentImageElement);
+              console.log('Chrome Extension Image Manipulator: 404 ERROR', currentImageElement);
               dialog.removeAttribute('aria-busy');
               spaceElement.classList.remove('loading');
               return;
@@ -2262,7 +2262,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
   if (menuItemId === 'reset-all') {
     const nodeList = [
       ...(targetElement ? [targetElement] : []),
-      ...document.querySelectorAll<HTMLImageElement>('[data-image-viewer-default-style]'),
+      ...document.querySelectorAll<HTMLImageElement>('[data-image-manipulator-default-style]'),
     ];
 
     nodeList.forEach((image) => {
@@ -2285,8 +2285,8 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
         });
       }
 
-      if (typeof image.dataset.imageViewerDefaultStyle === 'string') {
-        image.setAttribute('style', image.dataset.imageViewerDefaultStyle);
+      if (typeof image.dataset.imageManipulatorDefaultStyle === 'string') {
+        image.setAttribute('style', image.dataset.imageManipulatorDefaultStyle);
       }
     });
 
@@ -2321,8 +2321,8 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
             fileSize: imageData.fileSize,
           });
         } else {
-          if (typeof targetElement.dataset.imageViewerDefaultStyle === 'string') {
-            targetElement.setAttribute('style', targetElement.dataset.imageViewerDefaultStyle);
+          if (typeof targetElement.dataset.imageManipulatorDefaultStyle === 'string') {
+            targetElement.setAttribute('style', targetElement.dataset.imageManipulatorDefaultStyle);
           }
         }
 
@@ -2356,7 +2356,7 @@ window.addEventListener('contextmenu', ({ target }) => {
 
   if (!(targetImage instanceof HTMLImageElement)) {
     currentImageElement = null;
-    console.log('Chrome Extension Image Viewer: No image');
+    console.log('Chrome Extension Image Manipulator: No image');
 
     return;
   }
@@ -2365,8 +2365,8 @@ window.addEventListener('contextmenu', ({ target }) => {
     const isInDialog = dialogContains(targetImage);
 
     if (!isInDialog) {
-      if (typeof targetImage.dataset.imageViewerDefaultStyle !== 'string') {
-        targetImage.dataset.imageViewerDefaultStyle = targetImage.getAttribute('style') || '';
+      if (typeof targetImage.dataset.imageManipulatorDefaultStyle !== 'string') {
+        targetImage.dataset.imageManipulatorDefaultStyle = targetImage.getAttribute('style') || '';
       }
 
       currentImageElement = targetImage;

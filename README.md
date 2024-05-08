@@ -1,6 +1,6 @@
-# Image Viewer
+# Image Manipulator
 
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-viewer/maintainability)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-manipulator/maintainability)
 
 ![](./images/main.png)
 
@@ -12,12 +12,12 @@ This tool allows you to manipulate the target image from the context menu (right
 
 Install it on your Google Chrome from here.
 
-[![Available in the Chrome Web Store](./images/iNEddTyWiMfLSwFD6qGq.png)](https://chrome.google.com/webstore/detail/image-viewer/obkebbjepldbhebchaimjhmgbpniiceb?hl=ja&authuser=0)
+[![Available in the Chrome Web Store](./images/iNEddTyWiMfLSwFD6qGq.png)](https://chrome.google.com/webstore/detail/image-manipulator/obkebbjepldbhebchaimjhmgbpniiceb?hl=ja&authuser=0)
 
 ## How to use
 
 1. Click a image on a web page
-2. Choose [Image Viewer]
+2. Choose [Image Manipulator]
 3. Click menus
 
 ### 💡 The "View the details" function
