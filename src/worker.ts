@@ -1,7 +1,7 @@
 chrome.runtime.onInstalled.addListener(() => {
   const parentId = chrome.contextMenus.create({
-    id: 'heppokofrontend.image.viewer',
-    title: 'Image Viewer',
+    id: 'heppokofrontend.image.manipulator',
+    title: 'Image Manipulator',
     contexts: ['all'],
   });
 

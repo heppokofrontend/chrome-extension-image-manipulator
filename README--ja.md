@@ -1,6 +1,6 @@
-# 画像をいい感じに Web ページ上で確認できるやつ
+# 画像の拡大・反転・回転ができるやつ
 
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-viewer/maintainability)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Maintainability](https://api.codeclimate.com/v1/badges/2ecea4aab33e03fa6016/maintainability)](https://codeclimate.com/github/heppokofrontend/chrome-extension-image-manipulator/maintainability)
 
 ![](./images/main.png)
 
@@ -12,12 +12,12 @@
 
 Google Chrome にインストールしてください。
 
-[![Available in the Chrome Web Store](./images/iNEddTyWiMfLSwFD6qGq.png)](https://chrome.google.com/webstore/detail/image-viewer/obkebbjepldbhebchaimjhmgbpniiceb?hl=ja&authuser=0)
+[![Available in the Chrome Web Store](./images/iNEddTyWiMfLSwFD6qGq.png)](https://chrome.google.com/webstore/detail/image-manipulator/obkebbjepldbhebchaimjhmgbpniiceb?hl=ja&authuser=0)
 
 ## How to use
 
 1. Web ページ上の画像を右クリック（コンテキストメニューを開く）
-2. Image Viewer を選ぶ
+2. Image Manipulator を選ぶ
 3. 任意のメニューをクリックする
 
 ### 💡「詳細を表示」機能について
