@@ -551,111 +551,122 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
   };
   const { details, formControls } = (() => {
     const element = document.createElement('div');
+    const closeBtnForPortrait = document.createElement('button');
+    const closeHandler = () => {
+      dialog.close();
+    };
+
+    closeBtnForPortrait.type = 'button';
+    closeBtnForPortrait.className = 'close-btn for-portrait';
+    closeBtnForPortrait.textContent = chrome.i18n.getMessage('button_close');
+    closeBtnForPortrait.addEventListener('click', closeHandler);
 
     element.id = 'details';
     element.insertAdjacentHTML(
       'afterbegin',
       `
       <p class="close">
-        <button type="button">${chrome.i18n.getMessage('button_close')}</button>
+        <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
       </p>
 
-      <div id="readonly">
-        <p class="row">
-          <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
-          <span class="control">
-            <input
-              id="alt"
-              value=""
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
-          <span class="control">
-            <input
-              id="url"
-              value=""
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="type">${chrome.i18n.getMessage('readOnly_fileType')}</label>
-          <span class="control">
-            <input
-              id="type"
-              value=""
-              class="right"
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
-          <span class="control">
-            <input
-              id="size"
-              value=""
-              class="right"
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="natural-width">${chrome.i18n.getMessage(
-            'readOnly_naturalWidth',
-          )}</label>
-          <span class="control">
-            <input
-              id="natural-width"
-              value=""
-              class="right"
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="natural-height">${chrome.i18n.getMessage(
-            'readOnly_naturalHeight',
-          )}</label>
-          <span class="control">
-            <input
-              id="natural-height"
-              value=""
-              class="right"
-              readonly
-            />
-          </span>
-        </p>
-        <p class="row">
-          <label class="label" for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
-          <span class="control">
-            <input
-              id="aspect"
-              value=""
-              class="right"
-              readonly
-            />
-          </span>
-        </p>
+      <div id="details-main">
+        <div id="readonly">
+          <p class="row">
+            <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
+            <span class="control">
+              <input
+                id="alt"
+                value=""
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
+            <span class="control">
+              <input
+                id="url"
+                value=""
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="type">${chrome.i18n.getMessage('readOnly_fileType')}</label>
+            <span class="control">
+              <input
+                id="type"
+                value=""
+                class="right"
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
+            <span class="control">
+              <input
+                id="size"
+                value=""
+                class="right"
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="natural-width">${chrome.i18n.getMessage(
+              'readOnly_naturalWidth',
+            )}</label>
+            <span class="control">
+              <input
+                id="natural-width"
+                value=""
+                class="right"
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="natural-height">${chrome.i18n.getMessage(
+              'readOnly_naturalHeight',
+            )}</label>
+            <span class="control">
+              <input
+                id="natural-height"
+                value=""
+                class="right"
+                readonly
+              />
+            </span>
+          </p>
+          <p class="row">
+            <label class="label" for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
+            <span class="control">
+              <input
+                id="aspect"
+                value=""
+                class="right"
+                readonly
+              />
+            </span>
+          </p>
 
-        ${
-          /*
-        <p class="row">
-          <label class="label" for="srcset-${ratio}">srcset ${ratio}</label>
-          <span class="control">
-            <input
-              id="srcset-${ratio}"
-              value=""
-              readonly
-            />
-          </span>
-        </p>
-        */
-          ''
-        }
+          ${
+            /*
+          <p class="row">
+            <label class="label" for="srcset-${ratio}">srcset ${ratio}</label>
+            <span class="control">
+              <input
+                id="srcset-${ratio}"
+                value=""
+                readonly
+              />
+            </span>
+          </p>
+          */
+            ''
+          }
+        </div>
       </div>
 
       <div id="editable">
@@ -794,7 +805,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       </div>
 
       <div class="group">
-        <p>
+        <p class="search-wrapper">
           <button id="search">
             🔍 ${chrome.i18n.getMessage('search_in_page')}
           </button>
@@ -803,9 +814,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     `,
     );
 
-    element.querySelector('button')?.addEventListener('click', () => {
-      dialog.close();
-    });
+    element.querySelector('button')?.addEventListener('click', closeHandler);
 
     const url = element.querySelector<HTMLInputElement>('#url')!;
     const alt = element.querySelector<HTMLInputElement>('#alt')!;
@@ -1073,8 +1082,13 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       });
     });
 
+    const ui = document.createDocumentFragment();
+
+    ui.append(closeBtnForPortrait);
+    ui.append(element);
+
     return {
-      details: element,
+      details: ui,
       formControls: {
         url,
         alt,
@@ -1296,13 +1310,23 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'text-align': 'right',
         margin: '0 0 20px',
       },
-      '.close button': {
+      '.close-btn': {
         padding: '10px',
         background: '#42ccc0',
         border: 0,
         'border-radius': '6px',
         'min-width': '100px',
         'font-size': 'inherit',
+      },
+      '.close-btn.for-portrait': {
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        border: '2px solid #202124',
+        '--outline': '2px solid #202124',
+      },
+      '.close-btn.for-portrait:focus-visible': {
+        'box-shadow': '0 0 0 2px #fff',
       },
       dialog: {
         'font-size': '14px',
@@ -1385,6 +1409,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'max-height': '30%',
         overflow: 'auto',
         'scroll-behavior': 'smooth',
+      },
+      '#details > .close': {
+        display: 'none',
       },
       '#details input, #details select': {
         padding: '8px 6px 8px 4px',
@@ -1692,12 +1719,15 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         'text-align': 'right',
         padding: '6px 0',
       },
+      '.search-wrapper': {
+        padding: '0 10px 20px',
+      },
       '#search': {
         width: '100%',
         'font-size': '12px',
         'font-family': 'monospace',
         padding: '7px 0 6px',
-        margin: '4px 0 4px 4px',
+        margin: '4px 0',
         'border-radius': '4px',
         background: '#f0f0f0',
         border: '2px solid #1d1d1e',
@@ -1717,9 +1747,24 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           height: '100%',
         },
         '#details': {
+          padding: '0',
           'max-height': 'none',
           display: 'grid',
           'grid-template-rows': 'auto auto auto 1fr',
+        },
+        '.close-btn.for-portrait': {
+          display: 'none',
+        },
+        '#details > .close': {
+          display: 'block',
+          position: 'sticky',
+          top: '-10px',
+          'z-index': 10,
+          padding: '20px 14px 10px',
+          background: '#292a2dcc',
+        },
+        '#details-main': {
+          padding: '10px 14px 20px',
         },
       },
       '@media (orientation: landscape)',
