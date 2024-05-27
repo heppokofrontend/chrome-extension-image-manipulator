@@ -2,6 +2,7 @@ let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
 const IMAGE_LIST_COLS = 8;
 const IMAGE_LIST_GAP = 4;
+const SELECTOR = 'img, svg, [style*="url("]';
 const SPINNER = `
 <div id="spinner">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="224" height="224" style="shape-rendering: auto; display: block; background: transparent;" xmlns:xlink="http://www.w3.org/1999/xlink"><g><g transform="rotate(0 50 50)">
@@ -409,6 +410,8 @@ const SPINNER = `
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
 const convertedSvgMap: Map<SVGElement, HTMLImageElement> = new Map();
 const convertedImgToSVGMap: Map<HTMLImageElement, SVGElement> = new Map();
+const convertedDummyMap: Map<HTMLElement, HTMLImageElement> = new Map();
+const convertedImgToDummyMap: Map<HTMLImageElement, HTMLElement> = new Map();
 const convertSVGToImg = (img: SVGElement) => {
   const pseudoImage = (() => {
     const pseudo = convertedSvgMap.get(img);
@@ -428,6 +431,26 @@ const convertSVGToImg = (img: SVGElement) => {
   const svgData = img.outerHTML;
   pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(svgData);
   return pseudoImage;
+};
+const convertDummyElementToImg = (img: HTMLElement) => {
+  const pseudo = convertedDummyMap.get(img);
+
+  if (pseudo) {
+    return pseudo;
+  }
+
+  const element = document.createElement('img');
+  const { backgroundImage } = getComputedStyle(img);
+
+  if (backgroundImage === 'none') {
+    return null;
+  }
+
+  element.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
+
+  convertedDummyMap.set(img, element);
+  convertedImgToDummyMap.set(element, img);
+  return element;
 };
 const defaultState: StyleData = {
   isInDialog: false,
@@ -948,7 +971,9 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
             }
 
             if (data.origin instanceof HTMLImageElement) {
-              return convertedImgToSVGMap.get(data.origin);
+              return (
+                convertedImgToSVGMap.get(data.origin) ?? convertedImgToDummyMap.get(data.origin)
+              );
             }
           })();
 
@@ -989,11 +1014,13 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           point.addEventListener('blur', () => {
             point.remove();
             style.remove();
-            origin.classList.remove(uniqueString);
           });
 
           document.head.append(style);
           origin.before(point);
+          origin.addEventListener('animationend', () => {
+            origin.classList.remove(uniqueString);
+          });
           dialog.close();
 
           const rect = origin.getBoundingClientRect();
@@ -1837,14 +1864,14 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       src: string;
       alt: string;
       isError: boolean;
-      originalElement: SVGElement | HTMLImageElement;
+      originalElement: SVGElement | HTMLElement;
     }[] = [];
 
     return (noRecreate: boolean = false) => {
       const fragment = document.createDocumentFragment();
       const images = noRecreate
         ? imagesCache
-        : [...document.querySelectorAll<HTMLImageElement | SVGElement>('img, svg')]
+        : [...document.querySelectorAll<HTMLImageElement | SVGElement | HTMLElement>(SELECTOR)]
             .map((originalElement) => {
               if (originalElement instanceof HTMLImageElement) {
                 const result = {
@@ -1886,7 +1913,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                 return result;
               }
 
-              const pseudoImage = convertedSvgMap.get(originalElement);
+              const isSVG = originalElement instanceof SVGElement;
+              const pseudoImage = isSVG
+                ? convertedSvgMap.get(originalElement)
+                : convertedDummyMap.get(originalElement);
 
               if (pseudoImage) {
                 return {
@@ -1897,11 +1927,18 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                 };
               }
 
-              const svg = convertSVGToImg(originalElement);
-              const src = svg.src;
+              const newPseudoImage = isSVG
+                ? convertSVGToImg(originalElement)
+                : convertDummyElementToImg(originalElement);
+
+              if (!newPseudoImage) {
+                return null;
+              }
+
+              const src = newPseudoImage.src;
               const alt =
-                svg.getAttribute('aria-label') ??
-                svg.querySelector('title')?.textContent?.trim() ??
+                newPseudoImage.getAttribute('aria-label') ??
+                newPseudoImage.querySelector('title')?.textContent?.trim() ??
                 '';
 
               return {
@@ -1911,8 +1948,11 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                 originalElement,
               };
             })
+            .filter((current): current is (typeof imagesCache)[number] => {
+              return typeof current !== 'undefined';
+            })
             .filter((current, index, self) => {
-              return self.findIndex((element) => element.src === current.src) == index;
+              return self.findIndex((element) => element?.src === current.src) == index;
             });
 
       const onkeydown = (e: KeyboardEvent) => {
@@ -1980,11 +2020,17 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         button.addEventListener('click', () => {
           if (originalElement instanceof HTMLImageElement) {
             currentImageElement = originalElement;
-          } else {
+          } else if (originalElement instanceof SVGElement) {
             const svg = convertedSvgMap.get(originalElement);
 
             if (svg) {
               currentImageElement = svg;
+            }
+          } else {
+            const dummy = convertedDummyMap.get(originalElement);
+
+            if (dummy) {
+              currentImageElement = dummy;
             }
           }
 
@@ -2260,31 +2306,54 @@ const resolveTarget = (target: EventTarget | null) => {
       return childrenImages[0];
     }
 
-    const imagesFromParent = target.parentElement?.querySelectorAll('img, svg');
+    const checkOtherTrees = (currentNode: typeof target) => {
+      if (currentNode.matches(SELECTOR)) {
+        return currentNode;
+      }
 
-    if (imagesFromParent?.length === 1) {
-      return imagesFromParent[0];
-    }
+      const imagesFromParent = currentNode?.querySelectorAll(SELECTOR);
 
-    const focusableOrSemanticContextsImages = target
-      .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
-      ?.querySelectorAll('img, svg');
+      if (imagesFromParent?.length !== 0) {
+        return imagesFromParent[0];
+      }
 
-    if (focusableOrSemanticContextsImages?.length === 1) {
-      return focusableOrSemanticContextsImages[0];
-    }
+      const focusableOrSemanticContextsImages = currentNode
+        .closest('a, button, [tabindex], [aria-label], [role="button"], [role="link"]')
+        ?.querySelectorAll(SELECTOR);
 
-    const { backgroundImage } = getComputedStyle(target);
+      if (focusableOrSemanticContextsImages?.length === 1) {
+        return focusableOrSemanticContextsImages[0];
+      }
+    };
 
-    if (backgroundImage === 'none') {
+    let currentNode: HTMLElement | null = target;
+    let result = null;
+    const { documentElement } = document;
+    let i = 0;
+
+    // 全体から探す
+    while (currentNode !== documentElement) {
+      i++;
+
+      if (i === 100) {
+        return null;
+      }
+      currentNode = currentNode.parentElement;
+
+      if (currentNode) {
+        result = checkOtherTrees(currentNode);
+
+        if (result) {
+          return result;
+        }
+
+        continue;
+      }
+
       return null;
     }
 
-    const pseudoImage = new Image();
-
-    pseudoImage.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
-
-    return pseudoImage;
+    return target;
   };
 
   const img = getElement();
@@ -2294,6 +2363,10 @@ const resolveTarget = (target: EventTarget | null) => {
   }
   if (img instanceof SVGElement) {
     return convertSVGToImg(img);
+  }
+
+  if (img instanceof HTMLElement) {
+    return convertDummyElementToImg(img);
   }
 
   return null;
