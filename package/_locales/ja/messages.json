@@ -38,6 +38,12 @@
   "editable_rotate": {
     "message": "傾き"
   },
+  "rotate_left": {
+    "message": "左に回転"
+  },
+  "rotate_right": {
+    "message": "右に回転"
+  },
   "editable_reverse": {
     "message": "反転"
   },
