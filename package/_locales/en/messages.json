@@ -38,6 +38,12 @@
   "editable_rotate": {
     "message": "Rotate"
   },
+  "rotate_left": {
+    "message": "Rotate left"
+  },
+  "rotate_right": {
+    "message": "Rotate right"
+  },
   "editable_reverse": {
     "message": "Reverse"
   },
