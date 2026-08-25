@@ -1,59 +1,25 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-type OnClickData = chrome.contextMenus.OnClickData;
+const { registerContextMenuClickListener, registerContextMenusListener } = vi.hoisted(() => ({
+  registerContextMenuClickListener: vi.fn(),
+  registerContextMenusListener: vi.fn(),
+}));
 
-let onClickedListener: (info: OnClickData) => void;
-let queryTabs: ReturnType<typeof vi.fn>;
-let sendMessage: ReturnType<typeof vi.fn>;
-
-beforeEach(async () => {
-  vi.resetModules();
-
-  queryTabs = vi.fn().mockResolvedValue([]);
-  sendMessage = vi.fn().mockResolvedValue(undefined);
-
-  vi.stubGlobal('chrome', {
-    contextMenus: {
-      onClicked: {
-        addListener: (listener: typeof onClickedListener) => {
-          onClickedListener = listener;
-        },
-      },
-    },
-    runtime: {
-      onInstalled: {
-        addListener: () => {},
-      },
-    },
-    tabs: {
-      query: queryTabs,
-      sendMessage,
-    },
-  });
-
-  await import('@/contexts/worker/index');
-});
+vi.mock('@/contexts/worker/features', () => ({
+  registerContextMenuClickListener,
+  registerContextMenusListener,
+}));
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.resetModules();
 });
 
-describe('onClicked', () => {
-  it('forwards the menu click to the active tab, including file:// pages', async () => {
-    queryTabs.mockResolvedValue([{ id: 42, url: 'file:///path/to/image.jpg' }]);
+describe('worker entry point', () => {
+  it('registers the context menu listeners at startup', async () => {
+    await import('@/contexts/worker/index');
 
-    onClickedListener({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
-
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
-  });
-
-  it('does not forward the click when the active tab has no id', async () => {
-    queryTabs.mockResolvedValue([{ url: 'https://example.com' }]);
-
-    onClickedListener({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(queryTabs).toHaveBeenCalled());
-
-    expect(sendMessage).not.toHaveBeenCalled();
+    expect(registerContextMenusListener).toHaveBeenCalledTimes(1);
+    expect(registerContextMenuClickListener).toHaveBeenCalledTimes(1);
   });
 });
