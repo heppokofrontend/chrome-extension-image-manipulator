@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.7
+
+- Fix the context menu not responding to images opened as local files
+
 ## v1.2.6
 
 - Add rotate buttons
@@ -36,6 +40,6 @@
 - Fix zoom bugs
 - Add Image List in Dialog
 - Add using broder mode
-- Add return to  the original image in the page
+- Add return to the original image in the page
 - Support lazy load images
 - Support SVG images

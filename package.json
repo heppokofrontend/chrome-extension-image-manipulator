@@ -1,7 +1,7 @@
 {
   "name": "chrome-extension-image-controller",
   "description": "",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "author": "heppokofrontend",
   "allowScripts": {
     "esbuild@0.28.2": true
