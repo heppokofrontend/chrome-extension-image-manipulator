@@ -1,8 +1,11 @@
+const documentUrlPatterns = ['http://*/*', 'https://*/*', 'file://*/*'];
+
 chrome.runtime.onInstalled.addListener(() => {
   const parentId = chrome.contextMenus.create({
     id: 'heppokofrontend.image.manipulator',
     title: 'Image Manipulator',
     contexts: ['all'],
+    documentUrlPatterns,
   });
 
   [
@@ -57,6 +60,7 @@ chrome.runtime.onInstalled.addListener(() => {
       id,
       title,
       contexts: ['all'],
+      documentUrlPatterns,
       parentId,
     });
 
@@ -65,6 +69,7 @@ chrome.runtime.onInstalled.addListener(() => {
         id: childId,
         title: childTitle,
         contexts: ['all'],
+        documentUrlPatterns,
         parentId: id,
       });
     });
@@ -78,10 +83,8 @@ chrome.contextMenus.onClicked.addListener(({ menuItemId }: chrome.contextMenus.O
       currentWindow: true,
     });
 
-    if (tab?.id && tab.url) {
-      if (tab.url.startsWith('http')) {
-        chrome.tabs.sendMessage(tab.id, { menuItemId }).catch(console.log);
-      }
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, { menuItemId }).catch(console.log);
     }
 
     return true;

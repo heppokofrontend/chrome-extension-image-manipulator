@@ -91,11 +91,28 @@ describe('onInstalled', () => {
       '360deg',
     ]);
   });
+
+  it('restricts every menu item to http(s) and file pages', () => {
+    onInstalledListener();
+
+    const patterns = createContextMenu.mock.calls.map(
+      ([properties]) => properties.documentUrlPatterns,
+    );
+
+    expect(
+      patterns.every(
+        (pattern) =>
+          pattern?.includes('http://*/*') &&
+          pattern?.includes('https://*/*') &&
+          pattern?.includes('file://*/*'),
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('onClicked', () => {
-  it('forwards the menu click to the active http(s) tab', async () => {
-    queryTabs.mockResolvedValue([{ id: 42, url: 'https://example.com' }]);
+  it('forwards the menu click to the active tab, including file:// pages', async () => {
+    queryTabs.mockResolvedValue([{ id: 42, url: 'file:///path/to/image.jpg' }]);
 
     onClickedListener({ menuItemId: '150%' } as OnClickData);
     await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
@@ -103,8 +120,8 @@ describe('onClicked', () => {
     expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
   });
 
-  it('does not forward the click when the tab is not http(s)', async () => {
-    queryTabs.mockResolvedValue([{ id: 7, url: 'chrome://extensions' }]);
+  it('does not forward the click when the active tab has no id', async () => {
+    queryTabs.mockResolvedValue([{ url: 'https://example.com' }]);
 
     onClickedListener({ menuItemId: '150%' } as OnClickData);
     await vi.waitFor(() => expect(queryTabs).toHaveBeenCalled());
