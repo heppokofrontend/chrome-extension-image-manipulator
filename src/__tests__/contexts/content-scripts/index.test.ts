@@ -128,6 +128,36 @@ describe('contextmenu target resolution', () => {
   });
 });
 
+describe('resolving svg and background-image targets via contextmenu', () => {
+  it('converts a right-clicked svg element into a synthetic image, leaving the svg itself unstyled', async () => {
+    const { messageListener } = await importContentScripts();
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svg);
+
+    rightClick(svg);
+
+    expect(svg.getAttribute('xmlns')).toBe('http://www.w3.org/2000/svg');
+
+    messageListener({ menuItemId: '150%' }, {}, vi.fn());
+
+    expect(svg.getAttribute('style')).toBeNull();
+  });
+
+  it('converts a right-clicked background-image element into a synthetic image, leaving its own style untouched', async () => {
+    const { messageListener } = await importContentScripts();
+    const div = document.createElement('div');
+    div.style.backgroundImage = 'url("https://example.com/foo.png")';
+    document.body.appendChild(div);
+
+    rightClick(div);
+
+    messageListener({ menuItemId: '150%' }, {}, vi.fn());
+
+    expect(div.style.backgroundImage).toBe('url("https://example.com/foo.png")');
+    expect(div.style.transform).toBe('');
+  });
+});
+
 describe('applying style changes via the context menu message', () => {
   it('scales the current image for a "<n>%" menu item', async () => {
     const { messageListener } = await importContentScripts();
