@@ -17,7 +17,9 @@
     "eslint": "10.9.0",
     "eslint-config-prettier": "10.1.8",
     "globals": "17.11.0",
+    "husky": "9.1.7",
     "jsdom": "30.0.1",
+    "lint-staged": "17.3.0",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
     "typescript-eslint": "8.67.0",
@@ -26,6 +28,10 @@
   "homepage": "https://github.com/heppokofrontend/chrome-extension-image-controller#readme",
   "keywords": [],
   "license": "MIT",
+  "lint-staged": {
+    "*.{js,mjs,ts,tsx}": "eslint --fix",
+    "*": "prettier --write --ignore-unknown"
+  },
   "main": "index.js",
   "packageManager": "npm@11.17.0",
   "repository": {
@@ -39,6 +45,7 @@
     "format-fix": "prettier . --write",
     "lint-check": "eslint .",
     "lint-fix": "eslint . --fix",
+    "prepare": "husky",
     "test": "vitest run",
     "test-watch": "vitest",
     "type-check": "tsc --noEmit"
