@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type MessageListener = (
   message: { menuItemId: string },
@@ -37,6 +37,29 @@ const importContentScripts = async () => {
 
 const rightClick = (target: Element) => {
   target.dispatchEvent(new Event('contextmenu', { bubbles: true }));
+};
+
+const patchPrototypeMethod = <T extends object, K extends keyof T>(
+  target: T,
+  key: K,
+  implementation: T[K],
+) => {
+  const original = Object.getOwnPropertyDescriptor(target, key);
+
+  target[key] = implementation;
+
+  return () => {
+    if (original) {
+      Object.defineProperty(target, key, original);
+    } else {
+      Reflect.deleteProperty(target, key);
+    }
+  };
+};
+
+const flushAsyncWork = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 };
 
 afterEach(() => {
@@ -169,5 +192,67 @@ describe('applying style changes via the context menu message', () => {
 
     expect(imgA.getAttribute('style')).toBe('width: 40px;');
     expect(imgB.getAttribute('style')).toBe('width: 50px;');
+  });
+});
+
+describe('opening the dialog via the context menu message', () => {
+  let restoreFns: Array<() => void> = [];
+
+  beforeEach(() => {
+    restoreFns = [
+      patchPrototypeMethod(
+        HTMLDialogElement.prototype,
+        'showModal',
+        function (this: HTMLDialogElement) {
+          this.open = true;
+        },
+      ),
+      patchPrototypeMethod(
+        HTMLDialogElement.prototype,
+        'close',
+        function (this: HTMLDialogElement) {
+          this.open = false;
+        },
+      ),
+      patchPrototypeMethod(Element.prototype, 'scroll', function () {}),
+    ];
+
+    const originalSrcDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLImageElement.prototype,
+      'src',
+    )!;
+    Object.defineProperty(HTMLImageElement.prototype, 'src', {
+      configurable: true,
+      get(this: HTMLImageElement) {
+        return originalSrcDescriptor.get!.call(this) as string;
+      },
+      set(this: HTMLImageElement, value: string) {
+        originalSrcDescriptor.set!.call(this, value);
+        queueMicrotask(() => this.dispatchEvent(new Event('load')));
+      },
+    });
+    restoreFns.push(() => {
+      Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrcDescriptor);
+    });
+  });
+
+  afterEach(() => {
+    restoreFns.forEach((restore) => restore());
+  });
+
+  it('opens the dialog for the "dialog" menu item without throwing, acknowledging the message synchronously', async () => {
+    const { messageListener } = await importContentScripts();
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const sendResponse = vi.fn();
+    const result = messageListener({ menuItemId: 'dialog' }, {}, sendResponse);
+
+    expect(sendResponse).toHaveBeenCalledWith(true);
+    expect(result).toBe(true);
+
+    await flushAsyncWork();
   });
 });
