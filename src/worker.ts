@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener(() => {
     {
       id: 'zoom',
       title: chrome.i18n.getMessage('context_zoom'),
-      children: [...new Array(12)].map((_, index) => {
+      children: Array.from({ length: 12 }, (_, index) => {
         const value = `${(index + 1) * 0.25 * 100}%`;
 
         return {
@@ -21,7 +21,7 @@ chrome.runtime.onInstalled.addListener(() => {
     {
       id: 'rotate',
       title: chrome.i18n.getMessage('context_rotate'),
-      children: [...new Array(9)].map((_, index) => {
+      children: Array.from({ length: 9 }, (_, index) => {
         const value = `${index * 45}deg`;
 
         return {
@@ -71,8 +71,8 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.contextMenus.onClicked.addListener(
-  async ({ menuItemId }: chrome.contextMenus.OnClickData) => {
+chrome.contextMenus.onClicked.addListener(({ menuItemId }: chrome.contextMenus.OnClickData) => {
+  const handle = async () => {
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -85,5 +85,7 @@ chrome.contextMenus.onClicked.addListener(
     }
 
     return true;
-  },
-);
+  };
+
+  void handle();
+});
