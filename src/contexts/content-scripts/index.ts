@@ -61,14 +61,14 @@ const defaultState: StyleData = {
   fileSize: 'loading...',
   fileType: 'loading...',
 };
-const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = (() => {
-  const getImageData = (key: HTMLImageElement) => {
-    if (!imageDataMap.has(key)) {
-      imageDataMap.set(key, { ...defaultState });
-    }
+const getImageData = (key: HTMLImageElement) => {
+  if (!imageDataMap.has(key)) {
+    imageDataMap.set(key, { ...defaultState });
+  }
 
-    return { ...imageDataMap.get(key) } as StyleData;
-  };
+  return { ...imageDataMap.get(key) } as StyleData;
+};
+const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
   const dialog = (() => {
     const element = document.createElement('dialog');
 
@@ -1401,7 +1401,6 @@ const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = 
       });
     },
     dialogContains,
-    getImageData,
     setImageData,
   };
 })();
