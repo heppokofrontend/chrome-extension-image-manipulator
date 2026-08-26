@@ -482,7 +482,7 @@ const defaultState: StyleData = {
   fileSize: 'loading...',
   fileType: 'loading...',
 };
-const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageData } = (() => {
+const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = (() => {
   const getImageData = (key: HTMLImageElement) => {
     if (!imageDataMap.has(key)) {
       imageDataMap.set(key, { ...defaultState });
@@ -798,9 +798,11 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
             <select
               id="render"
             >
-            ${['crisp-edges', 'pixelated', 'smooth', 'high-quality'].map((value) => {
-              return `<option>${value}</option>`;
-            })}
+            ${['crisp-edges', 'pixelated', 'smooth', 'high-quality']
+              .map((value) => {
+                return `<option>${value}</option>`;
+              })
+              .join('')}
             </select>
           </span>
         </p>
@@ -904,8 +906,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     };
 
     scale.addEventListener('input', () => {
+      const value = Number(scale.value);
+
       updateState({
-        scale: Number(scale.value) ?? defaultState.scale,
+        scale: Number.isNaN(value) ? defaultState.scale : value,
       });
     });
 
@@ -925,8 +929,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
     });
 
     rotate.addEventListener('input', () => {
+      const value = Number(rotate.value);
+
       updateState({
-        rotate: Number(rotate.value) ?? defaultState.rotate,
+        rotate: Number.isNaN(value) ? defaultState.rotate : value,
       });
     });
 
@@ -1018,6 +1024,8 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                 convertedImgToSVGMap.get(data.origin) ?? convertedImgToDummyMap.get(data.origin)
               );
             }
+
+            return undefined;
           })();
 
           if (!origin) {
@@ -1121,13 +1129,13 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
       custom.addEventListener('input', () => {
         dialog.style.cssText = `--canvas-background: ${custom.value}`;
-        chrome.storage.local.set({
+        void chrome.storage.local.set({
           background: custom.value,
         });
       });
 
       chrome.storage.local.get('background', ({ background }) => {
-        if (background) {
+        if (typeof background === 'string' && background) {
           custom.value = background;
           custom.dispatchEvent(inputEvent);
         }
@@ -1346,7 +1354,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
       return `${cssText.trim()}${mediaQuery === '' ? '' : '}'}`;
     };
 
-    element.dataset.from = 'chrome-extension-image-manipulator';
+    element.dataset['from'] = 'chrome-extension-image-manipulator';
     element.textContent = convertToCSSText({
       ':host': {
         display: 'block !important',
@@ -1933,7 +1941,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                 };
 
                 // support lazyload by script
-                originalElement.addEventListener('load', async () => {
+                const handleLoad = async () => {
                   const clonedImage = document.createElement('img');
                   result.src = originalElement.src;
                   result.alt = originalElement.alt;
@@ -1956,6 +1964,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                     },
                     true,
                   );
+                };
+
+                originalElement.addEventListener('load', () => {
+                  void handleLoad();
                 });
                 originalElement.addEventListener('error', () => {
                   result.isError = true;
@@ -2025,16 +2037,16 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
           switch (e.key) {
             case 'Home':
-              buttons[0].click();
+              buttons[0]?.click();
               break;
             case 'End':
-              buttons[buttons.length - 1].click();
+              buttons[buttons.length - 1]?.click();
               break;
             case 'ArrowRight':
-              (buttons[index + 1] || buttons[0]).click();
+              (buttons[index + 1] || buttons[0])?.click();
               break;
             case 'ArrowLeft':
-              (buttons[index - 1] || buttons[buttons.length - 1]).click();
+              (buttons[index - 1] || buttons[buttons.length - 1])?.click();
               break;
             case 'ArrowUp': {
               (
@@ -2048,12 +2060,12 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
                     index -
                     IMAGE_LIST_COLS
                 ]
-              ).click();
+              )?.click();
               break;
             }
             case 'ArrowDown': {
               const rest = index % IMAGE_LIST_COLS;
-              (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0]).click();
+              (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0])?.click();
               break;
             }
           }
@@ -2090,7 +2102,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
           }
 
           if (button.getAttribute('aria-current') !== 'true') {
-            showDialog({ noCreateImageList: true });
+            void showDialog({ noCreateImageList: true });
           }
         });
         button.addEventListener('keydown', onkeydown);
@@ -2110,7 +2122,12 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         img.src = src;
         img.onerror = () => {
           listItem.remove();
-          self[index].isError = true;
+
+          const target = self[index];
+
+          if (target) {
+            target.isError = true;
+          }
         };
 
         // alt がない時、image_list_no_alt を alt に指定するとここの alt が拾われてしまうため、aria-label を使用する
@@ -2235,7 +2252,6 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
 
   return {
     imageViewer,
-    dialog,
     showDialog: async (option?: { noCreateImageList?: boolean }) => {
       const noCreateImageList = option?.noCreateImageList ?? false;
 
@@ -2243,7 +2259,7 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         dialog.showModal();
       }
 
-      return await new Promise<void>(async (resolve) => {
+      const showImageInDialog = async (resolve: () => void) => {
         if (!currentImageElement) {
           return;
         }
@@ -2323,6 +2339,10 @@ const { imageViewer, dialog, showDialog, dialogContains, getImageData, setImageD
         zoomAndScrollInit(currentImageElement, initialScale || 'init');
         setInputValues(imageData);
         resolve();
+      };
+
+      return await new Promise<void>((resolve) => {
+        void showImageInDialog(resolve);
       });
     },
     dialogContains,
@@ -2375,10 +2395,11 @@ const resolveTarget = (target: EventTarget | null) => {
       if (focusableOrSemanticContextsImages?.length === 1) {
         return focusableOrSemanticContextsImages[0];
       }
+
+      return undefined;
     };
 
     let currentNode: HTMLElement | null = target;
-    let result = null;
     const { documentElement } = document;
     let i = 0;
 
@@ -2392,7 +2413,7 @@ const resolveTarget = (target: EventTarget | null) => {
       currentNode = currentNode.parentElement;
 
       if (currentNode) {
-        result = checkOtherTrees(currentNode);
+        const result = checkOtherTrees(currentNode);
 
         if (result) {
           return result;
@@ -2423,7 +2444,7 @@ const resolveTarget = (target: EventTarget | null) => {
   return null;
 };
 
-chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
+chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _, sendResponse) => {
   const targetElement = currentImageElement;
 
   sendResponse(true);
@@ -2454,8 +2475,8 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
         });
       }
 
-      if (typeof image.dataset.imageManipulatorDefaultStyle === 'string') {
-        image.setAttribute('style', image.dataset.imageManipulatorDefaultStyle);
+      if (typeof image.dataset['imageManipulatorDefaultStyle'] === 'string') {
+        image.setAttribute('style', image.dataset['imageManipulatorDefaultStyle']);
       }
     });
 
@@ -2490,8 +2511,11 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
             fileSize: imageData.fileSize,
           });
         } else {
-          if (typeof targetElement.dataset.imageManipulatorDefaultStyle === 'string') {
-            targetElement.setAttribute('style', targetElement.dataset.imageManipulatorDefaultStyle);
+          if (typeof targetElement.dataset['imageManipulatorDefaultStyle'] === 'string') {
+            targetElement.setAttribute(
+              'style',
+              targetElement.dataset['imageManipulatorDefaultStyle'],
+            );
           }
         }
 
@@ -2510,7 +2534,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }, _, sendResponse) => {
           await showDialog();
         };
 
-        show();
+        void show();
 
         break;
       }
@@ -2534,8 +2558,9 @@ window.addEventListener('contextmenu', ({ target }) => {
     const isInDialog = dialogContains(targetImage);
 
     if (!isInDialog) {
-      if (typeof targetImage.dataset.imageManipulatorDefaultStyle !== 'string') {
-        targetImage.dataset.imageManipulatorDefaultStyle = targetImage.getAttribute('style') || '';
+      if (typeof targetImage.dataset['imageManipulatorDefaultStyle'] !== 'string') {
+        targetImage.dataset['imageManipulatorDefaultStyle'] =
+          targetImage.getAttribute('style') || '';
       }
 
       currentImageElement = targetImage;
