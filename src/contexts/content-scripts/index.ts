@@ -68,28 +68,16 @@ const getImageData = (key: HTMLImageElement) => {
 
   return { ...imageDataMap.get(key) } as StyleData;
 };
-const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
-  const dialog = (() => {
-    const element = document.createElement('dialog');
-
-    element.role = 'dialog';
-    element.ariaModal = 'true';
-    element.ariaLabel = chrome.i18n.getMessage('extName');
-    element.addEventListener('keydown', (e) => {
-      if (e.key === 'ESC') {
-        e.preventDefault();
-        e.stopPropagation();
-        dialog.close();
-      }
-    });
-
-    return element;
-  })();
-  const setImageData = (
-    img: HTMLImageElement,
-    options: Options,
-    noNeedInitScreen: boolean = false,
-  ) => {
+const createSetImageData = ({
+  canvas,
+  spaceElement,
+  setInputValues,
+}: {
+  canvas: HTMLDivElement;
+  spaceElement: HTMLDivElement;
+  setInputValues: (imageData: StyleData) => void;
+}) => {
+  return (img: HTMLImageElement, options: Options, noNeedInitScreen: boolean = false) => {
     if (!img) {
       return;
     }
@@ -170,6 +158,24 @@ const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
       setInputValues(imageData);
     }
   };
+};
+const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
+  const dialog = (() => {
+    const element = document.createElement('dialog');
+
+    element.role = 'dialog';
+    element.ariaModal = 'true';
+    element.ariaLabel = chrome.i18n.getMessage('extName');
+    element.addEventListener('keydown', (e) => {
+      if (e.key === 'ESC') {
+        e.preventDefault();
+        e.stopPropagation();
+        dialog.close();
+      }
+    });
+
+    return element;
+  })();
   const { details, formControls } = (() => {
     const element = document.createElement('div');
     const closeBtnForPortrait = document.createElement('button');
@@ -912,6 +918,7 @@ const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
       spaceElement: inner,
     };
   })();
+  const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
   const style = buildStyleElement();
   const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
