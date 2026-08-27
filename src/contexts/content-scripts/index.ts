@@ -1,9 +1,9 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
-import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
-import { createOnContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
-import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderers';
+import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
+import { buildStyleElement } from '@/contexts/content-scripts/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
   convertDummyElementToImg,
   convertedDummyMap,
@@ -63,8 +63,7 @@ const createGetFileSize = ({
   };
 };
 
-const dialog = buildDialogElement();
-const { canvas, spaceElement } = buildCanvas();
+const { imageViewer, dialog, canvas, spaceElement } = CONTENT_UI;
 
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
@@ -757,11 +756,10 @@ const setInputValues = (imageData: StyleData) => {
   formControls.render.value = imageData.render;
 };
 
-const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
+const setImageData = createSetImageData({ setInputValues });
 const style = buildStyleElement();
-const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
 const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
-const zoomAndScrollInit = createZoomAndScrollInit({ canvas, setImageData });
+const zoomAndScrollInit = createZoomAndScrollInit({ setImageData });
 const resizeSupport = () => {
   let setTimeoutId = -1;
   const wheelEvent = new Event('wheel');
@@ -1259,7 +1257,5 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
 
   return true;
 });
-
-const onContextmenu = createOnContextmenu({ imageViewer, spaceElement });
 
 window.addEventListener('contextmenu', onContextmenu);

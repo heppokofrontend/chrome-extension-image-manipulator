@@ -1,3 +1,4 @@
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { STATE } from '@/contexts/content-scripts/state';
 
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
@@ -23,18 +24,16 @@ export const getImageData = (key: HTMLImageElement) => {
 };
 
 export const createSetImageData = ({
-  canvas,
-  spaceElement,
   setInputValues,
 }: {
-  canvas: HTMLDivElement;
-  spaceElement: HTMLDivElement;
   setInputValues: (imageData: StyleData) => void;
 }) => {
   return (img: HTMLImageElement, options: Options, noNeedInitScreen: boolean = false) => {
     if (!img) {
       return;
     }
+
+    const { canvas, spaceElement } = CONTENT_UI;
 
     const baseImageData = getImageData(img);
     const oldScale = baseImageData.scale;
