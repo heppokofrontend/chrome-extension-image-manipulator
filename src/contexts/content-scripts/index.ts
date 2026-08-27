@@ -2,6 +2,9 @@ import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
 import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
 import {
+  convertDummyElementToImg,
+  convertedDummyMap,
+  convertedImgToDummyMap,
   convertedImgToSVGMap,
   convertedSvgMap,
   convertSVGToImg,
@@ -11,28 +14,6 @@ let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
 const SELECTOR = 'img, svg, [style*="url("]';
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
-const convertedDummyMap: Map<HTMLElement, HTMLImageElement> = new Map();
-const convertedImgToDummyMap: Map<HTMLImageElement, HTMLElement> = new Map();
-const convertDummyElementToImg = (img: HTMLElement) => {
-  const pseudo = convertedDummyMap.get(img);
-
-  if (pseudo) {
-    return pseudo;
-  }
-
-  const element = document.createElement('img');
-  const { backgroundImage } = getComputedStyle(img);
-
-  if (backgroundImage === 'none') {
-    return null;
-  }
-
-  element.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
-
-  convertedDummyMap.set(img, element);
-  convertedImgToDummyMap.set(element, img);
-  return element;
-};
 const defaultState: StyleData = {
   isInDialog: false,
   clonedImage: null,
