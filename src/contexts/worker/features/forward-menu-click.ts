@@ -1,10 +1,9 @@
-const forwardMenuClick = async ({ menuItemId }: chrome.contextMenus.OnClickData) => {
-  const [tab] = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+import { getTab } from '@/contexts/worker/utils';
 
-  if (tab?.id) {
+const forwardMenuClick = async ({ menuItemId }: chrome.contextMenus.OnClickData) => {
+  const tab = await getTab();
+
+  if (tab) {
     chrome.tabs.sendMessage(tab.id, { menuItemId }).catch(console.log);
   }
 };
