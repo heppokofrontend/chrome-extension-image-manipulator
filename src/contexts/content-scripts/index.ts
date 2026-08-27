@@ -1,35 +1,18 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
 import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
+import {
+  convertedImgToSVGMap,
+  convertedSvgMap,
+  convertSVGToImg,
+} from '@/contexts/content-scripts/utils';
 
 let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
 const SELECTOR = 'img, svg, [style*="url("]';
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
-const convertedSvgMap: Map<SVGElement, HTMLImageElement> = new Map();
-const convertedImgToSVGMap: Map<HTMLImageElement, SVGElement> = new Map();
 const convertedDummyMap: Map<HTMLElement, HTMLImageElement> = new Map();
 const convertedImgToDummyMap: Map<HTMLImageElement, HTMLElement> = new Map();
-const convertSVGToImg = (img: SVGElement) => {
-  const pseudoImage = (() => {
-    const pseudo = convertedSvgMap.get(img);
-
-    if (pseudo) {
-      return pseudo;
-    }
-
-    const element = document.createElement('img');
-    convertedSvgMap.set(img, element);
-    convertedImgToSVGMap.set(element, img);
-    return element;
-  })();
-
-  img.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-  const svgData = img.outerHTML;
-  pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(svgData);
-  return pseudoImage;
-};
 const convertDummyElementToImg = (img: HTMLElement) => {
   const pseudo = convertedDummyMap.get(img);
 
