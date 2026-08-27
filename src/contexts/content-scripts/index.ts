@@ -1,6 +1,6 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
-import { buildStyleElement } from '@/contexts/content-scripts/renderer';
+import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
 
 let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
@@ -61,35 +61,23 @@ const defaultState: StyleData = {
   fileSize: 'loading...',
   fileType: 'loading...',
 };
-const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = (() => {
-  const getImageData = (key: HTMLImageElement) => {
-    if (!imageDataMap.has(key)) {
-      imageDataMap.set(key, { ...defaultState });
-    }
+const getImageData = (key: HTMLImageElement) => {
+  if (!imageDataMap.has(key)) {
+    imageDataMap.set(key, { ...defaultState });
+  }
 
-    return { ...imageDataMap.get(key) } as StyleData;
-  };
-  const dialog = (() => {
-    const element = document.createElement('dialog');
-
-    element.role = 'dialog';
-    element.ariaModal = 'true';
-    element.ariaLabel = chrome.i18n.getMessage('extName');
-    element.addEventListener('keydown', (e) => {
-      if (e.key === 'ESC') {
-        e.preventDefault();
-        e.stopPropagation();
-        dialog.close();
-      }
-    });
-
-    return element;
-  })();
-  const setImageData = (
-    img: HTMLImageElement,
-    options: Options,
-    noNeedInitScreen: boolean = false,
-  ) => {
+  return { ...imageDataMap.get(key) } as StyleData;
+};
+const createSetImageData = ({
+  canvas,
+  spaceElement,
+  setInputValues,
+}: {
+  canvas: HTMLDivElement;
+  spaceElement: HTMLDivElement;
+  setInputValues: (imageData: StyleData) => void;
+}) => {
+  return (img: HTMLImageElement, options: Options, noNeedInitScreen: boolean = false) => {
     if (!img) {
       return;
     }
@@ -170,6 +158,55 @@ const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = 
       setInputValues(imageData);
     }
   };
+};
+const createGetFileSize = ({
+  setImageData,
+}: {
+  setImageData: ReturnType<typeof createSetImageData>;
+}) => {
+  return (image: HTMLImageElement) => {
+    return new Promise<void>((done) => {
+      const isSVG = image.src.startsWith('data:image/svg+xml');
+
+      if (isSVG) {
+        const size = new Blob([image.src]).size;
+
+        setImageData(image, {
+          fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+          fileType: 'image/svg+xml (in HTML)',
+        });
+
+        done();
+        return;
+      }
+
+      const { protocol } = new URL(image.src);
+
+      fetch(image.src.replace(protocol, location.protocol), { method: 'HEAD' })
+        .then(({ headers }) => {
+          const size = headers.get('Content-Length');
+          const type = headers.get('Content-Type');
+
+          setImageData(image, {
+            fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+            fileType: type ?? chrome.i18n.getMessage('error_fileType'),
+          });
+        })
+        .catch(() => {
+          setImageData(image, {
+            fileSize: chrome.i18n.getMessage('error_fileSize'),
+            fileType: chrome.i18n.getMessage('error_fileType'),
+          });
+        })
+        .finally(() => {
+          done();
+        });
+    });
+  };
+};
+
+const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
+  const dialog = buildDialogElement();
   const { details, formControls } = (() => {
     const element = document.createElement('div');
     const closeBtnForPortrait = document.createElement('button');
@@ -912,6 +949,7 @@ const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = 
       spaceElement: inner,
     };
   })();
+  const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
   const style = buildStyleElement();
   const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
@@ -1265,45 +1303,7 @@ const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = 
 
   resizeSupport();
 
-  const getFileSize = (image: HTMLImageElement) => {
-    return new Promise<void>((done) => {
-      const isSVG = image.src.startsWith('data:image/svg+xml');
-
-      if (isSVG) {
-        const size = new Blob([image.src]).size;
-
-        setImageData(image, {
-          fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
-          fileType: 'image/svg+xml (in HTML)',
-        });
-
-        done();
-        return;
-      }
-
-      const { protocol } = new URL(image.src);
-
-      fetch(image.src.replace(protocol, location.protocol), { method: 'HEAD' })
-        .then(({ headers }) => {
-          const size = headers.get('Content-Length');
-          const type = headers.get('Content-Type');
-
-          setImageData(image, {
-            fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
-            fileType: type ?? chrome.i18n.getMessage('error_fileType'),
-          });
-        })
-        .catch(() => {
-          setImageData(image, {
-            fileSize: chrome.i18n.getMessage('error_fileSize'),
-            fileType: chrome.i18n.getMessage('error_fileType'),
-          });
-        })
-        .finally(() => {
-          done();
-        });
-    });
-  };
+  const getFileSize = createGetFileSize({ setImageData });
 
   return {
     imageViewer,
@@ -1401,7 +1401,6 @@ const { imageViewer, showDialog, dialogContains, getImageData, setImageData } = 
       });
     },
     dialogContains,
-    getImageData,
     setImageData,
   };
 })();
