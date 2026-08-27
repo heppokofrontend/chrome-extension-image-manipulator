@@ -1,6 +1,6 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
-import { buildStyleElement } from '@/contexts/content-scripts/renderer';
+import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
 
 let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
@@ -159,23 +159,9 @@ const createSetImageData = ({
     }
   };
 };
+
 const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
-  const dialog = (() => {
-    const element = document.createElement('dialog');
-
-    element.role = 'dialog';
-    element.ariaModal = 'true';
-    element.ariaLabel = chrome.i18n.getMessage('extName');
-    element.addEventListener('keydown', (e) => {
-      if (e.key === 'ESC') {
-        e.preventDefault();
-        e.stopPropagation();
-        dialog.close();
-      }
-    });
-
-    return element;
-  })();
+  const dialog = buildDialogElement();
   const { details, formControls } = (() => {
     const element = document.createElement('div');
     const closeBtnForPortrait = document.createElement('button');
