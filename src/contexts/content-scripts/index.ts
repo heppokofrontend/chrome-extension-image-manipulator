@@ -1,7 +1,7 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
-import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
+import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderers';
 import {
   convertDummyElementToImg,
   convertedDummyMap,
