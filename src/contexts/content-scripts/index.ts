@@ -228,23 +228,22 @@ canvas.addEventListener('wheel', (e) => {
   });
 });
 
-const { imageViewer, showDialog, setImageData } = (() => {
-  const { details, formControls } = (() => {
-    const element = document.createElement('div');
-    const closeBtnForPortrait = document.createElement('button');
-    const closeHandler = () => {
-      dialog.close();
-    };
+const { details, formControls } = (() => {
+  const element = document.createElement('div');
+  const closeBtnForPortrait = document.createElement('button');
+  const closeHandler = () => {
+    dialog.close();
+  };
 
-    closeBtnForPortrait.type = 'button';
-    closeBtnForPortrait.className = 'close-btn for-portrait';
-    closeBtnForPortrait.textContent = chrome.i18n.getMessage('button_close');
-    closeBtnForPortrait.addEventListener('click', closeHandler);
+  closeBtnForPortrait.type = 'button';
+  closeBtnForPortrait.className = 'close-btn for-portrait';
+  closeBtnForPortrait.textContent = chrome.i18n.getMessage('button_close');
+  closeBtnForPortrait.addEventListener('click', closeHandler);
 
-    element.id = 'details';
-    element.insertAdjacentHTML(
-      'afterbegin',
-      `
+  element.id = 'details';
+  element.insertAdjacentHTML(
+    'afterbegin',
+    `
       <p class="close">
         <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
       </p>
@@ -504,181 +503,179 @@ const { imageViewer, showDialog, setImageData } = (() => {
         </p>
       </div>
     `,
-    );
+  );
 
-    element.querySelector('button')?.addEventListener('click', closeHandler);
+  element.querySelector('button')?.addEventListener('click', closeHandler);
 
-    const url = element.querySelector<HTMLInputElement>('#url')!;
-    const alt = element.querySelector<HTMLInputElement>('#alt')!;
-    const size = element.querySelector<HTMLInputElement>('#size')!;
-    const type = element.querySelector<HTMLInputElement>('#type')!;
-    const naturalWidth = element.querySelector<HTMLInputElement>('#natural-width')!;
-    const naturalHeight = element.querySelector<HTMLInputElement>('#natural-height')!;
-    const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
-    // const srcset = element.querySelector<HTMLInputElement>('#srcset')!;
-    const scale = element.querySelector<HTMLInputElement>('#scale')!;
-    const scaleFit = element.querySelector<HTMLInputElement>('#scale-fit')!;
-    const scale100 = element.querySelector<HTMLInputElement>('#scale-100')!;
-    const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
-    const rotateReset = element.querySelector<HTMLButtonElement>('#rotate-reset')!;
-    const rotateLeft = element.querySelector<HTMLButtonElement>('#rotate-left')!;
-    const rotateRight = element.querySelector<HTMLButtonElement>('#rotate-right')!;
-    const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
-    const border = element.querySelector<HTMLInputElement>('#border')!;
-    const render = element.querySelector<HTMLSelectElement>('#render')!;
-    const imageListButtons = {
-      reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
-      prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
-      next: element.querySelector<HTMLButtonElement>('#image-list-next')!,
-    };
-    const imageList = element.querySelector<HTMLElement>('#image-list')!;
-    const imageListInfo = element.querySelector<HTMLElement>('#image-list-info-text')!;
-    const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
+  const url = element.querySelector<HTMLInputElement>('#url')!;
+  const alt = element.querySelector<HTMLInputElement>('#alt')!;
+  const size = element.querySelector<HTMLInputElement>('#size')!;
+  const type = element.querySelector<HTMLInputElement>('#type')!;
+  const naturalWidth = element.querySelector<HTMLInputElement>('#natural-width')!;
+  const naturalHeight = element.querySelector<HTMLInputElement>('#natural-height')!;
+  const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
+  // const srcset = element.querySelector<HTMLInputElement>('#srcset')!;
+  const scale = element.querySelector<HTMLInputElement>('#scale')!;
+  const scaleFit = element.querySelector<HTMLInputElement>('#scale-fit')!;
+  const scale100 = element.querySelector<HTMLInputElement>('#scale-100')!;
+  const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
+  const rotateReset = element.querySelector<HTMLButtonElement>('#rotate-reset')!;
+  const rotateLeft = element.querySelector<HTMLButtonElement>('#rotate-left')!;
+  const rotateRight = element.querySelector<HTMLButtonElement>('#rotate-right')!;
+  const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
+  const border = element.querySelector<HTMLInputElement>('#border')!;
+  const render = element.querySelector<HTMLSelectElement>('#render')!;
+  const imageListButtons = {
+    reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
+    prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
+    next: element.querySelector<HTMLButtonElement>('#image-list-next')!,
+  };
+  const imageList = element.querySelector<HTMLElement>('#image-list')!;
+  const imageListInfo = element.querySelector<HTMLElement>('#image-list-info-text')!;
+  const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
 
-    const updateState = (options: Options) => {
-      if (STATE.currentImageElement) {
-        setImageData(STATE.currentImageElement, {
-          ...options,
-        });
-      }
-    };
-
-    scale.addEventListener('input', () => {
-      const value = Number(scale.value);
-
-      updateState({
-        scale: Number.isNaN(value) ? defaultState.scale : value,
+  const updateState = (options: Options) => {
+    if (STATE.currentImageElement) {
+      setImageData(STATE.currentImageElement, {
+        ...options,
       });
-    });
+    }
+  };
 
-    scaleFit.addEventListener('click', () => {
-      if (STATE.currentImageElement) {
-        updateState({
-          scale: 100,
-        });
-        zoomAndScrollInit(STATE.currentImageElement, 'fit');
-      }
-    });
+  scale.addEventListener('input', () => {
+    const value = Number(scale.value);
 
-    scale100.addEventListener('click', () => {
+    updateState({
+      scale: Number.isNaN(value) ? defaultState.scale : value,
+    });
+  });
+
+  scaleFit.addEventListener('click', () => {
+    if (STATE.currentImageElement) {
       updateState({
         scale: 100,
       });
+      zoomAndScrollInit(STATE.currentImageElement, 'fit');
+    }
+  });
+
+  scale100.addEventListener('click', () => {
+    updateState({
+      scale: 100,
     });
+  });
 
-    rotate.addEventListener('input', () => {
-      const value = Number(rotate.value);
+  rotate.addEventListener('input', () => {
+    const value = Number(rotate.value);
 
-      updateState({
-        rotate: Number.isNaN(value) ? defaultState.rotate : value,
-      });
+    updateState({
+      rotate: Number.isNaN(value) ? defaultState.rotate : value,
     });
+  });
 
-    rotateLeft.addEventListener('click', () => {
-      updateState({
-        rotate: (Number(rotate.value) || 0) + -90,
-      });
+  rotateLeft.addEventListener('click', () => {
+    updateState({
+      rotate: (Number(rotate.value) || 0) + -90,
     });
+  });
 
-    rotateRight.addEventListener('click', () => {
-      updateState({
-        rotate: (Number(rotate.value) || 0) + 90,
-      });
+  rotateRight.addEventListener('click', () => {
+    updateState({
+      rotate: (Number(rotate.value) || 0) + 90,
     });
+  });
 
-    rotateReset.addEventListener('click', () => {
-      updateState({
-        rotate: 0,
-      });
+  rotateReset.addEventListener('click', () => {
+    updateState({
+      rotate: 0,
     });
+  });
 
-    reverse.addEventListener('input', () => {
-      updateState({
-        reverse: reverse.checked,
-      });
+  reverse.addEventListener('input', () => {
+    updateState({
+      reverse: reverse.checked,
     });
+  });
 
-    border.addEventListener('input', () => {
-      STATE.hasBorder = border.checked;
-      updateState({});
-    });
+  border.addEventListener('input', () => {
+    STATE.hasBorder = border.checked;
+    updateState({});
+  });
 
-    imageListButtons.reload.addEventListener('click', () => {
-      createImageList();
-    });
-    imageListButtons.next.addEventListener('click', () => {
-      const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
-      const target = current?.closest('li')?.nextElementSibling?.firstElementChild;
+  imageListButtons.reload.addEventListener('click', () => {
+    createImageList();
+  });
+  imageListButtons.next.addEventListener('click', () => {
+    const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
+    const target = current?.closest('li')?.nextElementSibling?.firstElementChild;
 
-      if (target instanceof HTMLButtonElement) {
-        target?.click();
+    if (target instanceof HTMLButtonElement) {
+      target?.click();
 
-        return;
-      }
+      return;
+    }
 
-      const roopTarget =
-        current?.closest('ul')?.firstElementChild?.firstElementChild ??
-        imageList.querySelector('button');
+    const roopTarget =
+      current?.closest('ul')?.firstElementChild?.firstElementChild ??
+      imageList.querySelector('button');
 
-      if (roopTarget instanceof HTMLButtonElement) {
-        roopTarget?.click();
-      }
-    });
-    imageListButtons.prev.addEventListener('click', () => {
-      const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
-      const target = current?.closest('li')?.previousElementSibling?.firstElementChild;
+    if (roopTarget instanceof HTMLButtonElement) {
+      roopTarget?.click();
+    }
+  });
+  imageListButtons.prev.addEventListener('click', () => {
+    const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
+    const target = current?.closest('li')?.previousElementSibling?.firstElementChild;
 
-      if (target instanceof HTMLButtonElement) {
-        target?.click();
+    if (target instanceof HTMLButtonElement) {
+      target?.click();
 
-        return;
-      }
+      return;
+    }
 
-      const roopTarget =
-        current?.closest('ul')?.lastElementChild?.firstElementChild ??
-        imageList.querySelector('button');
+    const roopTarget =
+      current?.closest('ul')?.lastElementChild?.firstElementChild ??
+      imageList.querySelector('button');
 
-      if (roopTarget instanceof HTMLButtonElement) {
-        roopTarget?.click();
-      }
-    });
+    if (roopTarget instanceof HTMLButtonElement) {
+      roopTarget?.click();
+    }
+  });
 
-    searchButton.addEventListener('click', () => {
-      if (!STATE.currentImageElement) {
-        return;
-      }
+  searchButton.addEventListener('click', () => {
+    if (!STATE.currentImageElement) {
+      return;
+    }
 
-      const data = getImageData(STATE.currentImageElement);
+    const data = getImageData(STATE.currentImageElement);
 
-      if (data.isInDialog) {
-        if (data.origin) {
-          const origin = (() => {
-            if (document.body.contains(data.origin)) {
-              return data.origin;
-            }
-
-            if (data.origin instanceof HTMLImageElement) {
-              return (
-                convertedImgToSVGMap.get(data.origin) ?? convertedImgToDummyMap.get(data.origin)
-              );
-            }
-
-            return undefined;
-          })();
-
-          if (!origin) {
-            alert(chrome.i18n.getMessage('searched_image_error'));
-
-            return;
+    if (data.isInDialog) {
+      if (data.origin) {
+        const origin = (() => {
+          if (document.body.contains(data.origin)) {
+            return data.origin;
           }
 
-          const point = document.createElement('span');
-          const style = document.createElement('style');
-          const uniqueString = `heppokofrontent-chrome-extension-image-controler-blink-${Date.now().toString(
-            36,
-          )}`;
+          if (data.origin instanceof HTMLImageElement) {
+            return convertedImgToSVGMap.get(data.origin) ?? convertedImgToDummyMap.get(data.origin);
+          }
 
-          style.textContent = `
+          return undefined;
+        })();
+
+        if (!origin) {
+          alert(chrome.i18n.getMessage('searched_image_error'));
+
+          return;
+        }
+
+        const point = document.createElement('span');
+        const style = document.createElement('style');
+        const uniqueString = `heppokofrontent-chrome-extension-image-controler-blink-${Date.now().toString(
+          36,
+        )}`;
+
+        style.textContent = `
             @keyframes ${uniqueString} {
               0% {
                 opacity: 1;
@@ -696,633 +693,615 @@ const { imageViewer, showDialog, setImageData } = (() => {
             }
           `;
 
-          point.tabIndex = 0;
-          point.textContent = chrome.i18n.getMessage('searched_image_message');
-          point.style.cssText =
-            'all: unset; position: absolute; z-index: -1; width: 0; height: 0; overflow: hidden; display: block;';
-          point.addEventListener('blur', () => {
-            point.remove();
-            style.remove();
+        point.tabIndex = 0;
+        point.textContent = chrome.i18n.getMessage('searched_image_message');
+        point.style.cssText =
+          'all: unset; position: absolute; z-index: -1; width: 0; height: 0; overflow: hidden; display: block;';
+        point.addEventListener('blur', () => {
+          point.remove();
+          style.remove();
+        });
+
+        document.head.append(style);
+        origin.before(point);
+        origin.addEventListener('animationend', () => {
+          origin.classList.remove(uniqueString);
+        });
+        dialog.close();
+
+        const rect = origin.getBoundingClientRect();
+        const isVisible =
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+
+        if (isVisible) {
+          point.focus({
+            preventScroll: true,
           });
-
-          document.head.append(style);
-          origin.before(point);
-          origin.addEventListener('animationend', () => {
-            origin.classList.remove(uniqueString);
-          });
-          dialog.close();
-
-          const rect = origin.getBoundingClientRect();
-          const isVisible =
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth);
-
-          if (isVisible) {
+          origin.classList.add(uniqueString);
+        } else {
+          origin.scrollIntoView();
+          window.addEventListener('scrollend', () => {
             point.focus({
               preventScroll: true,
             });
             origin.classList.add(uniqueString);
-          } else {
-            origin.scrollIntoView();
-            window.addEventListener('scrollend', () => {
-              point.focus({
-                preventScroll: true,
-              });
-              origin.classList.add(uniqueString);
-            });
-          }
+          });
         }
       }
-    });
-
-    const stopPropagation = (e: Event) => e.stopPropagation();
-    scale.addEventListener('wheel', stopPropagation);
-    rotate.addEventListener('wheel', stopPropagation);
-    imageList.addEventListener('wheel', stopPropagation);
-    imageList.addEventListener('keydown', (e) => {
-      e.stopPropagation();
-
-      if (e.key.startsWith('Arrow')) {
-        e.preventDefault();
-      }
-    });
-
-    // bgcolor
-    const custom = element.querySelector<HTMLInputElement>('#background-custom');
-    const bright = element.querySelector<HTMLButtonElement>('#background-bright');
-    const dark = element.querySelector<HTMLButtonElement>('#background-dark');
-    const inputEvent = new Event('input');
-
-    if (custom) {
-      bright?.addEventListener('click', () => {
-        custom.value = '#fafafa';
-        custom.dispatchEvent(inputEvent);
-      });
-      dark?.addEventListener('click', () => {
-        custom.value = '#202124';
-        custom.dispatchEvent(inputEvent);
-      });
-
-      custom.addEventListener('input', () => {
-        dialog.style.cssText = `--canvas-background: ${custom.value}`;
-        void chrome.storage.local.set({
-          background: custom.value,
-        });
-      });
-
-      chrome.storage.local.get('background', ({ background }) => {
-        if (typeof background === 'string' && background) {
-          custom.value = background;
-          custom.dispatchEvent(inputEvent);
-        }
-      });
-    }
-
-    const resolveRenderMode = (value: string): RenderingMode => {
-      const types: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
-      const isInvalid = (value: string): value is RenderingMode =>
-        types.some((type) => type === value);
-
-      if (isInvalid(value)) {
-        return value;
-      }
-
-      return defaultState.render;
-    };
-
-    render.addEventListener('change', () => {
-      updateState({
-        render: resolveRenderMode(render.value),
-      });
-    });
-
-    const ui = document.createDocumentFragment();
-
-    ui.append(closeBtnForPortrait);
-    ui.append(element);
-
-    return {
-      details: ui,
-      formControls: {
-        url,
-        alt,
-        size,
-        type,
-        naturalWidth,
-        naturalHeight,
-        aspect,
-        // srcset,
-        scale,
-        rotate,
-        reverse,
-        border,
-        render,
-        imageList,
-        imageListInfo,
-      },
-    };
-  })();
-
-  const setInputValues = (imageData: StyleData) => {
-    if (!imageData.isInDialog || !STATE.currentImageElement) {
-      return;
-    }
-
-    formControls.url.value = STATE.currentImageElement.src;
-    // alt 以外のアクセシブルネームをサポートするかどうか
-    formControls.alt.value = STATE.currentImageElement.alt;
-    formControls.size.value = imageData.fileSize;
-    formControls.type.value = imageData.fileType;
-    formControls.naturalWidth.value = `${STATE.currentImageElement.naturalWidth} px`;
-    formControls.naturalHeight.value = `${STATE.currentImageElement.naturalHeight} px`;
-
-    const getAspectRatio = (width: number, height: number) => {
-      const getGCD = (a: number, b: number): number => {
-        if (b === 0) {
-          return a;
-        }
-
-        return getGCD(b, a % b);
-      };
-
-      const gcd = getGCD(width, height);
-      const ratio = `${width / gcd} : ${height / gcd}`;
-
-      return ratio;
-    };
-
-    formControls.aspect.value = getAspectRatio(
-      STATE.currentImageElement.naturalWidth,
-      STATE.currentImageElement.naturalHeight,
-    );
-
-    // formControls.srcset.value = hhhhhhh
-    formControls.scale.value = String(imageData.scale);
-    formControls.rotate.value = String(imageData.rotate);
-    formControls.reverse.checked = imageData.reverse;
-    formControls.border.checked = STATE.hasBorder;
-    formControls.render.value = imageData.render;
-  };
-
-  const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
-  const style = buildStyleElement();
-  const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
-  const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
-  const zoomAndScrollInit = (
-    targetImage: HTMLImageElement,
-    scaleValue?: number | 'init' | 'fit',
-  ) => {
-    const scale = (() => {
-      const baseScale = scaleValue ?? getImageData(targetImage).scale;
-
-      if (typeof baseScale === 'string') {
-        const fitHeight = (canvas.offsetHeight - 100) / targetImage.naturalHeight;
-        const fitWidth = (canvas.offsetWidth - 100) / targetImage.naturalWidth;
-        const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
-
-        const isResizedRatioOverHalfAreaWhenInit =
-          baseScale === 'init' &&
-          100 <= result &&
-          ((fitHeight <= fitWidth &&
-            canvas.offsetHeight / 2 < targetImage.naturalHeight * result) ||
-            (fitWidth <= fitHeight && canvas.offsetWidth / 2 < targetImage.naturalWidth * result));
-
-        if (isResizedRatioOverHalfAreaWhenInit) {
-          const fitHeight = (canvas.offsetHeight * 0.5) / targetImage.naturalHeight;
-          const fitWidth = (canvas.offsetWidth * 0.5) / targetImage.naturalWidth;
-          return Math.floor(Math.min(fitHeight, fitWidth) * 100);
-        }
-
-        return result;
-      }
-
-      return baseScale;
-    })();
-
-    setImageData(targetImage, {
-      scale,
-    });
-
-    const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;
-
-    canvas.scroll({
-      top: (scrollHeight - offsetHeight) / 2,
-      left: (scrollWidth - offsetWidth) / 2,
-    });
-  };
-  const resizeSupport = () => {
-    let setTimeoutId = -1;
-    const wheelEvent = new Event('wheel');
-
-    window.addEventListener('resize', () => {
-      clearTimeout(setTimeoutId);
-
-      setTimeoutId = setTimeout(() => {
-        if (dialog.open && STATE.currentImageElement) {
-          canvas.dispatchEvent(wheelEvent);
-          zoomAndScrollInit(STATE.currentImageElement);
-        }
-      }, 300);
-    });
-  };
-  const createImageList = (() => {
-    // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
-    let imagesCache: {
-      src: string;
-      alt: string;
-      isError: boolean;
-      originalElement: SVGElement | HTMLElement;
-    }[] = [];
-
-    return (noRecreate: boolean = false) => {
-      const fragment = document.createDocumentFragment();
-      const images = noRecreate
-        ? imagesCache
-        : [...document.querySelectorAll<HTMLImageElement | SVGElement | HTMLElement>(SELECTOR)]
-            .map((originalElement) => {
-              if (originalElement instanceof HTMLImageElement) {
-                const result = {
-                  src: originalElement.src,
-                  alt: originalElement.alt.trim(),
-                  isError: false,
-                  originalElement,
-                };
-
-                // support lazyload by script
-                const handleLoad = async () => {
-                  const clonedImage = document.createElement('img');
-                  result.src = originalElement.src;
-                  result.alt = originalElement.alt;
-                  clonedImage.src = originalElement.src;
-                  clonedImage.alt = originalElement.alt;
-
-                  setImageData(
-                    originalElement,
-                    {
-                      clonedImage,
-                    },
-                    true,
-                  );
-                  await getFileSize(clonedImage);
-                  setImageData(
-                    clonedImage,
-                    {
-                      isInDialog: true,
-                      origin: originalElement,
-                    },
-                    true,
-                  );
-                };
-
-                originalElement.addEventListener('load', () => {
-                  void handleLoad();
-                });
-                originalElement.addEventListener('error', () => {
-                  result.isError = true;
-                });
-
-                return result;
-              }
-
-              const isSVG = originalElement instanceof SVGElement;
-              const pseudoImage = isSVG
-                ? convertedSvgMap.get(originalElement)
-                : convertedDummyMap.get(originalElement);
-
-              if (pseudoImage) {
-                return {
-                  src: pseudoImage.src,
-                  alt: pseudoImage.alt,
-                  isError: false,
-                  originalElement,
-                };
-              }
-
-              const newPseudoImage = isSVG
-                ? convertSVGToImg(originalElement)
-                : convertDummyElementToImg(originalElement);
-
-              if (!newPseudoImage) {
-                return null;
-              }
-
-              const src = newPseudoImage.src;
-              const alt =
-                newPseudoImage.getAttribute('aria-label') ??
-                newPseudoImage.querySelector('title')?.textContent?.trim() ??
-                '';
-
-              return {
-                src,
-                alt,
-                isError: false,
-                originalElement,
-              };
-            })
-            .filter((current): current is (typeof imagesCache)[number] => {
-              return typeof current !== 'undefined' && current !== null;
-            })
-            .filter((current, index, self) => {
-              return self.findIndex((element) => element?.src === current.src) == index;
-            });
-
-      const onkeydown = (e: KeyboardEvent) => {
-        const self = e.currentTarget;
-
-        if (e.altKey || e.ctrlKey) {
-          return;
-        }
-
-        if (self instanceof HTMLButtonElement) {
-          const buttons = [
-            ...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? []),
-          ];
-          const index = buttons.indexOf(self);
-
-          if (e.key.startsWith('Arrow')) {
-            e.preventDefault();
-          }
-
-          switch (e.key) {
-            case 'Home':
-              buttons[0]?.click();
-              break;
-            case 'End':
-              buttons[buttons.length - 1]?.click();
-              break;
-            case 'ArrowRight':
-              (buttons[index + 1] || buttons[0])?.click();
-              break;
-            case 'ArrowLeft':
-              (buttons[index - 1] || buttons[buttons.length - 1])?.click();
-              break;
-            case 'ArrowUp': {
-              (
-                buttons[index - IMAGE_LIST_COLS] ||
-                buttons[Math.floor(buttons.length / IMAGE_LIST_COLS) * IMAGE_LIST_COLS + index] ||
-                buttons[
-                  Math.floor(
-                    (buttons.length - (buttons.length % IMAGE_LIST_COLS)) / IMAGE_LIST_COLS,
-                  ) *
-                    IMAGE_LIST_COLS +
-                    index -
-                    IMAGE_LIST_COLS
-                ]
-              )?.click();
-              break;
-            }
-            case 'ArrowDown': {
-              const rest = index % IMAGE_LIST_COLS;
-              (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0])?.click();
-              break;
-            }
-          }
-        }
-      };
-      const listItems = images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
-        if (isError) {
-          return [];
-        }
-
-        const listItem = document.createElement('li');
-        const button = document.createElement('button');
-
-        button.tabIndex = -1;
-        button.addEventListener('click', () => {
-          if (originalElement instanceof HTMLImageElement) {
-            STATE.currentImageElement = originalElement;
-          } else if (originalElement instanceof SVGElement) {
-            const svg = convertedSvgMap.get(originalElement);
-
-            if (svg) {
-              STATE.currentImageElement = svg;
-            }
-          } else {
-            const dummy = convertedDummyMap.get(originalElement);
-
-            if (dummy) {
-              STATE.currentImageElement = dummy;
-            }
-          }
-
-          if (!STATE.currentImageElement) {
-            return;
-          }
-
-          if (button.getAttribute('aria-current') !== 'true') {
-            void showDialog({ noCreateImageList: true });
-          }
-        });
-        button.addEventListener('keydown', onkeydown);
-
-        listItem.className = 'image-list-item';
-        button.className = 'image-list-item-button';
-
-        if (STATE.currentImageElement?.src === src) {
-          button.setAttribute('aria-current', 'true');
-          button.tabIndex = 0;
-        }
-
-        button.insertAdjacentHTML('afterbegin', `<img />`);
-
-        const img = button.firstElementChild as HTMLImageElement;
-
-        img.src = src;
-        img.onerror = () => {
-          listItem.remove();
-
-          const target = self[index];
-
-          if (target) {
-            target.isError = true;
-          }
-        };
-
-        // alt がない時、image_list_no_alt を alt に指定するとここの alt が拾われてしまうため、aria-label を使用する
-        if (alt) {
-          img.alt = alt;
-        } else {
-          img.setAttribute('aria-label', chrome.i18n.getMessage('image_list_no_alt'));
-        }
-
-        listItem.append(button);
-
-        return listItem;
-      });
-
-      fragment.append(...listItems);
-      formControls.imageList.textContent = '';
-      formControls.imageList.append(fragment);
-
-      const buttons = [...formControls.imageList.querySelectorAll('button')];
-      const current = buttons.find((button) => button.getAttribute('aria-current') === 'true');
-      const currentIndex = current ? buttons.indexOf(current) : -1;
-      const viewCurrentIndex = () => {
-        formControls.imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
-      };
-
-      if (noRecreate) {
-        viewCurrentIndex();
-
-        if (current) {
-          // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
-          const imageListRect = formControls.imageList.getBoundingClientRect();
-          const targetRect = current.getBoundingClientRect();
-          const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
-          const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
-
-          if (isNotVisibleTop) {
-            setTimeout(() => {
-              formControls.imageList.scrollBy(
-                0,
-                targetRect.top - imageListRect.top - IMAGE_LIST_GAP,
-              );
-            }, 0);
-          } else if (isNotVisibleBottom) {
-            setTimeout(() => {
-              formControls.imageList.scrollBy(
-                0,
-                targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP,
-              );
-            }, 0);
-          }
-        }
-
-        current?.focus();
-      } else {
-        imagesCache = images;
-        formControls.imageList.classList.add('invisible');
-
-        setTimeout(() => {
-          formControls.imageList.classList.remove('invisible');
-          viewCurrentIndex();
-          current?.scrollIntoView(false);
-        }, 300);
-      }
-    };
-  })();
-
-  dialog.append(canvas);
-  dialog.append(details);
-  canvas.insertAdjacentHTML('afterend', SPINNER);
-  shadowRoot.appendChild(style);
-  shadowRoot.appendChild(dialog);
-  document.body.appendChild(imageViewer);
-
-  window.addEventListener('load', () => {
-    // for front-end frameworks
-    if (!document.body.contains(imageViewer)) {
-      document.body.appendChild(imageViewer);
     }
   });
 
-  resizeSupport();
+  const stopPropagation = (e: Event) => e.stopPropagation();
+  scale.addEventListener('wheel', stopPropagation);
+  rotate.addEventListener('wheel', stopPropagation);
+  imageList.addEventListener('wheel', stopPropagation);
+  imageList.addEventListener('keydown', (e) => {
+    e.stopPropagation();
 
-  const getFileSize = createGetFileSize({ setImageData });
+    if (e.key.startsWith('Arrow')) {
+      e.preventDefault();
+    }
+  });
+
+  // bgcolor
+  const custom = element.querySelector<HTMLInputElement>('#background-custom');
+  const bright = element.querySelector<HTMLButtonElement>('#background-bright');
+  const dark = element.querySelector<HTMLButtonElement>('#background-dark');
+  const inputEvent = new Event('input');
+
+  if (custom) {
+    bright?.addEventListener('click', () => {
+      custom.value = '#fafafa';
+      custom.dispatchEvent(inputEvent);
+    });
+    dark?.addEventListener('click', () => {
+      custom.value = '#202124';
+      custom.dispatchEvent(inputEvent);
+    });
+
+    custom.addEventListener('input', () => {
+      dialog.style.cssText = `--canvas-background: ${custom.value}`;
+      void chrome.storage.local.set({
+        background: custom.value,
+      });
+    });
+
+    chrome.storage.local.get('background', ({ background }) => {
+      if (typeof background === 'string' && background) {
+        custom.value = background;
+        custom.dispatchEvent(inputEvent);
+      }
+    });
+  }
+
+  const resolveRenderMode = (value: string): RenderingMode => {
+    const types: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
+    const isInvalid = (value: string): value is RenderingMode =>
+      types.some((type) => type === value);
+
+    if (isInvalid(value)) {
+      return value;
+    }
+
+    return defaultState.render;
+  };
+
+  render.addEventListener('change', () => {
+    updateState({
+      render: resolveRenderMode(render.value),
+    });
+  });
+
+  const ui = document.createDocumentFragment();
+
+  ui.append(closeBtnForPortrait);
+  ui.append(element);
 
   return {
-    imageViewer,
-    showDialog: async (option?: { noCreateImageList?: boolean }) => {
-      const noCreateImageList = option?.noCreateImageList ?? false;
+    details: ui,
+    formControls: {
+      url,
+      alt,
+      size,
+      type,
+      naturalWidth,
+      naturalHeight,
+      aspect,
+      // srcset,
+      scale,
+      rotate,
+      reverse,
+      border,
+      render,
+      imageList,
+      imageListInfo,
+    },
+  };
+})();
 
-      if (!dialog.open) {
-        dialog.showModal();
+const setInputValues = (imageData: StyleData) => {
+  if (!imageData.isInDialog || !STATE.currentImageElement) {
+    return;
+  }
+
+  formControls.url.value = STATE.currentImageElement.src;
+  // alt 以外のアクセシブルネームをサポートするかどうか
+  formControls.alt.value = STATE.currentImageElement.alt;
+  formControls.size.value = imageData.fileSize;
+  formControls.type.value = imageData.fileType;
+  formControls.naturalWidth.value = `${STATE.currentImageElement.naturalWidth} px`;
+  formControls.naturalHeight.value = `${STATE.currentImageElement.naturalHeight} px`;
+
+  const getAspectRatio = (width: number, height: number) => {
+    const getGCD = (a: number, b: number): number => {
+      if (b === 0) {
+        return a;
       }
 
-      const showImageInDialog = async (resolve: () => void) => {
+      return getGCD(b, a % b);
+    };
+
+    const gcd = getGCD(width, height);
+    const ratio = `${width / gcd} : ${height / gcd}`;
+
+    return ratio;
+  };
+
+  formControls.aspect.value = getAspectRatio(
+    STATE.currentImageElement.naturalWidth,
+    STATE.currentImageElement.naturalHeight,
+  );
+
+  // formControls.srcset.value = hhhhhhh
+  formControls.scale.value = String(imageData.scale);
+  formControls.rotate.value = String(imageData.rotate);
+  formControls.reverse.checked = imageData.reverse;
+  formControls.border.checked = STATE.hasBorder;
+  formControls.render.value = imageData.render;
+};
+
+const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
+const style = buildStyleElement();
+const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
+const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
+const zoomAndScrollInit = (targetImage: HTMLImageElement, scaleValue?: number | 'init' | 'fit') => {
+  const scale = (() => {
+    const baseScale = scaleValue ?? getImageData(targetImage).scale;
+
+    if (typeof baseScale === 'string') {
+      const fitHeight = (canvas.offsetHeight - 100) / targetImage.naturalHeight;
+      const fitWidth = (canvas.offsetWidth - 100) / targetImage.naturalWidth;
+      const result = Math.floor(Math.min(fitHeight, fitWidth) * 100);
+
+      const isResizedRatioOverHalfAreaWhenInit =
+        baseScale === 'init' &&
+        100 <= result &&
+        ((fitHeight <= fitWidth && canvas.offsetHeight / 2 < targetImage.naturalHeight * result) ||
+          (fitWidth <= fitHeight && canvas.offsetWidth / 2 < targetImage.naturalWidth * result));
+
+      if (isResizedRatioOverHalfAreaWhenInit) {
+        const fitHeight = (canvas.offsetHeight * 0.5) / targetImage.naturalHeight;
+        const fitWidth = (canvas.offsetWidth * 0.5) / targetImage.naturalWidth;
+        return Math.floor(Math.min(fitHeight, fitWidth) * 100);
+      }
+
+      return result;
+    }
+
+    return baseScale;
+  })();
+
+  setImageData(targetImage, {
+    scale,
+  });
+
+  const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;
+
+  canvas.scroll({
+    top: (scrollHeight - offsetHeight) / 2,
+    left: (scrollWidth - offsetWidth) / 2,
+  });
+};
+const resizeSupport = () => {
+  let setTimeoutId = -1;
+  const wheelEvent = new Event('wheel');
+
+  window.addEventListener('resize', () => {
+    clearTimeout(setTimeoutId);
+
+    setTimeoutId = setTimeout(() => {
+      if (dialog.open && STATE.currentImageElement) {
+        canvas.dispatchEvent(wheelEvent);
+        zoomAndScrollInit(STATE.currentImageElement);
+      }
+    }, 300);
+  });
+};
+const createImageList = (() => {
+  // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
+  let imagesCache: {
+    src: string;
+    alt: string;
+    isError: boolean;
+    originalElement: SVGElement | HTMLElement;
+  }[] = [];
+
+  return (noRecreate: boolean = false) => {
+    const fragment = document.createDocumentFragment();
+    const images = noRecreate
+      ? imagesCache
+      : [...document.querySelectorAll<HTMLImageElement | SVGElement | HTMLElement>(SELECTOR)]
+          .map((originalElement) => {
+            if (originalElement instanceof HTMLImageElement) {
+              const result = {
+                src: originalElement.src,
+                alt: originalElement.alt.trim(),
+                isError: false,
+                originalElement,
+              };
+
+              // support lazyload by script
+              const handleLoad = async () => {
+                const clonedImage = document.createElement('img');
+                result.src = originalElement.src;
+                result.alt = originalElement.alt;
+                clonedImage.src = originalElement.src;
+                clonedImage.alt = originalElement.alt;
+
+                setImageData(
+                  originalElement,
+                  {
+                    clonedImage,
+                  },
+                  true,
+                );
+                await getFileSize(clonedImage);
+                setImageData(
+                  clonedImage,
+                  {
+                    isInDialog: true,
+                    origin: originalElement,
+                  },
+                  true,
+                );
+              };
+
+              originalElement.addEventListener('load', () => {
+                void handleLoad();
+              });
+              originalElement.addEventListener('error', () => {
+                result.isError = true;
+              });
+
+              return result;
+            }
+
+            const isSVG = originalElement instanceof SVGElement;
+            const pseudoImage = isSVG
+              ? convertedSvgMap.get(originalElement)
+              : convertedDummyMap.get(originalElement);
+
+            if (pseudoImage) {
+              return {
+                src: pseudoImage.src,
+                alt: pseudoImage.alt,
+                isError: false,
+                originalElement,
+              };
+            }
+
+            const newPseudoImage = isSVG
+              ? convertSVGToImg(originalElement)
+              : convertDummyElementToImg(originalElement);
+
+            if (!newPseudoImage) {
+              return null;
+            }
+
+            const src = newPseudoImage.src;
+            const alt =
+              newPseudoImage.getAttribute('aria-label') ??
+              newPseudoImage.querySelector('title')?.textContent?.trim() ??
+              '';
+
+            return {
+              src,
+              alt,
+              isError: false,
+              originalElement,
+            };
+          })
+          .filter((current): current is (typeof imagesCache)[number] => {
+            return typeof current !== 'undefined' && current !== null;
+          })
+          .filter((current, index, self) => {
+            return self.findIndex((element) => element?.src === current.src) == index;
+          });
+
+    const onkeydown = (e: KeyboardEvent) => {
+      const self = e.currentTarget;
+
+      if (e.altKey || e.ctrlKey) {
+        return;
+      }
+
+      if (self instanceof HTMLButtonElement) {
+        const buttons = [
+          ...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? []),
+        ];
+        const index = buttons.indexOf(self);
+
+        if (e.key.startsWith('Arrow')) {
+          e.preventDefault();
+        }
+
+        switch (e.key) {
+          case 'Home':
+            buttons[0]?.click();
+            break;
+          case 'End':
+            buttons[buttons.length - 1]?.click();
+            break;
+          case 'ArrowRight':
+            (buttons[index + 1] || buttons[0])?.click();
+            break;
+          case 'ArrowLeft':
+            (buttons[index - 1] || buttons[buttons.length - 1])?.click();
+            break;
+          case 'ArrowUp': {
+            (
+              buttons[index - IMAGE_LIST_COLS] ||
+              buttons[Math.floor(buttons.length / IMAGE_LIST_COLS) * IMAGE_LIST_COLS + index] ||
+              buttons[
+                Math.floor(
+                  (buttons.length - (buttons.length % IMAGE_LIST_COLS)) / IMAGE_LIST_COLS,
+                ) *
+                  IMAGE_LIST_COLS +
+                  index -
+                  IMAGE_LIST_COLS
+              ]
+            )?.click();
+            break;
+          }
+          case 'ArrowDown': {
+            const rest = index % IMAGE_LIST_COLS;
+            (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0])?.click();
+            break;
+          }
+        }
+      }
+    };
+    const listItems = images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
+      if (isError) {
+        return [];
+      }
+
+      const listItem = document.createElement('li');
+      const button = document.createElement('button');
+
+      button.tabIndex = -1;
+      button.addEventListener('click', () => {
+        if (originalElement instanceof HTMLImageElement) {
+          STATE.currentImageElement = originalElement;
+        } else if (originalElement instanceof SVGElement) {
+          const svg = convertedSvgMap.get(originalElement);
+
+          if (svg) {
+            STATE.currentImageElement = svg;
+          }
+        } else {
+          const dummy = convertedDummyMap.get(originalElement);
+
+          if (dummy) {
+            STATE.currentImageElement = dummy;
+          }
+        }
+
         if (!STATE.currentImageElement) {
           return;
         }
 
-        const imageData = getImageData(STATE.currentImageElement);
-        const initialScale = (() => {
-          if (
-            !('clonedImage' in imageData) ||
-            !(imageData.clonedImage instanceof HTMLImageElement)
-          ) {
-            return null;
-          }
-
-          return getImageData(imageData.clonedImage).scale;
-        })();
-
-        if (!imageData.isInDialog) {
-          if (imageData.clonedImage === null) {
-            dialog.setAttribute('aria-busy', 'true');
-            spaceElement.classList.add('loading');
-
-            const clonedImage = new Image();
-
-            clonedImage.alt = STATE.currentImageElement.alt;
-            clonedImage.src = STATE.currentImageElement.src;
-            clonedImage.width = STATE.currentImageElement.width;
-            clonedImage.height = STATE.currentImageElement.height;
-
-            const isError = await new Promise<boolean>((done) => {
-              clonedImage.onload = () => done(false);
-              clonedImage.onerror = () => done(true);
-            });
-
-            if (isError) {
-              console.log(
-                'Chrome Extension Image Manipulator: 404 ERROR',
-                STATE.currentImageElement,
-              );
-              dialog.removeAttribute('aria-busy');
-              spaceElement.classList.remove('loading');
-              return;
-            }
-
-            // ダイアログ用の画像は別で管理する
-            setImageData(clonedImage, {
-              ...imageData,
-              isInDialog: true,
-              origin: STATE.currentImageElement,
-            });
-
-            setImageData(STATE.currentImageElement, {
-              clonedImage,
-            });
-
-            STATE.currentImageElement = clonedImage;
-
-            // 容量の解決
-            await getFileSize(clonedImage).finally(() => {
-              dialog.removeAttribute('aria-busy');
-              spaceElement.classList.remove('loading');
-              zoomAndScrollInit(clonedImage, imageData.scale);
-            });
-          } else {
-            STATE.currentImageElement = imageData.clonedImage;
-            resolve();
-          }
+        if (button.getAttribute('aria-current') !== 'true') {
+          void showDialog({ noCreateImageList: true });
         }
+      });
+      button.addEventListener('keydown', onkeydown);
 
-        spaceElement.textContent = '';
-        spaceElement.append(STATE.currentImageElement);
+      listItem.className = 'image-list-item';
+      button.className = 'image-list-item-button';
 
-        createImageList(noCreateImageList);
+      if (STATE.currentImageElement?.src === src) {
+        button.setAttribute('aria-current', 'true');
+        button.tabIndex = 0;
+      }
 
-        if (dialog.open) {
-          formControls.imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
-        } else {
-          dialog.showModal();
+      button.insertAdjacentHTML('afterbegin', `<img />`);
+
+      const img = button.firstElementChild as HTMLImageElement;
+
+      img.src = src;
+      img.onerror = () => {
+        listItem.remove();
+
+        const target = self[index];
+
+        if (target) {
+          target.isError = true;
         }
-
-        zoomAndScrollInit(STATE.currentImageElement, initialScale || 'init');
-        setInputValues(imageData);
-        resolve();
       };
 
-      return await new Promise<void>((resolve) => {
-        void showImageInDialog(resolve);
-      });
-    },
-    setImageData,
+      // alt がない時、image_list_no_alt を alt に指定するとここの alt が拾われてしまうため、aria-label を使用する
+      if (alt) {
+        img.alt = alt;
+      } else {
+        img.setAttribute('aria-label', chrome.i18n.getMessage('image_list_no_alt'));
+      }
+
+      listItem.append(button);
+
+      return listItem;
+    });
+
+    fragment.append(...listItems);
+    formControls.imageList.textContent = '';
+    formControls.imageList.append(fragment);
+
+    const buttons = [...formControls.imageList.querySelectorAll('button')];
+    const current = buttons.find((button) => button.getAttribute('aria-current') === 'true');
+    const currentIndex = current ? buttons.indexOf(current) : -1;
+    const viewCurrentIndex = () => {
+      formControls.imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
+    };
+
+    if (noRecreate) {
+      viewCurrentIndex();
+
+      if (current) {
+        // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
+        const imageListRect = formControls.imageList.getBoundingClientRect();
+        const targetRect = current.getBoundingClientRect();
+        const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
+        const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
+
+        if (isNotVisibleTop) {
+          setTimeout(() => {
+            formControls.imageList.scrollBy(0, targetRect.top - imageListRect.top - IMAGE_LIST_GAP);
+          }, 0);
+        } else if (isNotVisibleBottom) {
+          setTimeout(() => {
+            formControls.imageList.scrollBy(
+              0,
+              targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP,
+            );
+          }, 0);
+        }
+      }
+
+      current?.focus();
+    } else {
+      imagesCache = images;
+      formControls.imageList.classList.add('invisible');
+
+      setTimeout(() => {
+        formControls.imageList.classList.remove('invisible');
+        viewCurrentIndex();
+        current?.scrollIntoView(false);
+      }, 300);
+    }
   };
 })();
+
+dialog.append(canvas);
+dialog.append(details);
+canvas.insertAdjacentHTML('afterend', SPINNER);
+shadowRoot.appendChild(style);
+shadowRoot.appendChild(dialog);
+document.body.appendChild(imageViewer);
+
+window.addEventListener('load', () => {
+  // for front-end frameworks
+  if (!document.body.contains(imageViewer)) {
+    document.body.appendChild(imageViewer);
+  }
+});
+
+resizeSupport();
+
+const getFileSize = createGetFileSize({ setImageData });
+
+const showDialog = async (option?: { noCreateImageList?: boolean }) => {
+  const noCreateImageList = option?.noCreateImageList ?? false;
+
+  if (!dialog.open) {
+    dialog.showModal();
+  }
+
+  const showImageInDialog = async (resolve: () => void) => {
+    if (!STATE.currentImageElement) {
+      return;
+    }
+
+    const imageData = getImageData(STATE.currentImageElement);
+    const initialScale = (() => {
+      if (!('clonedImage' in imageData) || !(imageData.clonedImage instanceof HTMLImageElement)) {
+        return null;
+      }
+
+      return getImageData(imageData.clonedImage).scale;
+    })();
+
+    if (!imageData.isInDialog) {
+      if (imageData.clonedImage === null) {
+        dialog.setAttribute('aria-busy', 'true');
+        spaceElement.classList.add('loading');
+
+        const clonedImage = new Image();
+
+        clonedImage.alt = STATE.currentImageElement.alt;
+        clonedImage.src = STATE.currentImageElement.src;
+        clonedImage.width = STATE.currentImageElement.width;
+        clonedImage.height = STATE.currentImageElement.height;
+
+        const isError = await new Promise<boolean>((done) => {
+          clonedImage.onload = () => done(false);
+          clonedImage.onerror = () => done(true);
+        });
+
+        if (isError) {
+          console.log('Chrome Extension Image Manipulator: 404 ERROR', STATE.currentImageElement);
+          dialog.removeAttribute('aria-busy');
+          spaceElement.classList.remove('loading');
+          return;
+        }
+
+        // ダイアログ用の画像は別で管理する
+        setImageData(clonedImage, {
+          ...imageData,
+          isInDialog: true,
+          origin: STATE.currentImageElement,
+        });
+
+        setImageData(STATE.currentImageElement, {
+          clonedImage,
+        });
+
+        STATE.currentImageElement = clonedImage;
+
+        // 容量の解決
+        await getFileSize(clonedImage).finally(() => {
+          dialog.removeAttribute('aria-busy');
+          spaceElement.classList.remove('loading');
+          zoomAndScrollInit(clonedImage, imageData.scale);
+        });
+      } else {
+        STATE.currentImageElement = imageData.clonedImage;
+        resolve();
+      }
+    }
+
+    spaceElement.textContent = '';
+    spaceElement.append(STATE.currentImageElement);
+
+    createImageList(noCreateImageList);
+
+    if (dialog.open) {
+      formControls.imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+    } else {
+      dialog.showModal();
+    }
+
+    zoomAndScrollInit(STATE.currentImageElement, initialScale || 'init');
+    setInputValues(imageData);
+    resolve();
+  };
+
+  return await new Promise<void>((resolve) => {
+    void showImageInDialog(resolve);
+  });
+};
 
 const resolveTarget = (target: EventTarget | null) => {
   const getElement = () => {
