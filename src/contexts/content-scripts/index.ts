@@ -2,6 +2,7 @@ import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
 import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderers';
+import { STATE } from '@/contexts/content-scripts/state';
 import {
   convertDummyElementToImg,
   convertedDummyMap,
@@ -11,8 +12,6 @@ import {
   convertSVGToImg,
 } from '@/contexts/content-scripts/utils';
 
-let currentImageElement: HTMLImageElement | null = null;
-let hasBorder = false;
 const SELECTOR = 'img, svg, [style*="url("]';
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
 const defaultState: StyleData = {
@@ -71,7 +70,7 @@ const createSetImageData = ({
 
     img.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
 
-    if (hasBorder) {
+    if (STATE.hasBorder) {
       img.classList.add('has-border');
     } else {
       img.classList.remove('has-border');
@@ -176,11 +175,11 @@ const { canvas, spaceElement } = buildCanvas();
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
 
-  if (!currentImageElement) {
+  if (!STATE.currentImageElement) {
     return;
   }
 
-  const imageData = getImageData(currentImageElement);
+  const imageData = getImageData(STATE.currentImageElement);
   const mode = e.shiftKey ? 'rotate' : 'zoom';
 
   if (mode === 'rotate') {
@@ -224,7 +223,7 @@ canvas.addEventListener('wheel', (e) => {
     }
   }
 
-  setImageData(currentImageElement, {
+  setImageData(STATE.currentImageElement, {
     ...imageData,
   });
 });
@@ -537,8 +536,8 @@ const { imageViewer, showDialog, setImageData } = (() => {
     const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
 
     const updateState = (options: Options) => {
-      if (currentImageElement) {
-        setImageData(currentImageElement, {
+      if (STATE.currentImageElement) {
+        setImageData(STATE.currentImageElement, {
           ...options,
         });
       }
@@ -553,11 +552,11 @@ const { imageViewer, showDialog, setImageData } = (() => {
     });
 
     scaleFit.addEventListener('click', () => {
-      if (currentImageElement) {
+      if (STATE.currentImageElement) {
         updateState({
           scale: 100,
         });
-        zoomAndScrollInit(currentImageElement, 'fit');
+        zoomAndScrollInit(STATE.currentImageElement, 'fit');
       }
     });
 
@@ -600,7 +599,7 @@ const { imageViewer, showDialog, setImageData } = (() => {
     });
 
     border.addEventListener('input', () => {
-      hasBorder = border.checked;
+      STATE.hasBorder = border.checked;
       updateState({});
     });
 
@@ -645,11 +644,11 @@ const { imageViewer, showDialog, setImageData } = (() => {
     });
 
     searchButton.addEventListener('click', () => {
-      if (!currentImageElement) {
+      if (!STATE.currentImageElement) {
         return;
       }
 
-      const data = getImageData(currentImageElement);
+      const data = getImageData(STATE.currentImageElement);
 
       if (data.isInDialog) {
         if (data.origin) {
@@ -827,17 +826,17 @@ const { imageViewer, showDialog, setImageData } = (() => {
   })();
 
   const setInputValues = (imageData: StyleData) => {
-    if (!imageData.isInDialog || !currentImageElement) {
+    if (!imageData.isInDialog || !STATE.currentImageElement) {
       return;
     }
 
-    formControls.url.value = currentImageElement.src;
+    formControls.url.value = STATE.currentImageElement.src;
     // alt 以外のアクセシブルネームをサポートするかどうか
-    formControls.alt.value = currentImageElement.alt;
+    formControls.alt.value = STATE.currentImageElement.alt;
     formControls.size.value = imageData.fileSize;
     formControls.type.value = imageData.fileType;
-    formControls.naturalWidth.value = `${currentImageElement.naturalWidth} px`;
-    formControls.naturalHeight.value = `${currentImageElement.naturalHeight} px`;
+    formControls.naturalWidth.value = `${STATE.currentImageElement.naturalWidth} px`;
+    formControls.naturalHeight.value = `${STATE.currentImageElement.naturalHeight} px`;
 
     const getAspectRatio = (width: number, height: number) => {
       const getGCD = (a: number, b: number): number => {
@@ -855,15 +854,15 @@ const { imageViewer, showDialog, setImageData } = (() => {
     };
 
     formControls.aspect.value = getAspectRatio(
-      currentImageElement.naturalWidth,
-      currentImageElement.naturalHeight,
+      STATE.currentImageElement.naturalWidth,
+      STATE.currentImageElement.naturalHeight,
     );
 
     // formControls.srcset.value = hhhhhhh
     formControls.scale.value = String(imageData.scale);
     formControls.rotate.value = String(imageData.rotate);
     formControls.reverse.checked = imageData.reverse;
-    formControls.border.checked = hasBorder;
+    formControls.border.checked = STATE.hasBorder;
     formControls.render.value = imageData.render;
   };
 
@@ -921,9 +920,9 @@ const { imageViewer, showDialog, setImageData } = (() => {
       clearTimeout(setTimeoutId);
 
       setTimeoutId = setTimeout(() => {
-        if (dialog.open && currentImageElement) {
+        if (dialog.open && STATE.currentImageElement) {
           canvas.dispatchEvent(wheelEvent);
-          zoomAndScrollInit(currentImageElement);
+          zoomAndScrollInit(STATE.currentImageElement);
         }
       }, 300);
     });
@@ -1093,22 +1092,22 @@ const { imageViewer, showDialog, setImageData } = (() => {
         button.tabIndex = -1;
         button.addEventListener('click', () => {
           if (originalElement instanceof HTMLImageElement) {
-            currentImageElement = originalElement;
+            STATE.currentImageElement = originalElement;
           } else if (originalElement instanceof SVGElement) {
             const svg = convertedSvgMap.get(originalElement);
 
             if (svg) {
-              currentImageElement = svg;
+              STATE.currentImageElement = svg;
             }
           } else {
             const dummy = convertedDummyMap.get(originalElement);
 
             if (dummy) {
-              currentImageElement = dummy;
+              STATE.currentImageElement = dummy;
             }
           }
 
-          if (!currentImageElement) {
+          if (!STATE.currentImageElement) {
             return;
           }
 
@@ -1121,7 +1120,7 @@ const { imageViewer, showDialog, setImageData } = (() => {
         listItem.className = 'image-list-item';
         button.className = 'image-list-item-button';
 
-        if (currentImageElement?.src === src) {
+        if (STATE.currentImageElement?.src === src) {
           button.setAttribute('aria-current', 'true');
           button.tabIndex = 0;
         }
@@ -1233,11 +1232,11 @@ const { imageViewer, showDialog, setImageData } = (() => {
       }
 
       const showImageInDialog = async (resolve: () => void) => {
-        if (!currentImageElement) {
+        if (!STATE.currentImageElement) {
           return;
         }
 
-        const imageData = getImageData(currentImageElement);
+        const imageData = getImageData(STATE.currentImageElement);
         const initialScale = (() => {
           if (
             !('clonedImage' in imageData) ||
@@ -1256,10 +1255,10 @@ const { imageViewer, showDialog, setImageData } = (() => {
 
             const clonedImage = new Image();
 
-            clonedImage.alt = currentImageElement.alt;
-            clonedImage.src = currentImageElement.src;
-            clonedImage.width = currentImageElement.width;
-            clonedImage.height = currentImageElement.height;
+            clonedImage.alt = STATE.currentImageElement.alt;
+            clonedImage.src = STATE.currentImageElement.src;
+            clonedImage.width = STATE.currentImageElement.width;
+            clonedImage.height = STATE.currentImageElement.height;
 
             const isError = await new Promise<boolean>((done) => {
               clonedImage.onload = () => done(false);
@@ -1267,7 +1266,10 @@ const { imageViewer, showDialog, setImageData } = (() => {
             });
 
             if (isError) {
-              console.log('Chrome Extension Image Manipulator: 404 ERROR', currentImageElement);
+              console.log(
+                'Chrome Extension Image Manipulator: 404 ERROR',
+                STATE.currentImageElement,
+              );
               dialog.removeAttribute('aria-busy');
               spaceElement.classList.remove('loading');
               return;
@@ -1277,14 +1279,14 @@ const { imageViewer, showDialog, setImageData } = (() => {
             setImageData(clonedImage, {
               ...imageData,
               isInDialog: true,
-              origin: currentImageElement,
+              origin: STATE.currentImageElement,
             });
 
-            setImageData(currentImageElement, {
+            setImageData(STATE.currentImageElement, {
               clonedImage,
             });
 
-            currentImageElement = clonedImage;
+            STATE.currentImageElement = clonedImage;
 
             // 容量の解決
             await getFileSize(clonedImage).finally(() => {
@@ -1293,13 +1295,13 @@ const { imageViewer, showDialog, setImageData } = (() => {
               zoomAndScrollInit(clonedImage, imageData.scale);
             });
           } else {
-            currentImageElement = imageData.clonedImage;
+            STATE.currentImageElement = imageData.clonedImage;
             resolve();
           }
         }
 
         spaceElement.textContent = '';
-        spaceElement.append(currentImageElement);
+        spaceElement.append(STATE.currentImageElement);
 
         createImageList(noCreateImageList);
 
@@ -1309,7 +1311,7 @@ const { imageViewer, showDialog, setImageData } = (() => {
           dialog.showModal();
         }
 
-        zoomAndScrollInit(currentImageElement, initialScale || 'init');
+        zoomAndScrollInit(STATE.currentImageElement, initialScale || 'init');
         setInputValues(imageData);
         resolve();
       };
@@ -1328,8 +1330,8 @@ const resolveTarget = (target: EventTarget | null) => {
       return null;
     }
 
-    if (currentImageElement instanceof HTMLImageElement && target === imageViewer) {
-      return currentImageElement;
+    if (STATE.currentImageElement instanceof HTMLImageElement && target === imageViewer) {
+      return STATE.currentImageElement;
     }
 
     if (target instanceof HTMLImageElement || target instanceof SVGElement) {
@@ -1416,7 +1418,7 @@ const resolveTarget = (target: EventTarget | null) => {
 };
 
 chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _, sendResponse) => {
-  const targetElement = currentImageElement;
+  const targetElement = STATE.currentImageElement;
 
   sendResponse(true);
 
@@ -1523,7 +1525,7 @@ const onContextmenu = ({ target }: MouseEvent) => {
   const targetImage = resolveTarget(target);
 
   if (!(targetImage instanceof HTMLImageElement)) {
-    currentImageElement = null;
+    STATE.currentImageElement = null;
     console.log('Chrome Extension Image Manipulator: No image');
 
     return;
@@ -1538,7 +1540,7 @@ const onContextmenu = ({ target }: MouseEvent) => {
           targetImage.getAttribute('style') || '';
       }
 
-      currentImageElement = targetImage;
+      STATE.currentImageElement = targetImage;
     }
   }
 };
