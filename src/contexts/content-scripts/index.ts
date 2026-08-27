@@ -1,9 +1,9 @@
 import { SPINNER } from '@/contexts/content-scripts/assets';
 import {
-  getEditableFields,
-  renderEditable,
-  setEditableValues,
-} from '@/contexts/content-scripts/components/editable';
+  getImageControllerFields,
+  renderImageController,
+  setImageControllerValues,
+} from '@/contexts/content-scripts/components/image-controller';
 import {
   renderImageInfo,
   setImageInfoValues,
@@ -108,7 +108,7 @@ const { details, formControls } = (() => {
   );
 
   renderImageInfo(element);
-  renderEditable(element);
+  renderImageController(element);
 
   element.insertAdjacentHTML(
     'beforeend',
@@ -166,7 +166,7 @@ const { details, formControls } = (() => {
     backgroundCustom,
     backgroundBright,
     backgroundDark,
-  } = getEditableFields();
+  } = getImageControllerFields();
   const imageListButtons = {
     reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
     prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
@@ -454,7 +454,7 @@ const setInputValues = (imageData: StyleData) => {
 
   // alt 以外のアクセシブルネームをサポートするかどうか
   setImageInfoValues(imageData);
-  setEditableValues(imageData);
+  setImageControllerValues(imageData);
 };
 
 const setImageData = createSetImageData({ setInputValues });

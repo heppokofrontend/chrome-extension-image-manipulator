@@ -1,10 +1,10 @@
-import { getEditableFields } from '../renderers';
+import { getImageControllerFields } from '../renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 
-export const setEditableValues = (
+export const setImageControllerValues = (
   imageData: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
 ) => {
-  const fields = getEditableFields();
+  const fields = getImageControllerFields();
 
   fields.scale.value = String(imageData.scale);
   fields.rotate.value = String(imageData.rotate);
