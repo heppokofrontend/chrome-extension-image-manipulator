@@ -1,4 +1,8 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
+import {
+  renderDetailsMain,
+  setDetailsMainValues,
+} from '@/contexts/content-scripts/components/details-main';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
 import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
@@ -95,107 +99,14 @@ const { details, formControls } = (() => {
       <p class="close">
         <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
       </p>
+    `,
+  );
 
-      <div id="details-main">
-        <div id="readonly">
-          <p class="row">
-            <label class="label" for="alt">${chrome.i18n.getMessage('readOnly_alt')}</label>
-            <span class="control">
-              <input
-                id="alt"
-                value=""
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="url">${chrome.i18n.getMessage('readOnly_url')}</label>
-            <span class="control">
-              <input
-                id="url"
-                value=""
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="type">${chrome.i18n.getMessage('readOnly_fileType')}</label>
-            <span class="control">
-              <input
-                id="type"
-                value=""
-                class="right"
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="size">${chrome.i18n.getMessage('readOnly_fileSize')}</label>
-            <span class="control">
-              <input
-                id="size"
-                value=""
-                class="right"
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="natural-width">${chrome.i18n.getMessage(
-              'readOnly_naturalWidth',
-            )}</label>
-            <span class="control">
-              <input
-                id="natural-width"
-                value=""
-                class="right"
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="natural-height">${chrome.i18n.getMessage(
-              'readOnly_naturalHeight',
-            )}</label>
-            <span class="control">
-              <input
-                id="natural-height"
-                value=""
-                class="right"
-                readonly
-              />
-            </span>
-          </p>
-          <p class="row">
-            <label class="label" for="aspect">${chrome.i18n.getMessage('readOnly_aspect')}</label>
-            <span class="control">
-              <input
-                id="aspect"
-                value=""
-                class="right"
-                readonly
-              />
-            </span>
-          </p>
+  renderDetailsMain(element);
 
-          ${
-            /*
-          <p class="row">
-            <label class="label" for="srcset-${ratio}">srcset ${ratio}</label>
-            <span class="control">
-              <input
-                id="srcset-${ratio}"
-                value=""
-                readonly
-              />
-            </span>
-          </p>
-          */
-            ''
-          }
-        </div>
-      </div>
-
+  element.insertAdjacentHTML(
+    'beforeend',
+    `
       <div id="editable">
         <div class="checkbox-group">
           <p class="row">
@@ -355,14 +266,6 @@ const { details, formControls } = (() => {
 
   element.querySelector('button')?.addEventListener('click', closeHandler);
 
-  const url = element.querySelector<HTMLInputElement>('#url')!;
-  const alt = element.querySelector<HTMLInputElement>('#alt')!;
-  const size = element.querySelector<HTMLInputElement>('#size')!;
-  const type = element.querySelector<HTMLInputElement>('#type')!;
-  const naturalWidth = element.querySelector<HTMLInputElement>('#natural-width')!;
-  const naturalHeight = element.querySelector<HTMLInputElement>('#natural-height')!;
-  const aspect = element.querySelector<HTMLInputElement>('#aspect')!;
-  // const srcset = element.querySelector<HTMLInputElement>('#srcset')!;
   const scale = element.querySelector<HTMLInputElement>('#scale')!;
   const scaleFit = element.querySelector<HTMLInputElement>('#scale-fit')!;
   const scale100 = element.querySelector<HTMLInputElement>('#scale-100')!;
@@ -651,13 +554,6 @@ const { details, formControls } = (() => {
   return {
     details: ui,
     formControls: {
-      url,
-      alt,
-      size,
-      type,
-      naturalWidth,
-      naturalHeight,
-      aspect,
       // srcset,
       scale,
       rotate,
@@ -675,33 +571,8 @@ const setInputValues = (imageData: StyleData) => {
     return;
   }
 
-  formControls.url.value = STATE.currentImageElement.src;
   // alt 以外のアクセシブルネームをサポートするかどうか
-  formControls.alt.value = STATE.currentImageElement.alt;
-  formControls.size.value = imageData.fileSize;
-  formControls.type.value = imageData.fileType;
-  formControls.naturalWidth.value = `${STATE.currentImageElement.naturalWidth} px`;
-  formControls.naturalHeight.value = `${STATE.currentImageElement.naturalHeight} px`;
-
-  const getAspectRatio = (width: number, height: number) => {
-    const getGCD = (a: number, b: number): number => {
-      if (b === 0) {
-        return a;
-      }
-
-      return getGCD(b, a % b);
-    };
-
-    const gcd = getGCD(width, height);
-    const ratio = `${width / gcd} : ${height / gcd}`;
-
-    return ratio;
-  };
-
-  formControls.aspect.value = getAspectRatio(
-    STATE.currentImageElement.naturalWidth,
-    STATE.currentImageElement.naturalHeight,
-  );
+  setDetailsMainValues(imageData);
 
   // formControls.srcset.value = hhhhhhh
   formControls.scale.value = String(imageData.scale);
