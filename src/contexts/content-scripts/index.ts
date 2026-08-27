@@ -1,55 +1,20 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
+import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
-import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
+import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderers';
+import {
+  convertDummyElementToImg,
+  convertedDummyMap,
+  convertedImgToDummyMap,
+  convertedImgToSVGMap,
+  convertedSvgMap,
+  convertSVGToImg,
+} from '@/contexts/content-scripts/utils';
 
 let currentImageElement: HTMLImageElement | null = null;
 let hasBorder = false;
 const SELECTOR = 'img, svg, [style*="url("]';
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
-const convertedSvgMap: Map<SVGElement, HTMLImageElement> = new Map();
-const convertedImgToSVGMap: Map<HTMLImageElement, SVGElement> = new Map();
-const convertedDummyMap: Map<HTMLElement, HTMLImageElement> = new Map();
-const convertedImgToDummyMap: Map<HTMLImageElement, HTMLElement> = new Map();
-const convertSVGToImg = (img: SVGElement) => {
-  const pseudoImage = (() => {
-    const pseudo = convertedSvgMap.get(img);
-
-    if (pseudo) {
-      return pseudo;
-    }
-
-    const element = document.createElement('img');
-    convertedSvgMap.set(img, element);
-    convertedImgToSVGMap.set(element, img);
-    return element;
-  })();
-
-  img.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-  const svgData = img.outerHTML;
-  pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(svgData);
-  return pseudoImage;
-};
-const convertDummyElementToImg = (img: HTMLElement) => {
-  const pseudo = convertedDummyMap.get(img);
-
-  if (pseudo) {
-    return pseudo;
-  }
-
-  const element = document.createElement('img');
-  const { backgroundImage } = getComputedStyle(img);
-
-  if (backgroundImage === 'none') {
-    return null;
-  }
-
-  element.src = backgroundImage.replace(/url\("(.*)"\)/, '$1');
-
-  convertedDummyMap.set(img, element);
-  convertedImgToDummyMap.set(element, img);
-  return element;
-};
 const defaultState: StyleData = {
   isInDialog: false,
   clonedImage: null,
@@ -205,8 +170,66 @@ const createGetFileSize = ({
   };
 };
 
-const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
-  const dialog = buildDialogElement();
+const dialog = buildDialogElement();
+const { canvas, spaceElement } = buildCanvas();
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+
+  if (!currentImageElement) {
+    return;
+  }
+
+  const imageData = getImageData(currentImageElement);
+  const mode = e.shiftKey ? 'rotate' : 'zoom';
+
+  if (mode === 'rotate') {
+    switch (e.deltaY < 0 ? 'right' : 'left') {
+      case 'right':
+        imageData.rotate += 10;
+
+        if (360 <= imageData.rotate) {
+          imageData.rotate -= 360;
+        }
+
+        break;
+
+      case 'left':
+        imageData.rotate -= 10;
+
+        if (imageData.rotate < 0) {
+          imageData.rotate += 360;
+        }
+        break;
+    }
+  } else {
+    const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
+
+    switch (e.deltaY < 0 ? 'in' : 'out') {
+      case 'in':
+        if (imageData.scale === 1) {
+          imageData.scale = diff;
+        } else {
+          imageData.scale += diff;
+        }
+        break;
+
+      case 'out':
+        imageData.scale -= diff;
+
+        if (imageData.scale <= 0) {
+          imageData.scale = 1;
+        }
+        break;
+    }
+  }
+
+  setImageData(currentImageElement, {
+    ...imageData,
+  });
+});
+
+const { imageViewer, showDialog, setImageData } = (() => {
   const { details, formControls } = (() => {
     const element = document.createElement('div');
     const closeBtnForPortrait = document.createElement('button');
@@ -802,9 +825,7 @@ const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
       },
     };
   })();
-  const dialogContains = (image: HTMLImageElement) => {
-    return image ? spaceElement.contains(image) : false;
-  };
+
   const setInputValues = (imageData: StyleData) => {
     if (!imageData.isInDialog || !currentImageElement) {
       return;
@@ -846,109 +867,6 @@ const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
     formControls.render.value = imageData.render;
   };
 
-  const { canvas, spaceElement } = (() => {
-    const outer = document.createElement('div');
-    const inner = document.createElement('div');
-    const moveState = {
-      clientY: 0,
-      clientX: 0,
-      startY: 0,
-      startX: 0,
-    };
-    const moveHandler = (e: MouseEvent) => {
-      outer.scroll({
-        top: moveState.startY + moveState.clientY - e.clientY,
-        left: moveState.startX + moveState.clientX - e.clientX,
-      });
-    };
-
-    outer.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) {
-        return;
-      }
-
-      e.preventDefault();
-
-      moveState.clientY = e.clientY;
-      moveState.clientX = e.clientX;
-      moveState.startX = outer.scrollLeft ?? 0;
-      moveState.startY = outer.scrollTop ?? 0;
-      window.addEventListener('mousemove', moveHandler);
-    });
-
-    outer.addEventListener('wheel', (e) => {
-      e.preventDefault();
-
-      if (!currentImageElement) {
-        return;
-      }
-
-      const imageData = getImageData(currentImageElement);
-      const mode = e.shiftKey ? 'rotate' : 'zoom';
-
-      if (mode === 'rotate') {
-        switch (e.deltaY < 0 ? 'right' : 'left') {
-          case 'right':
-            imageData.rotate += 10;
-
-            if (360 <= imageData.rotate) {
-              imageData.rotate -= 360;
-            }
-
-            break;
-
-          case 'left':
-            imageData.rotate -= 10;
-
-            if (imageData.rotate < 0) {
-              imageData.rotate += 360;
-            }
-            break;
-        }
-      } else {
-        const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
-
-        switch (e.deltaY < 0 ? 'in' : 'out') {
-          case 'in':
-            if (imageData.scale === 1) {
-              imageData.scale = diff;
-            } else {
-              imageData.scale += diff;
-            }
-            break;
-
-          case 'out':
-            imageData.scale -= diff;
-
-            if (imageData.scale <= 0) {
-              imageData.scale = 1;
-            }
-            break;
-        }
-      }
-
-      setImageData(currentImageElement, {
-        ...imageData,
-      });
-    });
-
-    window.addEventListener('mouseup', () => {
-      window.removeEventListener('mousemove', moveHandler);
-    });
-
-    window.addEventListener('mouseleave', () => {
-      window.removeEventListener('mousemove', moveHandler);
-    });
-
-    outer.id = 'canvas';
-    inner.id = 'canvas-inner';
-    outer.append(inner);
-
-    return {
-      canvas: outer,
-      spaceElement: inner,
-    };
-  })();
   const setImageData = createSetImageData({ canvas, spaceElement, setInputValues });
   const style = buildStyleElement();
   const imageViewer = document.createElement('heppokofrontend-imagemanipulator');
@@ -1400,7 +1318,6 @@ const { imageViewer, showDialog, dialogContains, setImageData } = (() => {
         void showImageInDialog(resolve);
       });
     },
-    dialogContains,
     setImageData,
   };
 })();
@@ -1598,7 +1515,11 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   return true;
 });
 
-window.addEventListener('contextmenu', ({ target }) => {
+const dialogContains = (image: HTMLImageElement) => {
+  return image ? spaceElement.contains(image) : false;
+};
+
+const onContextmenu = ({ target }: MouseEvent) => {
   const targetImage = resolveTarget(target);
 
   if (!(targetImage instanceof HTMLImageElement)) {
@@ -1620,4 +1541,6 @@ window.addEventListener('contextmenu', ({ target }) => {
       currentImageElement = targetImage;
     }
   }
-});
+};
+
+window.addEventListener('contextmenu', onContextmenu);

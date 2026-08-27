@@ -6,14 +6,17 @@ type MessageListener = (
   sendResponse: (response: boolean) => void,
 ) => boolean | undefined;
 
-const importContentScripts = async () => {
+const importContentScripts = async (
+  options: { openShadow?: boolean; storedBackground?: string } = {},
+) => {
   let messageListener: MessageListener | undefined;
 
   vi.stubGlobal('chrome', {
     i18n: { getMessage: (key: string) => key },
     storage: {
       local: {
-        get: (_key: string, callback: (items: { background?: string }) => void) => callback({}),
+        get: (_key: string, callback: (items: { background?: string }) => void) =>
+          callback(options.storedBackground ? { background: options.storedBackground } : {}),
         set: () => Promise.resolve(),
       },
     },
@@ -26,13 +29,89 @@ const importContentScripts = async () => {
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method -- captured only to be re-applied via `.call()` below
+  const originalAttachShadow = Element.prototype.attachShadow;
+
+  if (options.openShadow) {
+    Element.prototype.attachShadow = function (this: Element, init: ShadowRootInit) {
+      return originalAttachShadow.call(this, { ...init, mode: 'open' });
+    };
+  }
+
   await import('@/contexts/content-scripts');
+
+  Element.prototype.attachShadow = originalAttachShadow;
 
   if (!messageListener) {
     throw new Error('chrome.runtime.onMessage listener was not registered');
   }
 
   return { messageListener };
+};
+
+const getShadowRoot = () => {
+  const host = document.body.querySelector('heppokofrontend-imagemanipulator');
+  const shadowRoot = host?.shadowRoot;
+
+  if (!shadowRoot) {
+    throw new Error('shadow root was not accessible (did you pass { openShadow: true }?)');
+  }
+
+  return shadowRoot;
+};
+
+const getControl = <T extends Element = HTMLElement>(id: string) => {
+  const element = getShadowRoot().getElementById(id);
+
+  if (!element) {
+    throw new Error(`control #${id} was not found in the shadow root`);
+  }
+
+  return element as unknown as T;
+};
+
+/**
+ * ダイアログ・スクロール・画像読み込みは jsdom が未実装のため、
+ * showDialog / zoomAndScrollInit / getFileSize の到達に必要な最小限をパッチする。
+ * src に "/error-image" を含めると load の代わりに error を発火させる（404 系分岐の検証用）。
+ */
+const patchDialogEnvironment = () => {
+  const restoreFns: Array<() => void> = [
+    patchPrototypeMethod(
+      HTMLDialogElement.prototype,
+      'showModal',
+      function (this: HTMLDialogElement) {
+        this.open = true;
+      },
+    ),
+    patchPrototypeMethod(HTMLDialogElement.prototype, 'close', function (this: HTMLDialogElement) {
+      this.open = false;
+    }),
+    patchPrototypeMethod(Element.prototype, 'scroll', function () {}),
+    patchPrototypeMethod(Element.prototype, 'scrollBy', function () {}),
+    patchPrototypeMethod(Element.prototype, 'scrollIntoView', function () {}),
+  ];
+
+  const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
+
+  Object.defineProperty(HTMLImageElement.prototype, 'src', {
+    configurable: true,
+    get(this: HTMLImageElement) {
+      return originalSrcDescriptor.get!.call(this) as string;
+    },
+    set(this: HTMLImageElement, value: string) {
+      originalSrcDescriptor.set!.call(this, value);
+
+      const eventType = value.includes('/error-image') ? 'error' : 'load';
+
+      queueMicrotask(() => this.dispatchEvent(new Event(eventType)));
+    },
+  });
+  restoreFns.push(() => {
+    Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrcDescriptor);
+  });
+
+  return () => restoreFns.forEach((restore) => restore());
 };
 
 const rightClick = (target: Element) => {
@@ -60,6 +139,50 @@ const patchPrototypeMethod = <T extends object, K extends keyof T>(
 const flushAsyncWork = async () => {
   await new Promise((resolve) => setTimeout(resolve, 0));
   await new Promise((resolve) => setTimeout(resolve, 0));
+};
+
+/**
+ * ダイアログを最後まで開き切るテスト用ヘルパー。
+ * createImageList の noRecreate:false 分岐は 300ms 後に実タイマーで
+ * リストを可視化するため、afterEach の DOM 破棄より前にそれを消化しておかないと
+ * カバレッジ計測時に限りテアダウン後の要素操作で例外が漏れる。
+ */
+const openDialog = async (messageListener: MessageListener, img: HTMLImageElement) => {
+  if (!document.body.contains(img)) {
+    document.body.appendChild(img);
+  }
+
+  rightClick(img);
+
+  messageListener({ menuItemId: 'dialog' }, {}, vi.fn());
+
+  await flushAsyncWork();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+};
+
+const patchNaturalSize = (width: number, height: number) => {
+  const widthDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLImageElement.prototype,
+    'naturalWidth',
+  )!;
+  const heightDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLImageElement.prototype,
+    'naturalHeight',
+  )!;
+
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', {
+    configurable: true,
+    get: () => width,
+  });
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalHeight', {
+    configurable: true,
+    get: () => height,
+  });
+
+  return () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', widthDescriptor);
+    Object.defineProperty(HTMLImageElement.prototype, 'naturalHeight', heightDescriptor);
+  };
 };
 
 afterEach(() => {
@@ -226,48 +349,14 @@ describe('applying style changes via the context menu message', () => {
 });
 
 describe('opening the dialog via the context menu message', () => {
-  let restoreFns: Array<() => void> = [];
+  let restore: () => void;
 
   beforeEach(() => {
-    restoreFns = [
-      patchPrototypeMethod(
-        HTMLDialogElement.prototype,
-        'showModal',
-        function (this: HTMLDialogElement) {
-          this.open = true;
-        },
-      ),
-      patchPrototypeMethod(
-        HTMLDialogElement.prototype,
-        'close',
-        function (this: HTMLDialogElement) {
-          this.open = false;
-        },
-      ),
-      patchPrototypeMethod(Element.prototype, 'scroll', function () {}),
-    ];
-
-    const originalSrcDescriptor = Object.getOwnPropertyDescriptor(
-      HTMLImageElement.prototype,
-      'src',
-    )!;
-    Object.defineProperty(HTMLImageElement.prototype, 'src', {
-      configurable: true,
-      get(this: HTMLImageElement) {
-        return originalSrcDescriptor.get!.call(this) as string;
-      },
-      set(this: HTMLImageElement, value: string) {
-        originalSrcDescriptor.set!.call(this, value);
-        queueMicrotask(() => this.dispatchEvent(new Event('load')));
-      },
-    });
-    restoreFns.push(() => {
-      Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrcDescriptor);
-    });
+    restore = patchDialogEnvironment();
   });
 
   afterEach(() => {
-    restoreFns.forEach((restore) => restore());
+    restore();
   });
 
   it('opens the dialog for the "dialog" menu item without throwing, acknowledging the message synchronously', async () => {
@@ -284,5 +373,614 @@ describe('opening the dialog via the context menu message', () => {
     expect(result).toBe(true);
 
     await flushAsyncWork();
+    // createImageList の noRecreate:false 分岐が実タイマー(300ms)でリストを
+    // 可視化するため、afterEach のテアダウン前にそれを消化しておく。
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  });
+});
+
+describe('canvas wheel gestures', () => {
+  const dispatchWheel = (target: Element, deltaY: number, shiftKey = false) => {
+    target.dispatchEvent(
+      new WheelEvent('wheel', { deltaY, shiftKey, cancelable: true, bubbles: true }),
+    );
+  };
+
+  it('does nothing when no image is currently targeted', async () => {
+    await importContentScripts({ openShadow: true });
+    const canvas = getControl('canvas');
+
+    expect(() => dispatchWheel(canvas, -100)).not.toThrow();
+  });
+
+  it('zooms in and out around the current image, clamping the minimum scale to 1%', async () => {
+    await importContentScripts({ openShadow: true });
+    const canvas = getControl('canvas');
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    dispatchWheel(canvas, -100);
+    expect(img.style.transform).toContain('scale(1.1)');
+
+    dispatchWheel(canvas, 100);
+    expect(img.style.transform).toContain('scale(1)');
+
+    // 100 -> 1 は 10刻みから始まり50%未満で刻みが5, 40%未満で3に細かくなる。
+    // 19回のズームアウトで 0 以下になり、1%へクランプされる。
+    for (let i = 0; i < 19; i++) {
+      dispatchWheel(canvas, 100);
+    }
+    expect(img.style.transform).toContain('scale(0.01)');
+
+    // scale が 1 ちょうどのときにズームインすると diff 分がそのまま適用される
+    dispatchWheel(canvas, -100);
+    expect(img.style.transform).toContain('scale(0.03)');
+  });
+
+  it('rotates the current image with the shift key held, wrapping past 360 and below 0 degrees', async () => {
+    await importContentScripts({ openShadow: true });
+    const canvas = getControl('canvas');
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    dispatchWheel(canvas, -100, true);
+    expect(img.style.transform).toContain('rotateZ(10deg)');
+
+    for (let i = 0; i < 35; i++) {
+      dispatchWheel(canvas, -100, true);
+    }
+    expect(img.style.transform).toContain('rotateZ(0deg)');
+
+    dispatchWheel(canvas, 100, true);
+    expect(img.style.transform).toContain('rotateZ(350deg)');
+  });
+});
+
+describe('dialog form controls for a not-yet-in-dialog image', () => {
+  it('applies a numeric scale from the scale field, and falls back to 100 for a non-numeric value', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const scale = getControl<HTMLInputElement>('scale');
+    scale.value = '42';
+    scale.dispatchEvent(new Event('input'));
+    expect(img.style.transform).toContain('scale(0.42)');
+
+    // input[type="number"] は不正な値を空文字へ丸めてしまい Number('') = 0 になるため、
+    // NaN 分岐を通すには type を一時的に text に切り替えて値を素通しさせる。
+    scale.setAttribute('type', 'text');
+    scale.value = 'not-a-number';
+    scale.dispatchEvent(new Event('input'));
+    expect(img.style.transform).toContain('scale(1)');
+  });
+
+  it('resets the scale to 100% via the scale-100 button', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const scale = getControl<HTMLInputElement>('scale');
+    scale.value = '42';
+    scale.dispatchEvent(new Event('input'));
+
+    getControl<HTMLButtonElement>('scale-100').click();
+    expect(img.style.transform).toContain('scale(1)');
+  });
+
+  it('rotates via the rotate field, the left/right buttons, and resets via the reset button', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    // isInDialog が false の間は setInputValues が呼ばれず #rotate の value は
+    // ボタン操作後も自動更新されないため、各操作の直前に想定される表示値を
+    // 手動で設定してからクリックする。
+    const rotate = getControl<HTMLInputElement>('rotate');
+    rotate.value = '45';
+    rotate.dispatchEvent(new Event('input'));
+    expect(img.style.transform).toContain('rotateZ(45deg)');
+
+    getControl<HTMLButtonElement>('rotate-right').click();
+    expect(img.style.transform).toContain('rotateZ(135deg)');
+
+    rotate.value = '135';
+    getControl<HTMLButtonElement>('rotate-left').click();
+    expect(img.style.transform).toContain('rotateZ(45deg)');
+
+    getControl<HTMLButtonElement>('rotate-reset').click();
+    expect(img.style.transform).toContain('rotateZ(0deg)');
+
+    // input[type="number"] は不正な値を空文字へ丸めてしまうため、NaN 分岐を
+    // 通すには type を一時的に text に切り替えて値を素通しさせる。
+    rotate.setAttribute('type', 'text');
+    rotate.value = 'not-a-number';
+    rotate.dispatchEvent(new Event('input'));
+    expect(img.style.transform).toContain('rotateZ(0deg)');
+  });
+
+  it('flips the image via the reverse checkbox', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const reverse = getControl<HTMLInputElement>('reverse');
+    reverse.checked = true;
+    reverse.dispatchEvent(new Event('input'));
+
+    expect(img.style.transform).toContain('rotateY(180deg)');
+  });
+
+  it('toggles the shared has-border class on the current image via the border checkbox', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const border = getControl<HTMLInputElement>('border');
+    border.checked = true;
+    border.dispatchEvent(new Event('input'));
+    expect(img.classList.contains('has-border')).toBe(true);
+
+    border.checked = false;
+    border.dispatchEvent(new Event('input'));
+    expect(img.classList.contains('has-border')).toBe(false);
+  });
+
+  it('applies a valid rendering mode from the render select, and falls back to the default otherwise', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    const render = getControl<HTMLSelectElement>('render');
+    render.value = 'pixelated';
+    render.dispatchEvent(new Event('change'));
+
+    // isInDialog が false のときは image-rendering は反映されないため、
+    // 例外なく処理が完了することのみを確認する（resolveRenderMode の分岐カバレッジ用）。
+    expect(() => render.dispatchEvent(new Event('change'))).not.toThrow();
+
+    // <select> は存在しない option 値を割り当てると value が空文字にフォールバックする
+    // ため、resolveRenderMode の isInvalid('') === false の分岐（デフォルト値へのフォール
+    // バック）が自然に踏まれる。
+    render.value = 'not-a-real-render-mode';
+    expect(render.value).toBe('');
+    expect(() => render.dispatchEvent(new Event('change'))).not.toThrow();
+  });
+});
+
+describe('dialog background color controls', () => {
+  it('restores a previously stored background color on load', async () => {
+    await importContentScripts({ openShadow: true, storedBackground: '#123456' });
+
+    const custom = getControl<HTMLInputElement>('background-custom');
+    expect(custom.value).toBe('#123456');
+  });
+
+  it('applies the bright and dark preset colors and persists the choice', async () => {
+    await importContentScripts({ openShadow: true });
+
+    const dialog = getShadowRoot().querySelector('dialog')!;
+    const custom = getControl<HTMLInputElement>('background-custom');
+
+    getControl<HTMLButtonElement>('background-bright').click();
+    expect(custom.value).toBe('#fafafa');
+    expect(dialog.style.getPropertyValue('--canvas-background')).toBe('#fafafa');
+
+    getControl<HTMLButtonElement>('background-dark').click();
+    expect(custom.value).toBe('#202124');
+    expect(dialog.style.getPropertyValue('--canvas-background')).toBe('#202124');
+  });
+});
+
+describe('fully opening the dialog populates the form controls', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('sets url, alt, size, and type from the in-dialog clone', async () => {
+    // scale の 'init' フィットは naturalWidth/Height が 0 だと Infinity になり、
+    // <input type="number"> がそれを不正値として '' にサニタイズしてしまうため、
+    // 自然サイズを与えておく。
+    const restoreNaturalSize = patchNaturalSize(200, 100);
+
+    try {
+      const { messageListener } = await importContentScripts({ openShadow: true });
+      const img = document.createElement('img');
+      img.alt = 'a sample image';
+      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+      await openDialog(messageListener, img);
+
+      expect(getControl<HTMLInputElement>('alt').value).toBe('a sample image');
+      expect(getControl<HTMLInputElement>('url').value).toBe(img.src);
+      expect(getControl<HTMLInputElement>('size').value).toContain('byte');
+      expect(getControl<HTMLInputElement>('type').value).toBe('image/svg+xml (in HTML)');
+      expect(getControl<HTMLInputElement>('scale').value.length).toBeGreaterThan(0);
+      expect(getControl<HTMLInputElement>('rotate').value).toBe('0');
+      expect(getControl<HTMLInputElement>('reverse').checked).toBe(false);
+      expect(getControl<HTMLSelectElement>('render').value).toBe('crisp-edges');
+    } finally {
+      restoreNaturalSize();
+    }
+  });
+
+  it('computes the reduced aspect ratio from the natural dimensions', async () => {
+    const restoreNaturalSize = patchNaturalSize(200, 100);
+
+    try {
+      const { messageListener } = await importContentScripts({ openShadow: true });
+      const img = document.createElement('img');
+      img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+      await openDialog(messageListener, img);
+
+      expect(getControl<HTMLInputElement>('natural-width').value).toBe('200 px');
+      expect(getControl<HTMLInputElement>('natural-height').value).toBe('100 px');
+      expect(getControl<HTMLInputElement>('aspect').value).toBe('2 : 1');
+    } finally {
+      restoreNaturalSize();
+    }
+  });
+});
+
+describe('the image list inside an opened dialog', () => {
+  let restore: () => void;
+
+  const svgSrc = (label: string) =>
+    `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" data-label="${label}"></svg>`;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('renders one entry per unique image, flags the current one, and falls back to an aria-label when alt is empty', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    imgB.alt = 'image b';
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const buttons = [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')];
+
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]?.getAttribute('aria-current')).toBe('true');
+    expect(buttons[0]?.querySelector('img')?.getAttribute('aria-label')).toBe('image_list_no_alt');
+    expect(buttons[1]?.getAttribute('aria-current')).toBeNull();
+    expect(buttons[1]?.querySelector('img')?.alt).toBe('image b');
+    expect(buttons[1]?.querySelector('img')?.getAttribute('aria-label')).toBeNull();
+  });
+
+  it('switches the current image when a different list item is clicked', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const buttons = [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')];
+    buttons[1]?.click();
+
+    await flushAsyncWork();
+
+    const buttonsAfter = [
+      ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
+    ];
+    expect(buttonsAfter[1]?.getAttribute('aria-current')).toBe('true');
+    expect(buttonsAfter[0]?.getAttribute('aria-current')).toBeNull();
+  });
+
+  it('wraps around when navigating past the ends via the prev/next buttons', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const currentAriaCurrent = () =>
+      [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')].findIndex(
+        (button) => button.getAttribute('aria-current') === 'true',
+      );
+
+    getControl<HTMLButtonElement>('image-list-next').click();
+    await flushAsyncWork();
+    expect(currentAriaCurrent()).toBe(1);
+
+    // 直前の要素が存在する場合は roopTarget にフォールバックせず直接遷移する
+    getControl<HTMLButtonElement>('image-list-prev').click();
+    await flushAsyncWork();
+    expect(currentAriaCurrent()).toBe(0);
+
+    getControl<HTMLButtonElement>('image-list-next').click();
+    await flushAsyncWork();
+    expect(currentAriaCurrent()).toBe(1);
+
+    getControl<HTMLButtonElement>('image-list-next').click();
+    await flushAsyncWork();
+    expect(currentAriaCurrent()).toBe(0);
+
+    getControl<HTMLButtonElement>('image-list-prev').click();
+    await flushAsyncWork();
+    expect(currentAriaCurrent()).toBe(1);
+  });
+
+  it('reloads the image list without throwing when the reload button is clicked', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = svgSrc('a');
+
+    await openDialog(messageListener, img);
+
+    expect(() => getControl<HTMLButtonElement>('image-list-reload').click()).not.toThrow();
+  });
+
+  it('navigates via Home/End/Arrow keys and ignores the shortcut while a modifier key is held', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const buttons = () => [
+      ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
+    ];
+    const currentIndex = () =>
+      buttons().findIndex((button) => button.getAttribute('aria-current') === 'true');
+
+    const dispatchKey = async (key: string, modifiers: KeyboardEventInit = {}) => {
+      const current = buttons()[currentIndex()]!;
+      current.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...modifiers }));
+      await flushAsyncWork();
+    };
+
+    await dispatchKey('ArrowRight');
+    expect(currentIndex()).toBe(1);
+
+    await dispatchKey('ArrowLeft');
+    expect(currentIndex()).toBe(0);
+
+    await dispatchKey('End');
+    expect(currentIndex()).toBe(1);
+
+    await dispatchKey('Home');
+    expect(currentIndex()).toBe(0);
+
+    await dispatchKey('ArrowDown');
+    expect(currentIndex()).toBe(0);
+
+    await dispatchKey('ArrowUp');
+    expect(currentIndex()).toBe(0);
+
+    await dispatchKey('ArrowRight', { altKey: true });
+    expect(currentIndex()).toBe(0);
+  });
+});
+
+describe('resolving file size and type over the network for a non-svg image', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('reads size and type from the response headers on success', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        headers: new Headers({ 'Content-Length': '1234', 'Content-Type': 'image/png' }),
+      }),
+    );
+
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'https://example.com/foo.png';
+
+    await openDialog(messageListener, img);
+
+    expect(getControl<HTMLInputElement>('size').value).toBe('1234 byte');
+    expect(getControl<HTMLInputElement>('type').value).toBe('image/png');
+  });
+
+  it('falls back to error messages when the network request rejects', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
+
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'https://example.com/bar.png';
+
+    await openDialog(messageListener, img);
+
+    expect(getControl<HTMLInputElement>('size').value).toBe('error_fileSize');
+    expect(getControl<HTMLInputElement>('type').value).toBe('error_fileType');
+  });
+});
+
+describe('resizeSupport', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('re-fits the current image after the window is resized, once the debounce settles', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+    await openDialog(messageListener, img);
+
+    expect(() => window.dispatchEvent(new Event('resize'))).not.toThrow();
+
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  });
+});
+
+describe('the search-in-page button', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('closes the dialog and highlights the origin image when it is still visible in the page', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+    await openDialog(messageListener, img);
+
+    const dialogEl = getShadowRoot().querySelector('dialog')!;
+    expect(dialogEl.open).toBe(true);
+
+    getControl<HTMLButtonElement>('search').click();
+
+    expect(dialogEl.open).toBe(false);
+  });
+
+  it('alerts when the origin image can no longer be found in the page', async () => {
+    vi.stubGlobal('alert', vi.fn());
+
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+    await openDialog(messageListener, img);
+
+    img.remove();
+
+    getControl<HTMLButtonElement>('search').click();
+
+    expect(alert).toHaveBeenCalledWith('searched_image_error');
+  });
+
+  it('scrolls the origin image into view when it is off-screen', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+    await openDialog(messageListener, img);
+
+    img.getBoundingClientRect = () =>
+      ({
+        top: -100,
+        left: 0,
+        bottom: -50,
+        right: 0,
+      }) as DOMRect;
+
+    expect(() => getControl<HTMLButtonElement>('search').click()).not.toThrow();
+  });
+});
+
+describe('the dialog stays open without an image on a 404', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('clears the loading state but does not append an image when the clone fails to load', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'https://example.com/error-image.png';
+
+    await openDialog(messageListener, img);
+
+    const dialogEl = getShadowRoot().querySelector('dialog')!;
+    expect(dialogEl.open).toBe(true);
+    expect(dialogEl.hasAttribute('aria-busy')).toBe(false);
+    expect(getShadowRoot().getElementById('canvas-inner')?.children.length ?? 0).toBe(0);
+  });
+});
+
+describe('resetting an in-dialog image via the "reset" menu item', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('restores default scale and rotation while remaining in-dialog', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+
+    await openDialog(messageListener, img);
+
+    messageListener({ menuItemId: 'reset' }, {}, vi.fn());
+
+    expect(getControl<HTMLInputElement>('scale').value).toBe('100');
+    expect(getControl<HTMLInputElement>('rotate').value).toBe('0');
+  });
+});
+
+describe('the scale-fit button', () => {
+  let restore: () => void;
+
+  beforeEach(() => {
+    restore = patchDialogEnvironment();
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
+  it('sets scale to 100 and re-fits the current image without throwing', async () => {
+    await importContentScripts({ openShadow: true });
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    expect(() => getControl<HTMLButtonElement>('scale-fit').click()).not.toThrow();
   });
 });
