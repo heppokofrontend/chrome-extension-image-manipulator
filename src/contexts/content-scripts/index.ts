@@ -1,4 +1,9 @@
-import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
+import { SPINNER } from '@/contexts/content-scripts/assets';
+import {
+  getEditableFields,
+  renderEditable,
+  setEditableValues,
+} from '@/contexts/content-scripts/components/editable';
 import {
   renderImageInfo,
   setImageInfoValues,
@@ -103,130 +108,11 @@ const { details, formControls } = (() => {
   );
 
   renderImageInfo(element);
+  renderEditable(element);
 
   element.insertAdjacentHTML(
     'beforeend',
     `
-      <div id="editable">
-        <div class="checkbox-group">
-          <p class="row">
-            <label class="label" for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
-            <span class="control">
-              <span class="checkbox">
-                <input
-                  id="reverse"
-                  type="checkbox"
-                />
-              </span>
-            </span>
-          </p>
-
-          <p class="row">
-            <label class="label" for="border">${chrome.i18n.getMessage('editable_border')}</label>
-            <span class="control">
-              <span class="checkbox shared">
-                <input
-                  id="border"
-                  type="checkbox"
-                />
-              </span>
-            </span>
-          </p>
-        </div>
-
-        <div class="row" role="group" aria-labelledby="scale-legend">
-          <p class="label" id="scale-legend">
-            <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
-          </p>
-          <p class="control">
-            <span class="field">
-              <button type="button" id="scale-fit">FIT</button>
-              <button type="button" id="scale-100">100%</button>
-              <input
-                type="number"
-                name="scale"
-                id="scale"
-                value=""
-                step="1"
-                min="1"
-                class="right"
-              />
-            </span>
-            <span class="unit">%</span>
-          </p>
-        </div>
-
-        <div class="row" role="group" aria-labelledby="rotate-legend">
-          <p class="label" id="rotate-legend">
-            <label for="rotate">${chrome.i18n.getMessage('editable_rotate')}</label>
-          </p>
-          <p class="control">
-            <span class="field">
-              <button type="button" id="rotate-reset">RESET</button>
-              <button type="button" id="rotate-left" title="${chrome.i18n.getMessage(
-                'rotate_left',
-              )}">
-                ${ROTATE_ICON}
-              </button>
-              <button type="button" id="rotate-right" title="${chrome.i18n.getMessage(
-                'rotate_right',
-              )}">
-                ${ROTATE_ICON}
-              </button>
-              <input
-                type="number"
-                name="rotate"
-                id="rotate"
-                value=""
-                step="1"
-                min="-360"
-                max="360"
-                class="right"
-              />
-              <span class="unit">deg</span>
-            </span>
-          </p>
-        </div>
-
-        <p class="row">
-          <label class="label" for="render">${chrome.i18n.getMessage('editable_render')}</label>
-          <span class="control">
-            <select
-              id="render"
-            >
-            ${['crisp-edges', 'pixelated', 'smooth', 'high-quality']
-              .map((value) => {
-                return `<option>${value}</option>`;
-              })
-              .join('')}
-            </select>
-          </span>
-        </p>
-
-        <div class="group" id="color" role="group" aria-labelledby="background-label">
-          <p id="background-label" class="legend">${chrome.i18n.getMessage(
-            'editable_background',
-          )}</p>
-          <div class="control">
-            <p class="button">
-              <input type="color" aria-label="${chrome.i18n.getMessage(
-                'editable_background_custom',
-              )}" id="background-custom" value="#202124" />
-            </p>
-            <p class="button">
-              <button type="button" id="background-bright">${chrome.i18n.getMessage(
-                'editable_background_bright',
-              )}</button>
-            </p>
-            <p class="button">
-              <button type="button" id="background-dark">${chrome.i18n.getMessage(
-                'editable_background_dark',
-              )}</button>
-            </p>
-          </div>
-        </div>
-      </div>
-
       <div id="image-list-section" role="group" aria-labelledby="image-list-label">
         <div id="image-list-header">
           <p id="image-list-label" class="legend">${chrome.i18n.getMessage('image_list_title')}</p>
@@ -266,16 +152,21 @@ const { details, formControls } = (() => {
 
   element.querySelector('button')?.addEventListener('click', closeHandler);
 
-  const scale = element.querySelector<HTMLInputElement>('#scale')!;
-  const scaleFit = element.querySelector<HTMLInputElement>('#scale-fit')!;
-  const scale100 = element.querySelector<HTMLInputElement>('#scale-100')!;
-  const rotate = element.querySelector<HTMLInputElement>('#rotate')!;
-  const rotateReset = element.querySelector<HTMLButtonElement>('#rotate-reset')!;
-  const rotateLeft = element.querySelector<HTMLButtonElement>('#rotate-left')!;
-  const rotateRight = element.querySelector<HTMLButtonElement>('#rotate-right')!;
-  const reverse = element.querySelector<HTMLInputElement>('#reverse')!;
-  const border = element.querySelector<HTMLInputElement>('#border')!;
-  const render = element.querySelector<HTMLSelectElement>('#render')!;
+  const {
+    scale,
+    scaleFit,
+    scale100,
+    rotate,
+    rotateReset,
+    rotateLeft,
+    rotateRight,
+    reverse,
+    border,
+    render,
+    backgroundCustom,
+    backgroundBright,
+    backgroundDark,
+  } = getEditableFields();
   const imageListButtons = {
     reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
     prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
@@ -498,35 +389,30 @@ const { details, formControls } = (() => {
   });
 
   // bgcolor
-  const custom = element.querySelector<HTMLInputElement>('#background-custom');
-  const bright = element.querySelector<HTMLButtonElement>('#background-bright');
-  const dark = element.querySelector<HTMLButtonElement>('#background-dark');
   const inputEvent = new Event('input');
 
-  if (custom) {
-    bright?.addEventListener('click', () => {
-      custom.value = '#fafafa';
-      custom.dispatchEvent(inputEvent);
-    });
-    dark?.addEventListener('click', () => {
-      custom.value = '#202124';
-      custom.dispatchEvent(inputEvent);
-    });
+  backgroundBright.addEventListener('click', () => {
+    backgroundCustom.value = '#fafafa';
+    backgroundCustom.dispatchEvent(inputEvent);
+  });
+  backgroundDark.addEventListener('click', () => {
+    backgroundCustom.value = '#202124';
+    backgroundCustom.dispatchEvent(inputEvent);
+  });
 
-    custom.addEventListener('input', () => {
-      dialog.style.cssText = `--canvas-background: ${custom.value}`;
-      void chrome.storage.local.set({
-        background: custom.value,
-      });
+  backgroundCustom.addEventListener('input', () => {
+    dialog.style.cssText = `--canvas-background: ${backgroundCustom.value}`;
+    void chrome.storage.local.set({
+      background: backgroundCustom.value,
     });
+  });
 
-    chrome.storage.local.get('background', ({ background }) => {
-      if (typeof background === 'string' && background) {
-        custom.value = background;
-        custom.dispatchEvent(inputEvent);
-      }
-    });
-  }
+  chrome.storage.local.get('background', ({ background }) => {
+    if (typeof background === 'string' && background) {
+      backgroundCustom.value = background;
+      backgroundCustom.dispatchEvent(inputEvent);
+    }
+  });
 
   const resolveRenderMode = (value: string): RenderingMode => {
     const types: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
@@ -555,11 +441,6 @@ const { details, formControls } = (() => {
     details: ui,
     formControls: {
       // srcset,
-      scale,
-      rotate,
-      reverse,
-      border,
-      render,
       imageList,
       imageListInfo,
     },
@@ -573,13 +454,7 @@ const setInputValues = (imageData: StyleData) => {
 
   // alt 以外のアクセシブルネームをサポートするかどうか
   setImageInfoValues(imageData);
-
-  // formControls.srcset.value = hhhhhhh
-  formControls.scale.value = String(imageData.scale);
-  formControls.rotate.value = String(imageData.rotate);
-  formControls.reverse.checked = imageData.reverse;
-  formControls.border.checked = STATE.hasBorder;
-  formControls.render.value = imageData.render;
+  setEditableValues(imageData);
 };
 
 const setImageData = createSetImageData({ setInputValues });
