@@ -1562,7 +1562,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   return true;
 });
 
-window.addEventListener('contextmenu', ({ target }) => {
+const onContextmenu = ({ target }: MouseEvent) => {
   const targetImage = resolveTarget(target);
 
   if (!(targetImage instanceof HTMLImageElement)) {
@@ -1584,4 +1584,6 @@ window.addEventListener('contextmenu', ({ target }) => {
       currentImageElement = targetImage;
     }
   }
-});
+};
+
+window.addEventListener('contextmenu', onContextmenu);
