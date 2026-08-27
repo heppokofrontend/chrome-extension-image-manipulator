@@ -1,4 +1,4 @@
-import { getDetailsMainFields } from '../renderers';
+import { getImageInfoFields } from '../renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 
 const getAspectRatio = (width: number, height: number) => {
@@ -15,14 +15,14 @@ const getAspectRatio = (width: number, height: number) => {
   return `${width / gcd} : ${height / gcd}`;
 };
 
-export const setDetailsMainValues = (fileData: Pick<StyleData, 'fileSize' | 'fileType'>) => {
+export const setImageInfoValues = (fileData: Pick<StyleData, 'fileSize' | 'fileType'>) => {
   const { currentImageElement: image } = STATE;
 
   if (!image) {
     return;
   }
 
-  const fields = getDetailsMainFields();
+  const fields = getImageInfoFields();
 
   fields.url.value = image.src;
   fields.alt.value = image.alt;

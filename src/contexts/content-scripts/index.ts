@@ -1,8 +1,8 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
 import {
-  renderDetailsMain,
-  setDetailsMainValues,
-} from '@/contexts/content-scripts/components/details-main';
+  renderImageInfo,
+  setImageInfoValues,
+} from '@/contexts/content-scripts/components/image-info';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
 import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
@@ -102,7 +102,7 @@ const { details, formControls } = (() => {
     `,
   );
 
-  renderDetailsMain(element);
+  renderImageInfo(element);
 
   element.insertAdjacentHTML(
     'beforeend',
@@ -572,7 +572,7 @@ const setInputValues = (imageData: StyleData) => {
   }
 
   // alt 以外のアクセシブルネームをサポートするかどうか
-  setDetailsMainValues(imageData);
+  setImageInfoValues(imageData);
 
   // formControls.srcset.value = hhhhhhh
   formControls.scale.value = String(imageData.scale);

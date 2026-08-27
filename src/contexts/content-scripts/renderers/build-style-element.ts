@@ -516,7 +516,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
         padding: '20px 14px 10px',
         background: '#292a2dcc',
       },
-      '#details-main': {
+      '#image-info': {
         padding: '10px 14px 20px',
       },
     },

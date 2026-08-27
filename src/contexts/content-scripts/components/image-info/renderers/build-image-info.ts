@@ -48,11 +48,11 @@ const READONLY_FIELDS: Record<ReadonlyFieldKey, { key: string; className?: strin
   aspect: { key: 'readOnly_aspect', className: 'right' },
 };
 
-export const buildDetailsMain = () => {
+export const buildImageInfo = () => {
   const element = document.createElement('div');
   const readonly = document.createElement('div');
 
-  element.id = 'details-main';
+  element.id = 'image-info';
   readonly.id = 'readonly';
 
   const inputElements = {} as Record<ReadonlyFieldKey, HTMLInputElement>;
