@@ -1,4 +1,5 @@
 import { ROTATE_ICON, SPINNER } from '@/contexts/content-scripts/assets';
+import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
 import { buildDialogElement, buildStyleElement } from '@/contexts/content-scripts/renderer';
 import {
@@ -170,109 +171,64 @@ const createGetFileSize = ({
 };
 
 const dialog = buildDialogElement();
-const { canvas, spaceElement } = (() => {
-  const outer = document.createElement('div');
-  const inner = document.createElement('div');
-  const moveState = {
-    clientY: 0,
-    clientX: 0,
-    startY: 0,
-    startX: 0,
-  };
-  const moveHandler = (e: MouseEvent) => {
-    outer.scroll({
-      top: moveState.startY + moveState.clientY - e.clientY,
-      left: moveState.startX + moveState.clientX - e.clientX,
-    });
-  };
+const { canvas, spaceElement } = buildCanvas();
 
-  outer.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) {
-      return;
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+
+  if (!currentImageElement) {
+    return;
+  }
+
+  const imageData = getImageData(currentImageElement);
+  const mode = e.shiftKey ? 'rotate' : 'zoom';
+
+  if (mode === 'rotate') {
+    switch (e.deltaY < 0 ? 'right' : 'left') {
+      case 'right':
+        imageData.rotate += 10;
+
+        if (360 <= imageData.rotate) {
+          imageData.rotate -= 360;
+        }
+
+        break;
+
+      case 'left':
+        imageData.rotate -= 10;
+
+        if (imageData.rotate < 0) {
+          imageData.rotate += 360;
+        }
+        break;
     }
+  } else {
+    const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
 
-    e.preventDefault();
+    switch (e.deltaY < 0 ? 'in' : 'out') {
+      case 'in':
+        if (imageData.scale === 1) {
+          imageData.scale = diff;
+        } else {
+          imageData.scale += diff;
+        }
+        break;
 
-    moveState.clientY = e.clientY;
-    moveState.clientX = e.clientX;
-    moveState.startX = outer.scrollLeft ?? 0;
-    moveState.startY = outer.scrollTop ?? 0;
-    window.addEventListener('mousemove', moveHandler);
-  });
+      case 'out':
+        imageData.scale -= diff;
 
-  outer.addEventListener('wheel', (e) => {
-    e.preventDefault();
-
-    if (!currentImageElement) {
-      return;
+        if (imageData.scale <= 0) {
+          imageData.scale = 1;
+        }
+        break;
     }
+  }
 
-    const imageData = getImageData(currentImageElement);
-    const mode = e.shiftKey ? 'rotate' : 'zoom';
-
-    if (mode === 'rotate') {
-      switch (e.deltaY < 0 ? 'right' : 'left') {
-        case 'right':
-          imageData.rotate += 10;
-
-          if (360 <= imageData.rotate) {
-            imageData.rotate -= 360;
-          }
-
-          break;
-
-        case 'left':
-          imageData.rotate -= 10;
-
-          if (imageData.rotate < 0) {
-            imageData.rotate += 360;
-          }
-          break;
-      }
-    } else {
-      const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
-
-      switch (e.deltaY < 0 ? 'in' : 'out') {
-        case 'in':
-          if (imageData.scale === 1) {
-            imageData.scale = diff;
-          } else {
-            imageData.scale += diff;
-          }
-          break;
-
-        case 'out':
-          imageData.scale -= diff;
-
-          if (imageData.scale <= 0) {
-            imageData.scale = 1;
-          }
-          break;
-      }
-    }
-
-    setImageData(currentImageElement, {
-      ...imageData,
-    });
+  setImageData(currentImageElement, {
+    ...imageData,
   });
+});
 
-  window.addEventListener('mouseup', () => {
-    window.removeEventListener('mousemove', moveHandler);
-  });
-
-  window.addEventListener('mouseleave', () => {
-    window.removeEventListener('mousemove', moveHandler);
-  });
-
-  outer.id = 'canvas';
-  inner.id = 'canvas-inner';
-  outer.append(inner);
-
-  return {
-    canvas: outer,
-    spaceElement: inner,
-  };
-})();
 const { imageViewer, showDialog, setImageData } = (() => {
   const { details, formControls } = (() => {
     const element = document.createElement('div');
