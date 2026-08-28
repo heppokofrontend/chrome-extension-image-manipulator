@@ -100,7 +100,9 @@ const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement |
     return;
   }
 
-  current.focus();
+  current.focus({
+    preventScroll: true,
+  });
 
   const imageListRect = imageList.getBoundingClientRect();
   const targetRect = current.getBoundingClientRect();
