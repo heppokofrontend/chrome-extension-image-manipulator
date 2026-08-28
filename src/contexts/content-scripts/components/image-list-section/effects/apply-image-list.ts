@@ -19,9 +19,35 @@ import type {
 // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
 let imagesCache: ImageListEntry[] = [];
 
+// lazyload対応で load 発火のたびに呼ぶため、要素ごとに閉じ込めずモジュールスコープに置く
+const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: ImageListEntry) => {
+  const clonedImage = document.createElement('img');
+  result.src = originalElement.src;
+  result.alt = originalElement.alt;
+  clonedImage.src = originalElement.src;
+  clonedImage.alt = originalElement.alt;
+
+  setImageData(
+    originalElement,
+    {
+      clonedImage,
+    },
+    true,
+  );
+  await getFileSize(clonedImage);
+  setImageData(
+    clonedImage,
+    {
+      isInDialog: true,
+      origin: originalElement,
+    },
+    true,
+  );
+};
+
 const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | null => {
   if (originalElement instanceof HTMLImageElement) {
-    const result = {
+    const result: ImageListEntry = {
       src: originalElement.src,
       alt: originalElement.alt.trim(),
       isError: false,
@@ -29,33 +55,8 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
     };
 
     // support lazyload by script
-    const handleLoad = async () => {
-      const clonedImage = document.createElement('img');
-      result.src = originalElement.src;
-      result.alt = originalElement.alt;
-      clonedImage.src = originalElement.src;
-      clonedImage.alt = originalElement.alt;
-
-      setImageData(
-        originalElement,
-        {
-          clonedImage,
-        },
-        true,
-      );
-      await getFileSize(clonedImage);
-      setImageData(
-        clonedImage,
-        {
-          isInDialog: true,
-          origin: originalElement,
-        },
-        true,
-      );
-    };
-
     originalElement.addEventListener('load', () => {
-      void handleLoad();
+      void handleLazyLoadedImage(originalElement, result);
     });
     originalElement.addEventListener('error', () => {
       result.isError = true;
