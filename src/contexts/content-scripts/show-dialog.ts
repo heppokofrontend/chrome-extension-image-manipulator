@@ -1,4 +1,4 @@
-import { createImageList } from '@/contexts/content-scripts/components/image-list-section';
+import { applyImageList } from '@/contexts/content-scripts/components/image-list-section';
 import { getImageListSectionFields } from '@/contexts/content-scripts/components/image-list-section/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
@@ -12,8 +12,8 @@ import {
 
 const { dialog, spaceElement } = CONTENT_UI;
 
-export const showDialog = async (option?: { noCreateImageList?: boolean }) => {
-  const noCreateImageList = option?.noCreateImageList ?? false;
+export const showDialog = async (option?: { noRecreateImageList?: boolean }) => {
+  const noRecreateImageList = option?.noRecreateImageList ?? false;
 
   if (!dialog.open) {
     dialog.showModal();
@@ -85,7 +85,7 @@ export const showDialog = async (option?: { noCreateImageList?: boolean }) => {
     spaceElement.textContent = '';
     spaceElement.append(STATE.currentImageElement);
 
-    createImageList(noCreateImageList);
+    applyImageList(noRecreateImageList);
 
     if (dialog.open) {
       getImageListSectionFields()
