@@ -6,9 +6,15 @@ import {
   setImageData,
 } from '@/contexts/content-scripts/utils';
 
-import { getImageListSectionFields, renderImageList } from './renderers';
-import { resolveImageElement } from './utils';
-import type { ImageListEntry, ResolvableElement } from './types';
+import {
+  getImageListSectionFields,
+  renderImageList,
+} from '@/contexts/content-scripts/components/image-list-section/renderers';
+import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
+import type {
+  ImageListEntry,
+  ResolvableElement,
+} from '@/contexts/content-scripts/components/image-list-section/types';
 
 // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
 let imagesCache: ImageListEntry[] = [];
