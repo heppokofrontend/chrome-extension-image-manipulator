@@ -18,30 +18,17 @@ import {
   getImageData,
   setImageData,
 } from '@/contexts/content-scripts/utils';
+import { buildDetails } from './build-details';
 
 const { dialog } = CONTENT_UI;
 
 export const renderDetails = () => {
-  const element = document.createElement('div');
-  const closeBtnForPortrait = document.createElement('button');
+  const { element, closeBtnForPortrait, closeBtn } = buildDetails();
   const closeHandler = () => {
     dialog.close();
   };
 
-  closeBtnForPortrait.type = 'button';
-  closeBtnForPortrait.className = 'close-btn for-portrait';
-  closeBtnForPortrait.textContent = chrome.i18n.getMessage('button_close');
   closeBtnForPortrait.addEventListener('click', closeHandler);
-
-  element.id = 'details';
-  element.insertAdjacentHTML(
-    'afterbegin',
-    `
-      <p class="close">
-        <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
-      </p>
-    `,
-  );
 
   renderImageInfo(element);
   renderImageController(element);
@@ -60,7 +47,7 @@ export const renderDetails = () => {
     `,
   );
 
-  element.querySelector('button')?.addEventListener('click', closeHandler);
+  closeBtn.addEventListener('click', closeHandler);
 
   const {
     scale,
