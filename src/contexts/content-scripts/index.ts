@@ -8,6 +8,10 @@ import {
   renderImageInfo,
   setImageInfoValues,
 } from '@/contexts/content-scripts/components/image-info';
+import {
+  getImageListSectionFields,
+  renderImageListSection,
+} from '@/contexts/content-scripts/components/image-list-section';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
 import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
@@ -85,7 +89,7 @@ canvas.addEventListener('wheel', (e) => {
   });
 });
 
-const { details, formControls } = (() => {
+const details = (() => {
   const element = document.createElement('div');
   const closeBtnForPortrait = document.createElement('button');
   const closeHandler = () => {
@@ -109,37 +113,11 @@ const { details, formControls } = (() => {
 
   renderImageInfo(element);
   renderImageController(element);
+  renderImageListSection(element);
 
   element.insertAdjacentHTML(
     'beforeend',
     `
-      <div id="image-list-section" role="group" aria-labelledby="image-list-label">
-        <div id="image-list-header">
-          <p id="image-list-label" class="legend">${chrome.i18n.getMessage('image_list_title')}</p>
-
-          <div id="image-list-buttons">
-            <p><button type="button" id="image-list-reload">${chrome.i18n.getMessage(
-              'image_list_reload',
-            )}</button></p>
-            <p><button type="button" id="image-list-prev">${chrome.i18n.getMessage(
-              'image_list_prev',
-            )}</button></p>
-            <p><button type="button" id="image-list-next">${chrome.i18n.getMessage(
-              'image_list_next',
-            )}</button></p>
-          </div>
-        </div>
-
-        <div id="image-list-wrapper" title="${chrome.i18n.getMessage('image_list_description')}">
-          <ul id="image-list"></ul>
-        </div>
-
-        <p id="image-list-info">
-          ${chrome.i18n.getMessage('image_list_info')}
-          <span id="image-list-info-text" aria-live="polite"></span>
-        </p>
-      </div>
-
       <div class="group">
         <p class="search-wrapper">
           <button id="search">
@@ -167,13 +145,7 @@ const { details, formControls } = (() => {
     backgroundBright,
     backgroundDark,
   } = getImageControllerFields();
-  const imageListButtons = {
-    reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
-    prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
-    next: element.querySelector<HTMLButtonElement>('#image-list-next')!,
-  };
-  const imageList = element.querySelector<HTMLElement>('#image-list')!;
-  const imageListInfo = element.querySelector<HTMLElement>('#image-list-info-text')!;
+  const { reload, prev, next, imageList } = getImageListSectionFields();
   const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
 
   const updateState = (options: Options) => {
@@ -244,10 +216,10 @@ const { details, formControls } = (() => {
     updateState({});
   });
 
-  imageListButtons.reload.addEventListener('click', () => {
+  reload.addEventListener('click', () => {
     createImageList();
   });
-  imageListButtons.next.addEventListener('click', () => {
+  next.addEventListener('click', () => {
     const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
     const target = current?.closest('li')?.nextElementSibling?.firstElementChild;
 
@@ -265,7 +237,7 @@ const { details, formControls } = (() => {
       roopTarget?.click();
     }
   });
-  imageListButtons.prev.addEventListener('click', () => {
+  prev.addEventListener('click', () => {
     const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
     const target = current?.closest('li')?.previousElementSibling?.firstElementChild;
 
@@ -437,14 +409,7 @@ const { details, formControls } = (() => {
   ui.append(closeBtnForPortrait);
   ui.append(element);
 
-  return {
-    details: ui,
-    formControls: {
-      // srcset,
-      imageList,
-      imageListInfo,
-    },
-  };
+  return ui;
 })();
 
 const setInputValues = (imageData: StyleData) => {
@@ -477,6 +442,7 @@ const resizeSupport = () => {
   });
 };
 const createImageList = (() => {
+  const { imageList, imageListInfo } = getImageListSectionFields();
   // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
   let imagesCache: {
     src: string;
@@ -702,14 +668,14 @@ const createImageList = (() => {
     });
 
     fragment.append(...listItems);
-    formControls.imageList.textContent = '';
-    formControls.imageList.append(fragment);
+    imageList.textContent = '';
+    imageList.append(fragment);
 
-    const buttons = [...formControls.imageList.querySelectorAll('button')];
+    const buttons = [...imageList.querySelectorAll('button')];
     const current = buttons.find((button) => button.getAttribute('aria-current') === 'true');
     const currentIndex = current ? buttons.indexOf(current) : -1;
     const viewCurrentIndex = () => {
-      formControls.imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
+      imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
     };
 
     if (noRecreate) {
@@ -717,21 +683,18 @@ const createImageList = (() => {
 
       if (current) {
         // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
-        const imageListRect = formControls.imageList.getBoundingClientRect();
+        const imageListRect = imageList.getBoundingClientRect();
         const targetRect = current.getBoundingClientRect();
         const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
         const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
 
         if (isNotVisibleTop) {
           setTimeout(() => {
-            formControls.imageList.scrollBy(0, targetRect.top - imageListRect.top - IMAGE_LIST_GAP);
+            imageList.scrollBy(0, targetRect.top - imageListRect.top - IMAGE_LIST_GAP);
           }, 0);
         } else if (isNotVisibleBottom) {
           setTimeout(() => {
-            formControls.imageList.scrollBy(
-              0,
-              targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP,
-            );
+            imageList.scrollBy(0, targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP);
           }, 0);
         }
       }
@@ -739,10 +702,10 @@ const createImageList = (() => {
       current?.focus();
     } else {
       imagesCache = images;
-      formControls.imageList.classList.add('invisible');
+      imageList.classList.add('invisible');
 
       setTimeout(() => {
-        formControls.imageList.classList.remove('invisible');
+        imageList.classList.remove('invisible');
         viewCurrentIndex();
         current?.scrollIntoView(false);
       }, 300);
@@ -844,7 +807,9 @@ const showDialog = async (option?: { noCreateImageList?: boolean }) => {
     createImageList(noCreateImageList);
 
     if (dialog.open) {
-      formControls.imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+      getImageListSectionFields()
+        .imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')
+        ?.focus();
     } else {
       dialog.showModal();
     }
