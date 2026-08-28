@@ -2,17 +2,14 @@ import { SPINNER } from '@/contexts/content-scripts/assets';
 import {
   getImageControllerFields,
   renderImageController,
-  setImageControllerValues,
 } from '@/contexts/content-scripts/components/image-controller';
-import {
-  renderImageInfo,
-  setImageInfoValues,
-} from '@/contexts/content-scripts/components/image-info';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import {
   getImageListSectionFields,
   renderImageListSection,
 } from '@/contexts/content-scripts/components/image-list-section';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
+import { resetAll, resetCurrent } from '@/contexts/content-scripts/features';
 import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
@@ -24,11 +21,12 @@ import {
   convertedImgToSVGMap,
   convertedSvgMap,
   convertSVGToImg,
-  createGetFileSize,
-  createSetImageData,
-  createZoomAndScrollInit,
+  getFileSize,
+  zoomAndScrollInit,
   defaultState,
   getImageData,
+  setImageData,
+  setInputValues,
 } from '@/contexts/content-scripts/utils';
 
 const { imageViewer, dialog, canvas, spaceElement } = CONTENT_UI;
@@ -412,20 +410,8 @@ const details = (() => {
   return ui;
 })();
 
-const setInputValues = (imageData: StyleData) => {
-  if (!imageData.isInDialog || !STATE.currentImageElement) {
-    return;
-  }
-
-  // alt 以外のアクセシブルネームをサポートするかどうか
-  setImageInfoValues(imageData);
-  setImageControllerValues(imageData);
-};
-
-const setImageData = createSetImageData({ setInputValues });
 const style = buildStyleElement();
 const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
-const zoomAndScrollInit = createZoomAndScrollInit({ setImageData });
 const resizeSupport = () => {
   let setTimeoutId = -1;
   const wheelEvent = new Event('wheel');
@@ -729,8 +715,6 @@ window.addEventListener('load', () => {
 
 resizeSupport();
 
-const getFileSize = createGetFileSize({ setImageData });
-
 const showDialog = async (option?: { noCreateImageList?: boolean }) => {
   const noCreateImageList = option?.noCreateImageList ?? false;
 
@@ -830,35 +814,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   sendResponse(true);
 
   if (menuItemId === 'reset-all') {
-    const nodeList = [
-      ...(targetElement ? [targetElement] : []),
-      ...document.querySelectorAll<HTMLImageElement>('[data-image-manipulator-default-style]'),
-    ];
-
-    nodeList.forEach((image) => {
-      const imageData = getImageData(image);
-
-      setImageData(image, {
-        ...defaultState,
-        oldScale: imageData.oldScale,
-        fileSize: imageData.fileSize,
-      });
-
-      if (!imageData.isInDialog && imageData.clonedImage) {
-        const clonedImageData = getImageData(imageData.clonedImage);
-
-        setImageData(imageData.clonedImage, {
-          ...defaultState,
-          isInDialog: true,
-          oldScale: clonedImageData.oldScale,
-          fileSize: clonedImageData.fileSize,
-        });
-      }
-
-      if (typeof image.dataset['imageManipulatorDefaultStyle'] === 'string') {
-        image.setAttribute('style', image.dataset['imageManipulatorDefaultStyle']);
-      }
-    });
+    resetAll();
 
     return true;
   }
@@ -881,23 +837,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   } else {
     switch (menuItemId) {
       case 'reset': {
-        if (isInDialog) {
-          targetElement.removeAttribute('style');
-
-          setImageData(targetElement, {
-            ...defaultState,
-            isInDialog,
-            oldScale: imageData.oldScale,
-            fileSize: imageData.fileSize,
-          });
-        } else {
-          if (typeof targetElement.dataset['imageManipulatorDefaultStyle'] === 'string') {
-            targetElement.setAttribute(
-              'style',
-              targetElement.dataset['imageManipulatorDefaultStyle'],
-            );
-          }
-        }
+        resetCurrent(isInDialog);
 
         break;
       }

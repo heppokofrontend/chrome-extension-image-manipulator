@@ -1,23 +1,30 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+const { setImageData } = vi.hoisted(() => ({
+  setImageData: vi.fn(),
+}));
+
+vi.mock('@/contexts/content-scripts/utils/image-data', () => ({
+  setImageData,
+}));
+
 const importGetFileSize = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
-  const { createGetFileSize } = await import('@/contexts/content-scripts/utils/get-file-size');
+  const { getFileSize } = await import('@/contexts/content-scripts/utils/get-file-size');
 
-  return { createGetFileSize };
+  return { getFileSize };
 };
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
+  setImageData.mockClear();
 });
 
-describe('createGetFileSize', () => {
+describe('getFileSize', () => {
   it('reads size and type from a data URL without touching the network', async () => {
-    const { createGetFileSize } = await importGetFileSize();
-    const setImageData = vi.fn();
-    const getFileSize = createGetFileSize({ setImageData });
+    const { getFileSize } = await importGetFileSize();
     const img = document.createElement('img');
     img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
@@ -30,13 +37,11 @@ describe('createGetFileSize', () => {
   });
 
   it('falls back to error_fileSize when Content-Length is absent on success', async () => {
-    const { createGetFileSize } = await importGetFileSize();
+    const { getFileSize } = await importGetFileSize();
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({ headers: new Headers({ 'Content-Type': 'image/png' }) }),
     );
-    const setImageData = vi.fn();
-    const getFileSize = createGetFileSize({ setImageData });
     const img = document.createElement('img');
     img.src = 'https://example.com/foo.png';
 
@@ -49,13 +54,11 @@ describe('createGetFileSize', () => {
   });
 
   it('falls back to error_fileType when Content-Type is absent on success', async () => {
-    const { createGetFileSize } = await importGetFileSize();
+    const { getFileSize } = await importGetFileSize();
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({ headers: new Headers({ 'Content-Length': '1234' }) }),
     );
-    const setImageData = vi.fn();
-    const getFileSize = createGetFileSize({ setImageData });
     const img = document.createElement('img');
     img.src = 'https://example.com/foo.png';
 
@@ -68,10 +71,8 @@ describe('createGetFileSize', () => {
   });
 
   it('falls back to error messages when the network request rejects', async () => {
-    const { createGetFileSize } = await importGetFileSize();
+    const { getFileSize } = await importGetFileSize();
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
-    const setImageData = vi.fn();
-    const getFileSize = createGetFileSize({ setImageData });
     const img = document.createElement('img');
     img.src = 'https://example.com/bar.png';
 
