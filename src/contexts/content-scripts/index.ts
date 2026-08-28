@@ -5,12 +5,12 @@ import {
 } from '@/contexts/content-scripts/components/image-controller';
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import {
+  createImageList,
   getImageListSectionFields,
   renderImageListSection,
 } from '@/contexts/content-scripts/components/image-list-section';
 import { onMessage, onContextmenu } from '@/contexts/content-scripts/handlers';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
-import { createImageList } from '@/contexts/content-scripts/show-dialog';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
