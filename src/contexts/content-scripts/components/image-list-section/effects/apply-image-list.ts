@@ -45,14 +45,20 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
   );
 };
 
+const makeEntry = (
+  src: string,
+  alt: string,
+  originalElement: ResolvableElement,
+): ImageListEntry => ({
+  src,
+  alt,
+  isError: false,
+  originalElement,
+});
+
 const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | null => {
   if (originalElement instanceof HTMLImageElement) {
-    const result: ImageListEntry = {
-      src: originalElement.src,
-      alt: originalElement.alt.trim(),
-      isError: false,
-      originalElement,
-    };
+    const result = makeEntry(originalElement.src, originalElement.alt.trim(), originalElement);
 
     // support lazyload by script
     originalElement.addEventListener('load', () => {
@@ -65,38 +71,27 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
     return result;
   }
 
-  const isSVG = originalElement instanceof SVGElement;
   const pseudoImage = resolveImageElement(originalElement);
 
   if (pseudoImage) {
-    return {
-      src: pseudoImage.src,
-      alt: pseudoImage.alt,
-      isError: false,
-      originalElement,
-    };
+    return makeEntry(pseudoImage.src, pseudoImage.alt, originalElement);
   }
 
-  const newPseudoImage = isSVG
-    ? convertSVGToImg(originalElement)
-    : convertDummyElementToImg(originalElement);
+  const newPseudoImage =
+    originalElement instanceof SVGElement
+      ? convertSVGToImg(originalElement)
+      : convertDummyElementToImg(originalElement);
 
   if (!newPseudoImage) {
     return null;
   }
 
-  const src = newPseudoImage.src;
   const alt =
     newPseudoImage.getAttribute('aria-label') ??
     newPseudoImage.querySelector('title')?.textContent?.trim() ??
     '';
 
-  return {
-    src,
-    alt,
-    isError: false,
-    originalElement,
-  };
+  return makeEntry(newPseudoImage.src, alt, originalElement);
 };
 
 // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
@@ -138,7 +133,7 @@ const collectImageListEntries = (): ImageListEntry[] =>
     .map(toImageListEntry)
     .filter((current): current is ImageListEntry => current !== null)
     .filter((current, index, self) => {
-      return self.findIndex((element) => element?.src === current.src) == index;
+      return self.findIndex((entry) => entry.src === current.src) === index;
     });
 
 export const applyImageList = (noRecreate: boolean = false) => {
