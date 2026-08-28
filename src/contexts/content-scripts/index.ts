@@ -9,6 +9,7 @@ import {
   renderImageListSection,
 } from '@/contexts/content-scripts/components/image-list-section';
 import { IMAGE_LIST_COLS, IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
+import { resetAll, resetCurrent } from '@/contexts/content-scripts/features';
 import { onContextmenu } from '@/contexts/content-scripts/handlers/on-contextmenu';
 import { buildStyleElement } from '@/contexts/content-scripts/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
@@ -813,35 +814,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   sendResponse(true);
 
   if (menuItemId === 'reset-all') {
-    const nodeList = [
-      ...(targetElement ? [targetElement] : []),
-      ...document.querySelectorAll<HTMLImageElement>('[data-image-manipulator-default-style]'),
-    ];
-
-    nodeList.forEach((image) => {
-      const imageData = getImageData(image);
-
-      setImageData(image, {
-        ...defaultState,
-        oldScale: imageData.oldScale,
-        fileSize: imageData.fileSize,
-      });
-
-      if (!imageData.isInDialog && imageData.clonedImage) {
-        const clonedImageData = getImageData(imageData.clonedImage);
-
-        setImageData(imageData.clonedImage, {
-          ...defaultState,
-          isInDialog: true,
-          oldScale: clonedImageData.oldScale,
-          fileSize: clonedImageData.fileSize,
-        });
-      }
-
-      if (typeof image.dataset['imageManipulatorDefaultStyle'] === 'string') {
-        image.setAttribute('style', image.dataset['imageManipulatorDefaultStyle']);
-      }
-    });
+    resetAll(targetElement);
 
     return true;
   }
@@ -864,23 +837,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   } else {
     switch (menuItemId) {
       case 'reset': {
-        if (isInDialog) {
-          targetElement.removeAttribute('style');
-
-          setImageData(targetElement, {
-            ...defaultState,
-            isInDialog,
-            oldScale: imageData.oldScale,
-            fileSize: imageData.fileSize,
-          });
-        } else {
-          if (typeof targetElement.dataset['imageManipulatorDefaultStyle'] === 'string') {
-            targetElement.setAttribute(
-              'style',
-              targetElement.dataset['imageManipulatorDefaultStyle'],
-            );
-          }
-        }
+        resetCurrent(isInDialog);
 
         break;
       }
