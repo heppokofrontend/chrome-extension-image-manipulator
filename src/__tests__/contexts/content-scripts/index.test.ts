@@ -143,7 +143,7 @@ const flushAsyncWork = async () => {
 
 /**
  * ダイアログを最後まで開き切るテスト用ヘルパー。
- * createImageList の noRecreate:false 分岐は 300ms 後に実タイマーで
+ * applyImageList の noRecreate:false 分岐は 300ms 後に実タイマーで
  * リストを可視化するため、afterEach の DOM 破棄より前にそれを消化しておかないと
  * カバレッジ計測時に限りテアダウン後の要素操作で例外が漏れる。
  */
@@ -373,7 +373,7 @@ describe('opening the dialog via the context menu message', () => {
     expect(result).toBe(true);
 
     await flushAsyncWork();
-    // createImageList の noRecreate:false 分岐が実タイマー(300ms)でリストを
+    // applyImageList の noRecreate:false 分岐が実タイマー(300ms)でリストを
     // 可視化するため、afterEach のテアダウン前にそれを消化しておく。
     await new Promise((resolve) => setTimeout(resolve, 300));
   });
@@ -855,7 +855,7 @@ describe('the image list inside an opened dialog', () => {
     const buttons = [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')];
     expect(buttons).toHaveLength(3);
 
-    // click のたびに createImageList(true) がリストの DOM を丸ごと作り直すため、
+    // click のたびに applyImageList(true) がリストの DOM を丸ごと作り直すため、
     // ボタン参照は使い回さず src で毎回引き直す
     const svgSrcValue = 'data:image/svg+xml,' + encodeURIComponent(svg.outerHTML);
     const dummySrcValue = 'https://example.com/dummy.png';
@@ -942,7 +942,7 @@ describe('the image list inside an opened dialog', () => {
     imgC.src = svgSrc('c');
     document.body.append(imgA, imgB, imgC);
 
-    // createImageList が imgA/imgB/imgC へ load/error リスナーを付け終えたあとで src を差し替え、
+    // applyImageList が imgA/imgB/imgC へ load/error リスナーを付け終えたあとで src を差し替え、
     // パッチ済みの src setter がリスナー登録後に load/error を発火させる状況を作る
     await openDialog(messageListener, imgA);
 

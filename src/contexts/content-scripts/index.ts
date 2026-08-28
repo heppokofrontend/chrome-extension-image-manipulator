@@ -5,7 +5,7 @@ import {
 } from '@/contexts/content-scripts/components/image-controller';
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import {
-  createImageList,
+  applyImageList,
   getImageListSectionFields,
   renderImageListSection,
 } from '@/contexts/content-scripts/components/image-list-section';
@@ -208,7 +208,7 @@ const details = (() => {
   });
 
   reload.addEventListener('click', () => {
-    createImageList();
+    applyImageList();
   });
   next.addEventListener('click', () => {
     const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');

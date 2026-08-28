@@ -7,45 +7,43 @@ export const onImageListKeydown = (e: KeyboardEvent) => {
     return;
   }
 
-  if (self instanceof HTMLButtonElement) {
-    const buttons = [...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
-    const index = buttons.indexOf(self);
+  if (!(self instanceof HTMLButtonElement)) {
+    return;
+  }
 
-    if (e.key.startsWith('Arrow')) {
-      e.preventDefault();
+  const buttons = [...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
+  const index = buttons.indexOf(self);
+
+  if (e.key.startsWith('Arrow')) {
+    e.preventDefault();
+  }
+
+  switch (e.key) {
+    case 'Home':
+      buttons[0]?.click();
+      break;
+    case 'End':
+      buttons.at(-1)?.click();
+      break;
+    case 'ArrowRight':
+      (buttons[index + 1] || buttons[0])?.click();
+      break;
+    case 'ArrowLeft':
+      (buttons[index - 1] || buttons.at(-1))?.click();
+      break;
+    case 'ArrowUp': {
+      const lastRowStart = Math.floor(buttons.length / IMAGE_LIST_COLS) * IMAGE_LIST_COLS;
+      (
+        buttons[index - IMAGE_LIST_COLS] ||
+        buttons[lastRowStart + index] ||
+        buttons[lastRowStart + index - IMAGE_LIST_COLS]
+      )?.click();
+      break;
     }
-
-    switch (e.key) {
-      case 'Home':
-        buttons[0]?.click();
-        break;
-      case 'End':
-        buttons[buttons.length - 1]?.click();
-        break;
-      case 'ArrowRight':
-        (buttons[index + 1] || buttons[0])?.click();
-        break;
-      case 'ArrowLeft':
-        (buttons[index - 1] || buttons[buttons.length - 1])?.click();
-        break;
-      case 'ArrowUp': {
-        (
-          buttons[index - IMAGE_LIST_COLS] ||
-          buttons[Math.floor(buttons.length / IMAGE_LIST_COLS) * IMAGE_LIST_COLS + index] ||
-          buttons[
-            Math.floor((buttons.length - (buttons.length % IMAGE_LIST_COLS)) / IMAGE_LIST_COLS) *
-              IMAGE_LIST_COLS +
-              index -
-              IMAGE_LIST_COLS
-          ]
-        )?.click();
-        break;
-      }
-      case 'ArrowDown': {
-        const rest = index % IMAGE_LIST_COLS;
-        (buttons[index + IMAGE_LIST_COLS] || buttons[rest] || buttons[0])?.click();
-        break;
-      }
+    case 'ArrowDown': {
+      const column = index % IMAGE_LIST_COLS;
+      (buttons[index + IMAGE_LIST_COLS] || buttons[column])?.click();
+      break;
     }
   }
 };
