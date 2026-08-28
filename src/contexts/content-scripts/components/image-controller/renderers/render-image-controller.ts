@@ -1,3 +1,10 @@
+import {
+  addEventBackgroundControllers,
+  addEventRenderControllers,
+  addEventReverseAndBorderControllers,
+  addEventRotateControllers,
+  addEventScaleControllers,
+} from '../effects';
 import { buildImageController } from './build-image-controller';
 
 type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'element'>;
@@ -9,6 +16,12 @@ export const renderImageController = (container: Element | DocumentFragment) => 
 
   fields = rest;
   container.append(element);
+
+  addEventScaleControllers(rest);
+  addEventRotateControllers(rest);
+  addEventReverseAndBorderControllers(rest);
+  addEventRenderControllers(rest);
+  addEventBackgroundControllers(rest);
 };
 
 export const getImageControllerFields = () => {
