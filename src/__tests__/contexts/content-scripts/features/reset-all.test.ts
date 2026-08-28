@@ -16,8 +16,9 @@ const importResetAll = async () => {
 
   const { defaultState } = await import('@/contexts/content-scripts/utils');
   const { resetAll } = await import('@/contexts/content-scripts/features/reset-all');
+  const { STATE } = await import('@/contexts/content-scripts/state');
 
-  return { resetAll, defaultState };
+  return { resetAll, defaultState, STATE };
 };
 
 afterEach(() => {
@@ -29,14 +30,15 @@ afterEach(() => {
 });
 
 describe('resetAll', () => {
-  it('resets the passed-in target element and restores its default inline style', async () => {
-    const { resetAll, defaultState } = await importResetAll();
+  it('resets the currently tracked image and restores its default inline style', async () => {
+    const { resetAll, defaultState, STATE } = await importResetAll();
     const img = document.createElement('img');
     img.dataset['imageManipulatorDefaultStyle'] = 'width: 10px;';
     img.setAttribute('style', 'width: 999px;');
+    STATE.currentImageElement = img;
     getImageData.mockReturnValue({ ...defaultState, oldScale: 50, fileSize: '1 byte' });
 
-    resetAll(img);
+    resetAll();
 
     expect(setImageData).toHaveBeenCalledWith(img, {
       ...defaultState,
@@ -47,34 +49,37 @@ describe('resetAll', () => {
   });
 
   it('also resets every other tracked image found in the document', async () => {
-    const { resetAll, defaultState } = await importResetAll();
+    const { resetAll, defaultState, STATE } = await importResetAll();
+    STATE.currentImageElement = null;
     const other = document.createElement('img');
     other.dataset['imageManipulatorDefaultStyle'] = 'width: 20px;';
     document.body.appendChild(other);
     getImageData.mockReturnValue({ ...defaultState });
 
-    resetAll(null);
+    resetAll();
 
     expect(setImageData).toHaveBeenCalledWith(other, { ...defaultState });
     expect(other.getAttribute('style')).toBe('width: 20px;');
   });
 
   it('does not reset a cloned image when the source image is itself in a dialog', async () => {
-    const { resetAll, defaultState } = await importResetAll();
+    const { resetAll, defaultState, STATE } = await importResetAll();
     const img = document.createElement('img');
+    STATE.currentImageElement = img;
     const clonedImage = document.createElement('img');
     clonedImage.src = 'cloned.png';
     getImageData.mockReturnValue({ ...defaultState, isInDialog: true, clonedImage });
 
-    resetAll(img);
+    resetAll();
 
     expect(setImageData).toHaveBeenCalledTimes(1);
     expect(setImageData).not.toHaveBeenCalledWith(clonedImage, expect.anything());
   });
 
   it('resets the cloned image with isInDialog true when the source image is not in a dialog', async () => {
-    const { resetAll, defaultState } = await importResetAll();
+    const { resetAll, defaultState, STATE } = await importResetAll();
     const img = document.createElement('img');
+    STATE.currentImageElement = img;
     const clonedImage = document.createElement('img');
     getImageData.mockImplementation((key: HTMLImageElement) =>
       key === img
@@ -82,7 +87,7 @@ describe('resetAll', () => {
         : { ...defaultState, oldScale: 25, fileSize: '3 byte' },
     );
 
-    resetAll(img);
+    resetAll();
 
     expect(setImageData).toHaveBeenCalledWith(img, {
       ...defaultState,

@@ -814,7 +814,7 @@ chrome.runtime.onMessage.addListener(({ menuItemId }: { menuItemId: string }, _,
   sendResponse(true);
 
   if (menuItemId === 'reset-all') {
-    resetAll(targetElement);
+    resetAll();
 
     return true;
   }

@@ -1,6 +1,8 @@
+import { STATE } from '@/contexts/content-scripts/state';
 import { defaultState, getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
-export const resetAll = (targetElement: HTMLImageElement | null) => {
+export const resetAll = () => {
+  const targetElement = STATE.currentImageElement;
   const nodeList = [
     ...(targetElement ? [targetElement] : []),
     ...document.querySelectorAll<HTMLImageElement>('[data-image-manipulator-default-style]'),
