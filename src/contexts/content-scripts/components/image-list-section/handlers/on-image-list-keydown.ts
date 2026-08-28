@@ -20,13 +20,13 @@ export const onImageListKeydown = (e: KeyboardEvent) => {
         buttons[0]?.click();
         break;
       case 'End':
-        buttons[buttons.length - 1]?.click();
+        buttons.at(-1)?.click();
         break;
       case 'ArrowRight':
         (buttons[index + 1] || buttons[0])?.click();
         break;
       case 'ArrowLeft':
-        (buttons[index - 1] || buttons[buttons.length - 1])?.click();
+        (buttons[index - 1] || buttons.at(-1))?.click();
         break;
       case 'ArrowUp': {
         (
