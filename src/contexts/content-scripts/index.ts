@@ -2,12 +2,8 @@ import { SPINNER } from '@/contexts/content-scripts/assets';
 import {
   getImageControllerFields,
   renderImageController,
-  setImageControllerValues,
 } from '@/contexts/content-scripts/components/image-controller';
-import {
-  renderImageInfo,
-  setImageInfoValues,
-} from '@/contexts/content-scripts/components/image-info';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import {
   getImageListSectionFields,
   renderImageListSection,
@@ -24,11 +20,12 @@ import {
   convertedImgToSVGMap,
   convertedSvgMap,
   convertSVGToImg,
-  createGetFileSize,
-  createSetImageData,
-  createZoomAndScrollInit,
+  getFileSize,
+  zoomAndScrollInit,
   defaultState,
   getImageData,
+  setImageData,
+  setInputValues,
 } from '@/contexts/content-scripts/utils';
 
 const { imageViewer, dialog, canvas, spaceElement } = CONTENT_UI;
@@ -412,20 +409,8 @@ const details = (() => {
   return ui;
 })();
 
-const setInputValues = (imageData: StyleData) => {
-  if (!imageData.isInDialog || !STATE.currentImageElement) {
-    return;
-  }
-
-  // alt 以外のアクセシブルネームをサポートするかどうか
-  setImageInfoValues(imageData);
-  setImageControllerValues(imageData);
-};
-
-const setImageData = createSetImageData({ setInputValues });
 const style = buildStyleElement();
 const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
-const zoomAndScrollInit = createZoomAndScrollInit({ setImageData });
 const resizeSupport = () => {
   let setTimeoutId = -1;
   const wheelEvent = new Event('wheel');
@@ -728,8 +713,6 @@ window.addEventListener('load', () => {
 });
 
 resizeSupport();
-
-const getFileSize = createGetFileSize({ setImageData });
 
 const showDialog = async (option?: { noCreateImageList?: boolean }) => {
   const noCreateImageList = option?.noCreateImageList ?? false;
