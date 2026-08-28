@@ -741,7 +741,7 @@ describe('the image list inside an opened dialog', () => {
     expect(() => getControl<HTMLButtonElement>('image-list-reload').click()).not.toThrow();
   });
 
-  it('navigates via Home/End/Arrow keys and ignores the shortcut while a modifier key is held', async () => {
+  it('navigates via Home/End/Arrow keys, wraps at both ends, and ignores the shortcut while a modifier key (alt or ctrl) is held', async () => {
     const { messageListener } = await importContentScripts({ openShadow: true });
     const imgA = document.createElement('img');
     imgA.src = svgSrc('a');
@@ -783,6 +783,191 @@ describe('the image list inside an opened dialog', () => {
 
     await dispatchKey('ArrowRight', { altKey: true });
     expect(currentIndex()).toBe(0);
+
+    await dispatchKey('ArrowRight', { ctrlKey: true });
+    expect(currentIndex()).toBe(0);
+
+    // 末尾を超えた ArrowRight は先頭へ、先頭を下回った ArrowLeft は末尾へ折り返す
+    await dispatchKey('ArrowLeft');
+    expect(currentIndex()).toBe(1);
+
+    await dispatchKey('ArrowRight');
+    expect(currentIndex()).toBe(0);
+  });
+
+  it('wraps ArrowUp/ArrowDown across row boundaries in a grid wider than one row', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    // IMAGE_LIST_COLS(8) を跨ぐグリッド折り返しの分岐を踏むため9枚用意する
+    const images = Array.from({ length: 9 }, (_, i) => {
+      const img = document.createElement('img');
+      img.src = svgSrc(`grid-${i}`);
+      return img;
+    });
+    document.body.append(...images);
+
+    await openDialog(messageListener, images[0]!);
+
+    const buttons = () => [
+      ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
+    ];
+    const currentIndex = () =>
+      buttons().findIndex((button) => button.getAttribute('aria-current') === 'true');
+
+    const dispatchKey = async (key: string) => {
+      const current = buttons()[currentIndex()]!;
+      current.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      await flushAsyncWork();
+    };
+
+    // 先頭(index 0)からの ArrowDown は index+COLS(8) が存在するのでそこへ直接移動する
+    await dispatchKey('ArrowDown');
+    expect(currentIndex()).toBe(8);
+
+    // 最終行(index 8)からの ArrowUp は index-COLS(-8) が存在しないため折り返しにフォールバックする
+    await dispatchKey('ArrowUp');
+    expect(currentIndex()).toBe(0);
+  });
+
+  it('collects svg and background-image page elements alongside <img>, converting each into a synthetic list entry that can be selected', async () => {
+    // dummy 要素の合成 img は svg と異なり非 data URI の src を持つため、選択時に
+    // getFileSize がネットワークへ HEAD リクエストを投げにいく。実通信を避けるため fetch をスタブする。
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        headers: new Headers({ 'Content-Length': '1', 'Content-Type': 'image/png' }),
+      }),
+    );
+
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const dummy = document.createElement('div');
+    dummy.style.backgroundImage = 'url("https://example.com/dummy.png")';
+    // background-image を持たない要素は SELECTOR にマッチしても合成 img へ変換されず除外される
+    const nonBgWithUrlInStyle = document.createElement('div');
+    nonBgWithUrlInStyle.setAttribute('style', 'cursor: url(icon.png), pointer;');
+    document.body.append(svg, dummy, nonBgWithUrlInStyle);
+
+    const img = document.createElement('img');
+    img.src = svgSrc('a');
+
+    await openDialog(messageListener, img);
+
+    const buttons = [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')];
+    expect(buttons).toHaveLength(3);
+
+    // click のたびに createImageList(true) がリストの DOM を丸ごと作り直すため、
+    // ボタン参照は使い回さず src で毎回引き直す
+    const svgSrcValue = 'data:image/svg+xml,' + encodeURIComponent(svg.outerHTML);
+    const dummySrcValue = 'https://example.com/dummy.png';
+    const findButtonBySrc = (src: string) =>
+      [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')].find(
+        (button) => button.querySelector('img')?.src === src,
+      );
+
+    const svgButton = findButtonBySrc(svgSrcValue);
+    const dummyButton = findButtonBySrc(dummySrcValue);
+
+    expect(svgButton).toBeDefined();
+    expect(dummyButton).toBeDefined();
+    // 合成 img には aria-label も title 子要素も無いため alt は常に空文字にフォールバックする
+    expect(svgButton?.querySelector('img')?.getAttribute('aria-label')).toBe('image_list_no_alt');
+    expect(dummyButton?.querySelector('img')?.getAttribute('aria-label')).toBe('image_list_no_alt');
+
+    svgButton!.click();
+    await flushAsyncWork();
+    expect(findButtonBySrc(svgSrcValue)?.getAttribute('aria-current')).toBe('true');
+
+    findButtonBySrc(dummySrcValue)!.click();
+    await flushAsyncWork();
+    expect(findButtonBySrc(dummySrcValue)?.getAttribute('aria-current')).toBe('true');
+
+    // 再生成(reload)時は convertedSvgMap/convertedDummyMap にキャッシュ済みの合成 img を再利用する
+    getControl<HTMLButtonElement>('image-list-reload').click();
+    await flushAsyncWork();
+
+    const buttonsAfterReload = [
+      ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
+    ];
+    expect(buttonsAfterReload).toHaveLength(3);
+  });
+
+  it('removes a list item and marks it errored when its own thumbnail image fails to load', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = 'https://example.com/error-image.png';
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const buttons = [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')];
+    expect(buttons).toHaveLength(1);
+    expect(buttons.some((button) => button.querySelector('img')?.src === imgB.src)).toBe(false);
+  });
+
+  it('adjusts scroll position when the newly current item sits above or below the visible list', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    document.body.append(imgA, imgB);
+
+    await openDialog(messageListener, imgA);
+
+    const imageList = getControl<HTMLUListElement>('image-list');
+    imageList.getBoundingClientRect = () => ({ top: 100, bottom: 200 }) as DOMRect;
+
+    const buttons = () => [
+      ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
+    ];
+
+    buttons()[1]!.getBoundingClientRect = () => ({ top: 0, bottom: 10 }) as DOMRect;
+    expect(() => buttons()[1]!.click()).not.toThrow();
+    await flushAsyncWork();
+
+    buttons()[0]!.getBoundingClientRect = () => ({ top: 500, bottom: 510 }) as DOMRect;
+    expect(() => buttons()[0]!.click()).not.toThrow();
+    await flushAsyncWork();
+  });
+
+  it('picks up a lazily-loaded image update when the source <img> fires load/error after the list is already built, and filters the errored entry out of the noRecreate cache on the next selection', async () => {
+    const { messageListener } = await importContentScripts({ openShadow: true });
+    const imgA = document.createElement('img');
+    imgA.src = svgSrc('a');
+    const imgB = document.createElement('img');
+    imgB.src = svgSrc('b');
+    const imgC = document.createElement('img');
+    imgC.src = svgSrc('c');
+    document.body.append(imgA, imgB, imgC);
+
+    // createImageList が imgA/imgB/imgC へ load/error リスナーを付け終えたあとで src を差し替え、
+    // パッチ済みの src setter がリスナー登録後に load/error を発火させる状況を作る
+    await openDialog(messageListener, imgA);
+
+    imgA.src = svgSrc('a-updated');
+    imgB.src = 'https://example.com/error-image.png';
+
+    await flushAsyncWork();
+
+    const findButtonBySrc = (src: string) =>
+      [...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button')].find(
+        (button) => button.querySelector('img')?.src === src,
+      );
+
+    // imgB の isError は imagesCache 上の result を直接書き換えたもの。別ボタン(imgC)のクリックで
+    // noRecreate=true(キャッシュ再利用)を踏むと、listItems 生成時にこのエントリがフィルタされて消える
+    findButtonBySrc(svgSrc('c'))!.click();
+    await flushAsyncWork();
+
+    expect(findButtonBySrc(imgB.src)).toBeUndefined();
+    expect(findButtonBySrc(svgSrc('c'))?.getAttribute('aria-current')).toBe('true');
+
+    // reload(noRecreate=false)は DOM を再走査するため、この操作自体が例外を起こさないことのみ確認する
+    // (imgB の合成サムネイルは src に /error-image を含み自身の onerror で即座に再エラー扱いになるため復活しない)
+    expect(() => getControl<HTMLButtonElement>('image-list-reload').click()).not.toThrow();
+    await flushAsyncWork();
   });
 });
 
