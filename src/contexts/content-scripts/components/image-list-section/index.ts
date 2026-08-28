@@ -15,108 +15,152 @@ import { getImageListSectionFields } from './renderers';
 
 export { getImageListSectionFields, renderImageListSection } from './renderers';
 
-// 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
-let imagesCache: {
+type ResolvableElement = HTMLImageElement | SVGElement | HTMLElement;
+
+type ImageListEntry = {
   src: string;
   alt: string;
   isError: boolean;
   originalElement: SVGElement | HTMLElement;
-}[] = [];
+};
 
-export const createImageList = (noRecreate: boolean = false) => {
-  const { imageList, imageListInfo } = getImageListSectionFields();
-  const fragment = document.createDocumentFragment();
-  const images = noRecreate
-    ? imagesCache
-    : [...document.querySelectorAll<HTMLImageElement | SVGElement | HTMLElement>(SELECTOR)]
-        .map((originalElement) => {
-          if (originalElement instanceof HTMLImageElement) {
-            const result = {
-              src: originalElement.src,
-              alt: originalElement.alt.trim(),
-              isError: false,
-              originalElement,
-            };
+// 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
+let imagesCache: ImageListEntry[] = [];
 
-            // support lazyload by script
-            const handleLoad = async () => {
-              const clonedImage = document.createElement('img');
-              result.src = originalElement.src;
-              result.alt = originalElement.alt;
-              clonedImage.src = originalElement.src;
-              clonedImage.alt = originalElement.alt;
+// originalElement (img自体 / SVG / SVG以外の疑似画像要素) から実際に表示すべき画像要素を1本の分岐で解決する
+const resolveImageElement = (originalElement: ResolvableElement): HTMLImageElement | undefined => {
+  if (originalElement instanceof HTMLImageElement) {
+    return originalElement;
+  }
 
-              setImageData(
-                originalElement,
-                {
-                  clonedImage,
-                },
-                true,
-              );
-              await getFileSize(clonedImage);
-              setImageData(
-                clonedImage,
-                {
-                  isInDialog: true,
-                  origin: originalElement,
-                },
-                true,
-              );
-            };
+  return originalElement instanceof SVGElement
+    ? convertedSvgMap.get(originalElement)
+    : convertedDummyMap.get(originalElement);
+};
 
-            originalElement.addEventListener('load', () => {
-              void handleLoad();
-            });
-            originalElement.addEventListener('error', () => {
-              result.isError = true;
-            });
+const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | null => {
+  if (originalElement instanceof HTMLImageElement) {
+    const result = {
+      src: originalElement.src,
+      alt: originalElement.alt.trim(),
+      isError: false,
+      originalElement,
+    };
 
-            return result;
-          }
+    // support lazyload by script
+    const handleLoad = async () => {
+      const clonedImage = document.createElement('img');
+      result.src = originalElement.src;
+      result.alt = originalElement.alt;
+      clonedImage.src = originalElement.src;
+      clonedImage.alt = originalElement.alt;
 
-          const isSVG = originalElement instanceof SVGElement;
-          const pseudoImage = isSVG
-            ? convertedSvgMap.get(originalElement)
-            : convertedDummyMap.get(originalElement);
+      setImageData(
+        originalElement,
+        {
+          clonedImage,
+        },
+        true,
+      );
+      await getFileSize(clonedImage);
+      setImageData(
+        clonedImage,
+        {
+          isInDialog: true,
+          origin: originalElement,
+        },
+        true,
+      );
+    };
 
-          if (pseudoImage) {
-            return {
-              src: pseudoImage.src,
-              alt: pseudoImage.alt,
-              isError: false,
-              originalElement,
-            };
-          }
+    originalElement.addEventListener('load', () => {
+      void handleLoad();
+    });
+    originalElement.addEventListener('error', () => {
+      result.isError = true;
+    });
 
-          const newPseudoImage = isSVG
-            ? convertSVGToImg(originalElement)
-            : convertDummyElementToImg(originalElement);
+    return result;
+  }
 
-          if (!newPseudoImage) {
-            return null;
-          }
+  const isSVG = originalElement instanceof SVGElement;
+  const pseudoImage = resolveImageElement(originalElement);
 
-          const src = newPseudoImage.src;
-          const alt =
-            newPseudoImage.getAttribute('aria-label') ??
-            newPseudoImage.querySelector('title')?.textContent?.trim() ??
-            '';
+  if (pseudoImage) {
+    return {
+      src: pseudoImage.src,
+      alt: pseudoImage.alt,
+      isError: false,
+      originalElement,
+    };
+  }
 
-          return {
-            src,
-            alt,
-            isError: false,
-            originalElement,
-          };
-        })
-        .filter((current): current is (typeof imagesCache)[number] => {
-          return typeof current !== 'undefined' && current !== null;
-        })
-        .filter((current, index, self) => {
-          return self.findIndex((element) => element?.src === current.src) == index;
-        });
+  const newPseudoImage = isSVG
+    ? convertSVGToImg(originalElement)
+    : convertDummyElementToImg(originalElement);
 
-  const listItems = images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
+  if (!newPseudoImage) {
+    return null;
+  }
+
+  const src = newPseudoImage.src;
+  const alt =
+    newPseudoImage.getAttribute('aria-label') ??
+    newPseudoImage.querySelector('title')?.textContent?.trim() ??
+    '';
+
+  return {
+    src,
+    alt,
+    isError: false,
+    originalElement,
+  };
+};
+
+// scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
+const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement | undefined) => {
+  if (!current) {
+    return;
+  }
+
+  current.focus();
+
+  const imageListRect = imageList.getBoundingClientRect();
+  const targetRect = current.getBoundingClientRect();
+  const scrollDelta = (() => {
+    const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
+    const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
+
+    if (isNotVisibleTop) {
+      return targetRect.top - imageListRect.top - IMAGE_LIST_GAP;
+    }
+
+    if (isNotVisibleBottom) {
+      return targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP;
+    }
+
+    return null;
+  })();
+
+  if (scrollDelta === null) {
+    return;
+  }
+
+  setTimeout(() => {
+    imageList.scrollBy(0, scrollDelta);
+  }, 0);
+};
+
+const collectImageListEntries = (): ImageListEntry[] =>
+  [...document.querySelectorAll<ResolvableElement>(SELECTOR)]
+    .map(toImageListEntry)
+    .filter((current): current is ImageListEntry => current !== null)
+    .filter((current, index, self) => {
+      return self.findIndex((element) => element?.src === current.src) == index;
+    });
+
+const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
+  images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
     if (isError) {
       return [];
     }
@@ -126,20 +170,14 @@ export const createImageList = (noRecreate: boolean = false) => {
 
     button.tabIndex = -1;
     button.addEventListener('click', () => {
-      if (originalElement instanceof HTMLImageElement) {
-        STATE.currentImageElement = originalElement;
-      } else if (originalElement instanceof SVGElement) {
-        const svg = convertedSvgMap.get(originalElement);
+      const resolved = resolveImageElement(originalElement);
 
-        if (svg) {
-          STATE.currentImageElement = svg;
-        }
-      } else {
-        const dummy = convertedDummyMap.get(originalElement);
-
-        if (dummy) {
-          STATE.currentImageElement = dummy;
-        }
+      // FIXME: resolved が undefined の時 STATE.currentImageElement が前回値のまま残り、
+      // 直後の !STATE.currentImageElement ガードを素通りして無関係な前回選択画像でダイアログが開く恐れがある。
+      // 現状は convertedSvgMap/convertedDummyMap が .delete() されないので実質到達しないはずだが、
+      // 前提が崩れると気付きにくく壊れる。resolved が falsy なら早期 return する形に直すのが本筋。
+      if (resolved) {
+        STATE.currentImageElement = resolved;
       }
 
       if (!STATE.currentImageElement) {
@@ -160,9 +198,7 @@ export const createImageList = (noRecreate: boolean = false) => {
       button.tabIndex = 0;
     }
 
-    button.insertAdjacentHTML('afterbegin', `<img />`);
-
-    const img = button.firstElementChild as HTMLImageElement;
+    const img = document.createElement('img');
 
     img.src = src;
     img.onerror = () => {
@@ -182,10 +218,17 @@ export const createImageList = (noRecreate: boolean = false) => {
       img.setAttribute('aria-label', chrome.i18n.getMessage('image_list_no_alt'));
     }
 
+    button.append(img);
     listItem.append(button);
 
     return listItem;
   });
+
+export const createImageList = (noRecreate: boolean = false) => {
+  const { imageList, imageListInfo } = getImageListSectionFields();
+  const fragment = document.createDocumentFragment();
+  const images = noRecreate ? imagesCache : collectImageListEntries();
+  const listItems = buildListItems(images);
 
   fragment.append(...listItems);
   imageList.textContent = '';
@@ -200,34 +243,20 @@ export const createImageList = (noRecreate: boolean = false) => {
 
   if (noRecreate) {
     viewCurrentIndex();
+    scheduleScrollAdjustment(imageList, current);
 
-    if (current) {
-      // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
-      const imageListRect = imageList.getBoundingClientRect();
-      const targetRect = current.getBoundingClientRect();
-      const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
-      const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
-
-      if (isNotVisibleTop) {
-        setTimeout(() => {
-          imageList.scrollBy(0, targetRect.top - imageListRect.top - IMAGE_LIST_GAP);
-        }, 0);
-      } else if (isNotVisibleBottom) {
-        setTimeout(() => {
-          imageList.scrollBy(0, targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP);
-        }, 0);
-      }
-    }
-
-    current?.focus();
-  } else {
-    imagesCache = images;
-    imageList.classList.add('invisible');
-
-    setTimeout(() => {
-      imageList.classList.remove('invisible');
-      viewCurrentIndex();
-      current?.scrollIntoView(false);
-    }, 300);
+    return;
   }
+
+  imagesCache = images;
+  imageList.classList.add('invisible');
+
+  // FIXME: 300ms以内に createImageList が連続で呼ばれると、この setTimeout が古い
+  // current/currentIndex のクロージャのまま新しいDOMに対して発火し、表示が一瞬チラつく恐れがある。
+  // 前回分の setTimeout を clearTimeout してから予約し直すのが本筋。
+  setTimeout(() => {
+    imageList.classList.remove('invisible');
+    viewCurrentIndex();
+    current?.scrollIntoView(false);
+  }, 300);
 };
