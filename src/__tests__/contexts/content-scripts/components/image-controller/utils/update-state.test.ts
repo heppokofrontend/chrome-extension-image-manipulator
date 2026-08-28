@@ -13,7 +13,7 @@ const importUpdateState = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
   const { updateState } =
-    await import('@/contexts/content-scripts/components/details/utils/update-state');
+    await import('@/contexts/content-scripts/components/image-controller/utils/update-state');
   const { STATE } = await import('@/contexts/content-scripts/state');
 
   return { updateState, STATE };

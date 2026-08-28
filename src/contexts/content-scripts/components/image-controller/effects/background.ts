@@ -1,5 +1,5 @@
-import { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+import type { getImageControllerFields } from '../renderers';
 
 const { dialog } = CONTENT_UI;
 
