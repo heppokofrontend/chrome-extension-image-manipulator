@@ -8,7 +8,9 @@ import {
 import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list-section/types';
 
 export const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
-  images.flatMap(({ src, alt, isError, originalElement }, index, self) => {
+  images.flatMap((entry) => {
+    const { src, alt, isError, originalElement } = entry;
+
     if (isError) {
       return [];
     }
@@ -34,12 +36,7 @@ export const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
     img.src = src;
     img.onerror = () => {
       listItem.remove();
-
-      const target = self[index];
-
-      if (target) {
-        target.isError = true;
-      }
+      entry.isError = true;
     };
 
     // alt がない時、image_list_no_alt を alt に指定するとここの alt が拾われてしまうため、aria-label を使用する
