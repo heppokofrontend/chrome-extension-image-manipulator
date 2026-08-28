@@ -177,7 +177,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
     '#details input[readonly]:focus-visible, #details select[readonly]:focus-visible': {
       'border-bottom-color': '#cbd7db',
     },
-    '#readonly .row, #editable .row, #editable .group': {
+    '#readonly .row, #image-controller .row, #image-controller .group': {
       display: 'grid',
       'grid-template-columns': '140px 1fr',
     },
@@ -285,10 +285,10 @@ export const buildStyleElement = (): HTMLStyleElement => {
     '#readonly .unit': {
       'padding-left': 0,
     },
-    '#editable input:not([type="checkbox"]), #editable select': {
+    '#image-controller input:not([type="checkbox"]), #image-controller select': {
       background: '#1d1d1e',
     },
-    '#editable .row:not(:first-child)': {
+    '#image-controller .row:not(:first-child)': {
       margin: '12px 0 0',
     },
     '.checkbox': {

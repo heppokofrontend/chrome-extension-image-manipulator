@@ -2,10 +2,10 @@ import { ROTATE_ICON } from '@/contexts/content-scripts/assets';
 
 const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
 
-export const buildEditable = () => {
+export const buildImageController = () => {
   const element = document.createElement('div');
 
-  element.id = 'editable';
+  element.id = 'image-controller';
   element.innerHTML = `
     <div class="checkbox-group">
       <p class="row">
