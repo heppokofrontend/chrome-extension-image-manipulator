@@ -6,9 +6,7 @@ type ImageListControllerFields = Pick<
   'reload' | 'prev' | 'next' | 'imageList'
 >;
 
-type Direction = 'next' | 'prev';
-
-const focusAdjacentImage = (imageList: HTMLElement, direction: Direction) => {
+const focusAdjacentImage = (imageList: HTMLElement, direction: 'next' | 'prev') => {
   const current = imageList.querySelector<HTMLButtonElement>('[aria-current="true"]');
   const sibling =
     direction === 'next'
@@ -23,12 +21,12 @@ const focusAdjacentImage = (imageList: HTMLElement, direction: Direction) => {
   }
 
   const list = current?.closest('ul');
-  const roopTarget =
+  const loopTarget =
     (direction === 'next' ? list?.firstElementChild : list?.lastElementChild)?.firstElementChild ??
     imageList.querySelector('button');
 
-  if (roopTarget instanceof HTMLButtonElement) {
-    roopTarget.click();
+  if (loopTarget instanceof HTMLButtonElement) {
+    loopTarget.click();
   }
 };
 
@@ -51,6 +49,8 @@ export const addEventImageListControllers = ({
   });
 
   imageList.addEventListener('wheel', (e) => e.stopPropagation());
+  // TODO: preventDefault は onImageListKeydown 側と重複、stopPropagation の必要性も含めて要調査。
+  // 対象ページ側のグローバルショートカット対策で意図的に残っている可能性があり、未確証のまま削除しない。
   imageList.addEventListener('keydown', (e) => {
     e.stopPropagation();
 
