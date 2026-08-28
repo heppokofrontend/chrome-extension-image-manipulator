@@ -1,3 +1,4 @@
+import { addEventImageListControllers } from '../../effects';
 import { buildImageListSection } from './build-image-list-section';
 
 type ImageListSectionFields = Omit<ReturnType<typeof buildImageListSection>, 'element'>;
@@ -9,6 +10,8 @@ export const renderImageListSection = (container: Element | DocumentFragment) =>
 
   fields = rest;
   container.append(element);
+
+  addEventImageListControllers(rest);
 };
 
 export const getImageListSectionFields = () => {

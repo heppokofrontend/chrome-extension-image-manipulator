@@ -1,10 +1,6 @@
 import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
-import {
-  getImageListSectionFields,
-  renderImageListSection,
-} from '@/contexts/content-scripts/components/image-list-section';
-import { addEventImageListControllers } from '../effects';
+import { renderImageListSection } from '@/contexts/content-scripts/components/image-list-section';
 import { onDetailsClose, onSearchClick } from '../handlers';
 import { buildDetails } from './build-details';
 
@@ -32,10 +28,7 @@ export const renderDetails = () => {
 
   closeBtn.addEventListener('click', onDetailsClose);
 
-  const imageListSectionFields = getImageListSectionFields();
   const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
-
-  addEventImageListControllers(imageListSectionFields);
 
   searchButton.addEventListener('click', onSearchClick);
 
