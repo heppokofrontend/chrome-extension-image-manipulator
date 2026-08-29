@@ -1,1 +1,1 @@
-export { renderImageInfo, setImageInfoValues } from './renderers';
+export { renderImageInfo } from './renderers';
