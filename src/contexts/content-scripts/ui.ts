@@ -1,12 +1,13 @@
 import { SPINNER_SVG } from '@/contexts/content-scripts/assets';
 import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils/non-nullable-query-selector';
+import { getMessage } from '@/utils';
 
 export const buildDialogElement = () => {
   const element = document.createElement('dialog');
 
   element.role = 'dialog';
   element.ariaModal = 'true';
-  element.ariaLabel = chrome.i18n.getMessage('extName');
+  element.ariaLabel = getMessage('extName');
   element.addEventListener('keydown', (e) => {
     if (e.key === 'ESC') {
       e.preventDefault();
@@ -22,10 +23,10 @@ export const buildDialogElement = () => {
       <div id="canvas-inner"></div>
     </div>
     <div id="spinner">${SPINNER_SVG}</div>
-    <button type="button" class="close-btn for-portrait">${chrome.i18n.getMessage('button_close')}</button>
+    <button type="button" class="close-btn for-portrait">${getMessage('button_close')}</button>
     <div id="details">
       <p class="close">
-        <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
+        <button type="button" class="close-btn">${getMessage('button_close')}</button>
       </p>
       <div id="image-info"></div>
       <div id="image-controller"></div>
@@ -33,7 +34,7 @@ export const buildDialogElement = () => {
       <div class="group">
         <p class="search-wrapper">
           <button id="search">
-            🔍 ${chrome.i18n.getMessage('search_in_page')}
+            🔍 ${getMessage('search_in_page')}
           </button>
         </p>
       </div>

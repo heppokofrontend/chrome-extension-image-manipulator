@@ -5,6 +5,7 @@ import {
   convertedImgToSVGMap,
   getImageData,
 } from '@/contexts/content-scripts/utils';
+import { getMessage } from '@/utils';
 
 const { dialog } = CONTENT_UI;
 
@@ -30,7 +31,7 @@ export const searchInPage = () => {
       })();
 
       if (!origin) {
-        alert(chrome.i18n.getMessage('searched_image_error'));
+        alert(getMessage('searched_image_error'));
 
         return;
       }
@@ -60,7 +61,7 @@ export const searchInPage = () => {
           `;
 
       point.tabIndex = 0;
-      point.textContent = chrome.i18n.getMessage('searched_image_message');
+      point.textContent = getMessage('searched_image_message');
       point.style.cssText =
         'all: unset; position: absolute; z-index: -1; width: 0; height: 0; overflow: hidden; display: block;';
       point.addEventListener('blur', () => {

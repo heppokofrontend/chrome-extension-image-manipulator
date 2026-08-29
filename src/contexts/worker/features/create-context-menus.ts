@@ -1,3 +1,5 @@
+import { getMessage } from '@/utils';
+
 interface MenuItem {
   id: string;
   title: string;
@@ -7,7 +9,7 @@ interface MenuItem {
 export const createMenuDefinitions = (): MenuItem[] => [
   {
     id: 'zoom',
-    title: chrome.i18n.getMessage('context_zoom'),
+    title: getMessage('context_zoom'),
     children: Array.from({ length: 12 }, (_, index) => {
       const value = `${(index + 1) * 0.25 * 100}%`;
 
@@ -16,7 +18,7 @@ export const createMenuDefinitions = (): MenuItem[] => [
   },
   {
     id: 'rotate',
-    title: chrome.i18n.getMessage('context_rotate'),
+    title: getMessage('context_rotate'),
     children: Array.from({ length: 9 }, (_, index) => {
       const value = `${index * 45}deg`;
 
@@ -25,18 +27,18 @@ export const createMenuDefinitions = (): MenuItem[] => [
   },
   {
     id: 'reverse',
-    title: chrome.i18n.getMessage('context_reverse'),
+    title: getMessage('context_reverse'),
   },
   {
     id: 'dialog',
-    title: chrome.i18n.getMessage('context_dialog'),
+    title: getMessage('context_dialog'),
   },
   {
     id: 'reset-menus',
-    title: chrome.i18n.getMessage('context_resetMenus'),
+    title: getMessage('context_resetMenus'),
     children: [
-      { id: 'reset', title: chrome.i18n.getMessage('context_reset') },
-      { id: 'reset-all', title: chrome.i18n.getMessage('context_resetAll') },
+      { id: 'reset', title: getMessage('context_reset') },
+      { id: 'reset-all', title: getMessage('context_resetAll') },
     ],
   },
 ];

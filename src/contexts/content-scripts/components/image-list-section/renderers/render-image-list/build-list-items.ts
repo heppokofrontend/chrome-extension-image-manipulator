@@ -5,6 +5,7 @@ import {
 } from '@/contexts/content-scripts/components/image-list-section/handlers';
 import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list-section/types';
 import { STATE } from '@/contexts/content-scripts/state';
+import { getMessage } from '@/utils';
 
 export const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
   images.flatMap((entry) => {
@@ -42,7 +43,7 @@ export const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
     if (alt) {
       img.alt = alt;
     } else {
-      img.setAttribute('aria-label', chrome.i18n.getMessage('image_list_no_alt'));
+      img.setAttribute('aria-label', getMessage('image_list_no_alt'));
     }
 
     button.append(img);
