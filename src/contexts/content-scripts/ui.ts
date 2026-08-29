@@ -27,20 +27,30 @@ export const buildDialogElement = () => {
       <p class="close">
         <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
       </p>
-      <div class="group">
-        <p class="search-wrapper">
-          <button id="search">
-            🔍 ${chrome.i18n.getMessage('search_in_page')}
-          </button>
-        </p>
-      </div>
     </div>
   `,
   );
 
   return element;
 };
+
+const buildSearchGroupElement = () => {
+  const element = document.createElement('div');
+
+  element.className = 'group';
+  element.innerHTML = `
+    <p class="search-wrapper">
+      <button id="search">
+        🔍 ${chrome.i18n.getMessage('search_in_page')}
+      </button>
+    </p>
+  `;
+
+  return element;
+};
+
 const dialog = buildDialogElement();
+const searchGroup = buildSearchGroupElement();
 
 export const CONTENT_UI = {
   imageViewer: document.createElement('heppokofrontend-imagemanipulator'),
@@ -53,5 +63,6 @@ export const CONTENT_UI = {
     '.close-btn.for-portrait',
     dialog,
   ),
-  searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', dialog),
+  searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', searchGroup),
+  searchGroup,
 };
