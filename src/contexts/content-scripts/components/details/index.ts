@@ -1,1 +1,0 @@
-export { renderDetails } from './renderers';

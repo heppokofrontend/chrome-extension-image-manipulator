@@ -3,8 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const importOnDetailsClose = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
-  const { onDetailsClose } =
-    await import('@/contexts/content-scripts/components/details/handlers/on-details-close');
+  const { onDetailsClose } = await import('@/contexts/content-scripts/handlers/on-details-close');
   const { CONTENT_UI } = await import('@/contexts/content-scripts/ui');
 
   return { onDetailsClose, CONTENT_UI };
