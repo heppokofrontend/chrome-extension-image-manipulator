@@ -1,9 +1,9 @@
-import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import type { ImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { defaultState } from '@/contexts/content-scripts/utils';
 
 type RotateFields = Pick<
-  ReturnType<typeof getImageControllerFields>,
+  ImageControllerFields,
   'rotate' | 'rotateReset' | 'rotateLeft' | 'rotateRight'
 >;
 

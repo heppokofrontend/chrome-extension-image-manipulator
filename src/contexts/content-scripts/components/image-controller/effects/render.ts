@@ -1,8 +1,8 @@
-import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import type { ImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { defaultState } from '@/contexts/content-scripts/utils';
 
-type RenderFields = Pick<ReturnType<typeof getImageControllerFields>, 'render'>;
+type RenderFields = Pick<ImageControllerFields, 'render'>;
 
 const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
 

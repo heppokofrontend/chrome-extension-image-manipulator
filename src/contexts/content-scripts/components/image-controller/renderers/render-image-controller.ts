@@ -5,31 +5,38 @@ import {
   addEventRotateControllers,
   addEventScaleControllers,
 } from '@/contexts/content-scripts/components/image-controller/effects';
+import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageController } from './build-image-controller';
 
-type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'fragment'>;
+export type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'fragment'>;
 
 let fields: ImageControllerFields | undefined;
 
-export const renderImageController = () => {
-  const { fragment, ...rest } = buildImageController();
-
-  fields = rest;
-  CONTENT_UI.imageController.append(fragment);
-
-  addEventScaleControllers(rest);
-  addEventRotateControllers(rest);
-  addEventReverseAndBorderControllers(rest);
-  addEventRenderControllers(rest);
-  addEventBackgroundControllers(rest);
-};
-
-export const getImageControllerFields = () => {
+export const renderImageController = (
+  imageData?: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
+) => {
   if (!fields) {
-    throw new Error('renderImageController must be called before getImageControllerFields');
+    const { fragment, ...rest } = buildImageController();
+
+    fields = rest;
+    CONTENT_UI.imageController.append(fragment);
+
+    addEventScaleControllers(rest);
+    addEventRotateControllers(rest);
+    addEventReverseAndBorderControllers(rest);
+    addEventRenderControllers(rest);
+    addEventBackgroundControllers(rest);
   }
 
-  return fields;
+  if (!imageData) {
+    return;
+  }
+
+  fields.scale.value = String(imageData.scale);
+  fields.rotate.value = String(imageData.rotate);
+  fields.reverse.checked = imageData.reverse;
+  fields.border.checked = STATE.hasBorder;
+  fields.render.value = imageData.render;
 };
