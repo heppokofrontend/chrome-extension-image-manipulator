@@ -1,11 +1,23 @@
-import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
-import { buildDialogElement } from '@/contexts/content-scripts/renderers/build-dialog-element';
+export const buildDialogElement = () => {
+  const element = document.createElement('dialog');
 
-const { canvas, spaceElement } = buildCanvas();
+  element.role = 'dialog';
+  element.ariaModal = 'true';
+  element.ariaLabel = chrome.i18n.getMessage('extName');
+  element.addEventListener('keydown', (e) => {
+    if (e.key === 'ESC') {
+      e.preventDefault();
+      e.stopPropagation();
+      element.close();
+    }
+  });
+
+  return element;
+};
 
 export const CONTENT_UI = {
   imageViewer: document.createElement('heppokofrontend-imagemanipulator'),
   dialog: buildDialogElement(),
-  canvas,
-  spaceElement,
+  canvas: document.createElement('div'),
+  spaceElement: document.createElement('div'),
 };
