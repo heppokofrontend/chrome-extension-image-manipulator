@@ -1,20 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildDialogElement } from '@/contexts/content-scripts/renderers/build-dialog-element';
+const importBuildDialogElement = async () => {
+  vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
-const stubChrome = () => {
-  vi.stubGlobal('chrome', {
-    i18n: { getMessage: (key: string) => key },
-  });
+  const { buildDialogElement } = await import('@/contexts/content-scripts/ui');
+
+  return { buildDialogElement };
 };
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.resetModules();
 });
 
 describe('buildDialogElement', () => {
-  it('builds an accessible dialog labeled with the extension name', () => {
-    stubChrome();
+  it('builds an accessible dialog labeled with the extension name', async () => {
+    const { buildDialogElement } = await importBuildDialogElement();
 
     const dialog = buildDialogElement();
 
@@ -24,8 +25,8 @@ describe('buildDialogElement', () => {
     expect(dialog.ariaLabel).toBe('extName');
   });
 
-  it('closes the dialog on the legacy "ESC" key value', () => {
-    stubChrome();
+  it('closes the dialog on the legacy "ESC" key value', async () => {
+    const { buildDialogElement } = await importBuildDialogElement();
 
     const dialog = buildDialogElement();
     const close = vi.fn();
@@ -40,8 +41,8 @@ describe('buildDialogElement', () => {
     expect(stopPropagation).toHaveBeenCalled();
   });
 
-  it('does not close the dialog for any other key', () => {
-    stubChrome();
+  it('does not close the dialog for any other key', async () => {
+    const { buildDialogElement } = await importBuildDialogElement();
 
     const dialog = buildDialogElement();
     const close = vi.fn();

@@ -1,4 +1,5 @@
 import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list-section/effects';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageListSection } from './build-image-list-section';
 
@@ -6,11 +7,11 @@ type ImageListSectionFields = Omit<ReturnType<typeof buildImageListSection>, 'el
 
 let fields: ImageListSectionFields | undefined;
 
-export const renderImageListSection = (container: Element | DocumentFragment) => {
+export const renderImageListSection = () => {
   const { element, ...rest } = buildImageListSection();
 
   fields = rest;
-  container.append(element);
+  CONTENT_UI.details.append(element);
 
   addEventImageListControllers(rest);
 };

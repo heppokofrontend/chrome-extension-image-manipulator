@@ -1,6 +1,9 @@
-export const buildCanvas = () => {
-  const outer = document.createElement('div');
-  const inner = document.createElement('div');
+import { onCanvasWheel } from '@/contexts/content-scripts/handlers';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+
+export const initCanvas = () => {
+  const outer = CONTENT_UI.canvas;
+  const inner = CONTENT_UI.spaceElement;
   const moveState = {
     clientY: 0,
     clientX: 0,
@@ -39,9 +42,5 @@ export const buildCanvas = () => {
   outer.id = 'canvas';
   inner.id = 'canvas-inner';
   outer.append(inner);
-
-  return {
-    canvas: outer,
-    spaceElement: inner,
-  };
+  outer.addEventListener('wheel', onCanvasWheel);
 };
