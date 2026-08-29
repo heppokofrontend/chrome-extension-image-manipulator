@@ -2,15 +2,15 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageInfo } from './build-image-info';
 
-type ImageInfoFields = Omit<ReturnType<typeof buildImageInfo>, 'element'>;
+type ImageInfoFields = Omit<ReturnType<typeof buildImageInfo>, 'fragment'>;
 
 let fields: ImageInfoFields | undefined;
 
 export const renderImageInfo = () => {
-  const { element, ...rest } = buildImageInfo();
+  const { fragment, ...rest } = buildImageInfo();
 
   fields = rest;
-  CONTENT_UI.details.append(element);
+  CONTENT_UI.imageInfo.append(fragment);
 };
 
 export const getImageInfoFields = () => {

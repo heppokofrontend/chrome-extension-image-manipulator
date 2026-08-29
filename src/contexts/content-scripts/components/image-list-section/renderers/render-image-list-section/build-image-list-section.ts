@@ -3,9 +3,6 @@ import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
 export const buildImageListSection = () => {
   const element = document.createElement('div');
 
-  element.id = 'image-list-section';
-  element.setAttribute('role', 'group');
-  element.setAttribute('aria-labelledby', 'image-list-label');
   element.innerHTML = `
     <div id="image-list-header">
       <p id="image-list-label" class="legend">${chrome.i18n.getMessage('image_list_title')}</p>
@@ -33,12 +30,17 @@ export const buildImageListSection = () => {
     </p>
   `;
 
-  return {
-    element,
+  const fields = {
     reload: nonNullableQuerySelector<HTMLButtonElement>('#image-list-reload', element),
     prev: nonNullableQuerySelector<HTMLButtonElement>('#image-list-prev', element),
     next: nonNullableQuerySelector<HTMLButtonElement>('#image-list-next', element),
     imageList: nonNullableQuerySelector<HTMLElement>('#image-list', element),
     imageListInfo: nonNullableQuerySelector<HTMLElement>('#image-list-info-text', element),
   };
+
+  const fragment = document.createDocumentFragment();
+
+  fragment.append(...element.childNodes);
+
+  return { fragment, ...fields };
 };

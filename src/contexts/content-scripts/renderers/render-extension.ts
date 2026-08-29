@@ -14,8 +14,7 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { buildStyleElement } from './build-style-element';
 
 export const renderExtension = () => {
-  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton, searchGroup, details } =
-    CONTENT_UI;
+  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton } = CONTENT_UI;
   const style = buildStyleElement();
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
 
@@ -26,7 +25,6 @@ export const renderExtension = () => {
   renderImageInfo();
   renderImageController();
   renderImageListSection();
-  details.append(searchGroup);
   initCanvas();
 
   shadowRoot.appendChild(style);

@@ -27,6 +27,16 @@ export const buildDialogElement = () => {
       <p class="close">
         <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
       </p>
+      <div id="image-info"></div>
+      <div id="image-controller"></div>
+      <div id="image-list-section" role="group" aria-labelledby="image-list-label"></div>
+      <div class="group">
+        <p class="search-wrapper">
+          <button id="search">
+            🔍 ${chrome.i18n.getMessage('search_in_page')}
+          </button>
+        </p>
+      </div>
     </div>
   `,
   );
@@ -34,35 +44,20 @@ export const buildDialogElement = () => {
   return element;
 };
 
-const buildSearchGroupElement = () => {
-  const element = document.createElement('div');
-
-  element.className = 'group';
-  element.innerHTML = `
-    <p class="search-wrapper">
-      <button id="search">
-        🔍 ${chrome.i18n.getMessage('search_in_page')}
-      </button>
-    </p>
-  `;
-
-  return element;
-};
-
 const dialog = buildDialogElement();
-const searchGroup = buildSearchGroupElement();
 
 export const CONTENT_UI = {
   imageViewer: document.createElement('heppokofrontend-imagemanipulator'),
   dialog,
   canvas: nonNullableQuerySelector('#canvas', dialog),
   spaceElement: nonNullableQuerySelector('#canvas-inner', dialog),
-  details: nonNullableQuerySelector('#details', dialog),
+  imageInfo: nonNullableQuerySelector('#image-info', dialog),
+  imageController: nonNullableQuerySelector('#image-controller', dialog),
+  imageListSection: nonNullableQuerySelector('#image-list-section', dialog),
   closeBtn: nonNullableQuerySelector<HTMLButtonElement>('#details .close .close-btn', dialog),
   closeBtnForPortrait: nonNullableQuerySelector<HTMLButtonElement>(
     '.close-btn.for-portrait',
     dialog,
   ),
-  searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', searchGroup),
-  searchGroup,
+  searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', dialog),
 };
