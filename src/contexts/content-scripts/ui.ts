@@ -1,5 +1,5 @@
 import { buildCanvas } from '@/contexts/content-scripts/components/canvas/renderers';
-import { buildDialogElement } from '@/contexts/content-scripts/renderers';
+import { buildDialogElement } from '@/contexts/content-scripts/renderers/build-dialog-element';
 
 const { canvas, spaceElement } = buildCanvas();
 

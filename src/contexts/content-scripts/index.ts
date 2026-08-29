@@ -1,7 +1,9 @@
 import { SPINNER } from '@/contexts/content-scripts/assets';
-import { renderDetails } from '@/contexts/content-scripts/components/details';
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
+import { renderImageListSection } from '@/contexts/content-scripts/components/image-list-section';
 import { onMessage, onContextmenu } from '@/contexts/content-scripts/handlers';
-import { buildStyleElement } from '@/contexts/content-scripts/renderers';
+import { buildDetails, buildStyleElement } from '@/contexts/content-scripts/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { getImageData, setImageData, zoomAndScrollInit } from '@/contexts/content-scripts/utils';
@@ -64,7 +66,11 @@ canvas.addEventListener('wheel', (e) => {
   });
 });
 
-const details = renderDetails();
+const { element: detailsElement, closeBtnForPortrait } = buildDetails();
+
+renderImageInfo(detailsElement);
+renderImageController(detailsElement);
+renderImageListSection(detailsElement);
 
 const style = buildStyleElement();
 const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
@@ -84,7 +90,8 @@ const resizeSupport = () => {
   });
 };
 dialog.append(canvas);
-dialog.append(details);
+dialog.append(closeBtnForPortrait);
+dialog.append(detailsElement);
 canvas.insertAdjacentHTML('afterend', SPINNER);
 shadowRoot.appendChild(style);
 shadowRoot.appendChild(dialog);
