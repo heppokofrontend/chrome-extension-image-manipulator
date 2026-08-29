@@ -9,15 +9,15 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageController } from './build-image-controller';
 
-type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'element'>;
+type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'fragment'>;
 
 let fields: ImageControllerFields | undefined;
 
 export const renderImageController = () => {
-  const { element, ...rest } = buildImageController();
+  const { fragment, ...rest } = buildImageController();
 
   fields = rest;
-  CONTENT_UI.details.append(element);
+  CONTENT_UI.imageController.append(fragment);
 
   addEventScaleControllers(rest);
   addEventRotateControllers(rest);

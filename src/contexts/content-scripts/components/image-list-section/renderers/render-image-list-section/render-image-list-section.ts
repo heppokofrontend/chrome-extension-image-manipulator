@@ -3,15 +3,15 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageListSection } from './build-image-list-section';
 
-type ImageListSectionFields = Omit<ReturnType<typeof buildImageListSection>, 'element'>;
+type ImageListSectionFields = Omit<ReturnType<typeof buildImageListSection>, 'fragment'>;
 
 let fields: ImageListSectionFields | undefined;
 
 export const renderImageListSection = () => {
-  const { element, ...rest } = buildImageListSection();
+  const { fragment, ...rest } = buildImageListSection();
 
   fields = rest;
-  CONTENT_UI.details.append(element);
+  CONTENT_UI.imageListSection.append(fragment);
 
   addEventImageListControllers(rest);
 };

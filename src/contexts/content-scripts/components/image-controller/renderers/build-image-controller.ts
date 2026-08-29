@@ -6,7 +6,6 @@ const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'hi
 export const buildImageController = () => {
   const element = document.createElement('div');
 
-  element.id = 'image-controller';
   element.innerHTML = `
     <div class="checkbox-group">
       <p class="row">
@@ -119,8 +118,7 @@ export const buildImageController = () => {
     </div>
   `;
 
-  return {
-    element,
+  const fields = {
     reverse: nonNullableQuerySelector<HTMLInputElement>('#reverse', element),
     border: nonNullableQuerySelector<HTMLInputElement>('#border', element),
     scale: nonNullableQuerySelector<HTMLInputElement>('#scale', element),
@@ -135,4 +133,10 @@ export const buildImageController = () => {
     backgroundBright: nonNullableQuerySelector<HTMLButtonElement>('#background-bright', element),
     backgroundDark: nonNullableQuerySelector<HTMLButtonElement>('#background-dark', element),
   };
+
+  const fragment = document.createDocumentFragment();
+
+  fragment.append(...element.childNodes);
+
+  return { fragment, ...fields };
 };

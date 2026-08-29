@@ -49,10 +49,8 @@ const READONLY_FIELDS: Record<ReadonlyFieldKey, { key: string; className?: strin
 };
 
 export const buildImageInfo = () => {
-  const element = document.createElement('div');
   const readonly = document.createElement('div');
 
-  element.id = 'image-info';
   readonly.id = 'readonly';
 
   const inputElements = {} as Record<ReadonlyFieldKey, HTMLInputElement>;
@@ -68,10 +66,12 @@ export const buildImageInfo = () => {
     inputElements[field] = input;
   }
 
-  element.append(readonly);
+  const fragment = document.createDocumentFragment();
+
+  fragment.append(readonly);
 
   return {
-    element,
+    fragment,
     alt: inputElements.alt,
     url: inputElements.url,
     type: inputElements.type,
