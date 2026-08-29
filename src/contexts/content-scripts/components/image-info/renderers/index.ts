@@ -1,1 +1,1 @@
-export { getImageInfoFields, renderImageInfo } from './render-image-info';
+export { renderImageInfo, setImageInfoValues } from './render-image-info';
