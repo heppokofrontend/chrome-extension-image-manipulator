@@ -227,6 +227,17 @@ describe('content-scripts entry point', () => {
     expect(sendResponse).toHaveBeenCalledWith(true);
     expect(result).toBe(true);
   });
+
+  it('re-appends the custom element on window load if a framework removed it', async () => {
+    await importContentScripts();
+
+    const host = nonNullable(document.body.querySelector('heppokofrontend-imagemanipulator'));
+
+    host.remove();
+    window.dispatchEvent(new Event('load'));
+
+    expect(document.body.contains(host)).toBe(true);
+  });
 });
 
 describe('contextmenu target resolution', () => {
@@ -454,6 +465,21 @@ describe('canvas wheel gestures', () => {
 
     dispatchWheel(canvas, 100, true);
     expect(img.style.transform).toContain('rotateZ(350deg)');
+  });
+
+  it('rotates left without wrapping when the result stays within 0-359 degrees', async () => {
+    await importContentScripts({ openShadow: true });
+    const canvas = getControl('canvas');
+    const img = document.createElement('img');
+    document.body.appendChild(img);
+    rightClick(img);
+
+    dispatchWheel(canvas, -100, true);
+    dispatchWheel(canvas, -100, true);
+    expect(img.style.transform).toContain('rotateZ(20deg)');
+
+    dispatchWheel(canvas, 100, true);
+    expect(img.style.transform).toContain('rotateZ(10deg)');
   });
 });
 
