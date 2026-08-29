@@ -1,4 +1,5 @@
 import { setImageData } from '@/contexts/content-scripts/utils/image-data';
+import { getMessage } from '@/utils';
 
 export const getFileSize = (image: HTMLImageElement) => {
   return new Promise<void>((done) => {
@@ -8,7 +9,7 @@ export const getFileSize = (image: HTMLImageElement) => {
       const size = new Blob([image.src]).size;
 
       setImageData(image, {
-        fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
+        fileSize: size ? `${size} byte` : getMessage('error_fileSize'),
         fileType: 'image/svg+xml (in HTML)',
       });
 
@@ -24,14 +25,14 @@ export const getFileSize = (image: HTMLImageElement) => {
         const type = headers.get('Content-Type');
 
         setImageData(image, {
-          fileSize: size ? `${size} byte` : chrome.i18n.getMessage('error_fileSize'),
-          fileType: type ?? chrome.i18n.getMessage('error_fileType'),
+          fileSize: size ? `${size} byte` : getMessage('error_fileSize'),
+          fileType: type ?? getMessage('error_fileType'),
         });
       })
       .catch(() => {
         setImageData(image, {
-          fileSize: chrome.i18n.getMessage('error_fileSize'),
-          fileType: chrome.i18n.getMessage('error_fileType'),
+          fileSize: getMessage('error_fileSize'),
+          fileType: getMessage('error_fileType'),
         });
       })
       .finally(() => {

@@ -1,5 +1,6 @@
 import { ROTATE_ICON_SVG } from '@/contexts/content-scripts/assets';
 import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
+import { getMessage } from '@/utils';
 
 const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
 
@@ -9,7 +10,7 @@ export const buildImageController = () => {
   element.innerHTML = `
     <div class="checkbox-group">
       <p class="row">
-        <label class="label" for="reverse">${chrome.i18n.getMessage('editable_reverse')}</label>
+        <label class="label" for="reverse">${getMessage('editable_reverse')}</label>
         <span class="control">
           <span class="checkbox">
             <input
@@ -21,7 +22,7 @@ export const buildImageController = () => {
       </p>
 
       <p class="row">
-        <label class="label" for="border">${chrome.i18n.getMessage('editable_border')}</label>
+        <label class="label" for="border">${getMessage('editable_border')}</label>
         <span class="control">
           <span class="checkbox shared">
             <input
@@ -35,7 +36,7 @@ export const buildImageController = () => {
 
     <div class="row" role="group" aria-labelledby="scale-legend">
       <p class="label" id="scale-legend">
-        <label for="scale">${chrome.i18n.getMessage('editable_scale')}</label>
+        <label for="scale">${getMessage('editable_scale')}</label>
       </p>
       <p class="control">
         <span class="field">
@@ -57,15 +58,15 @@ export const buildImageController = () => {
 
     <div class="row" role="group" aria-labelledby="rotate-legend">
       <p class="label" id="rotate-legend">
-        <label for="rotate">${chrome.i18n.getMessage('editable_rotate')}</label>
+        <label for="rotate">${getMessage('editable_rotate')}</label>
       </p>
       <p class="control">
         <span class="field">
           <button type="button" id="rotate-reset">RESET</button>
-          <button type="button" id="rotate-left" title="${chrome.i18n.getMessage('rotate_left')}">
+          <button type="button" id="rotate-left" title="${getMessage('rotate_left')}">
             ${ROTATE_ICON_SVG}
           </button>
-          <button type="button" id="rotate-right" title="${chrome.i18n.getMessage('rotate_right')}">
+          <button type="button" id="rotate-right" title="${getMessage('rotate_right')}">
             ${ROTATE_ICON_SVG}
           </button>
           <input
@@ -84,7 +85,7 @@ export const buildImageController = () => {
     </div>
 
     <p class="row">
-      <label class="label" for="render">${chrome.i18n.getMessage('editable_render')}</label>
+      <label class="label" for="render">${getMessage('editable_render')}</label>
       <span class="control">
         <select
           id="render"
@@ -97,20 +98,20 @@ export const buildImageController = () => {
     </p>
 
     <div class="group" id="color" role="group" aria-labelledby="background-label">
-      <p id="background-label" class="legend">${chrome.i18n.getMessage('editable_background')}</p>
+      <p id="background-label" class="legend">${getMessage('editable_background')}</p>
       <div class="control">
         <p class="button">
-          <input type="color" aria-label="${chrome.i18n.getMessage(
+          <input type="color" aria-label="${getMessage(
             'editable_background_custom',
           )}" id="background-custom" value="#202124" />
         </p>
         <p class="button">
-          <button type="button" id="background-bright">${chrome.i18n.getMessage(
+          <button type="button" id="background-bright">${getMessage(
             'editable_background_bright',
           )}</button>
         </p>
         <p class="button">
-          <button type="button" id="background-dark">${chrome.i18n.getMessage(
+          <button type="button" id="background-dark">${getMessage(
             'editable_background_dark',
           )}</button>
         </p>

@@ -1,4 +1,4 @@
-import { objectEntries } from '@/utils';
+import { getMessage, objectEntries } from '@/utils';
 
 const buildReadonlyRow = ({
   id,
@@ -58,7 +58,7 @@ export const buildImageInfo = () => {
   for (const [field, { key, className }] of objectEntries(READONLY_FIELDS)) {
     const { row, input } = buildReadonlyRow({
       id: toElementId(field),
-      labelText: chrome.i18n.getMessage(key),
+      labelText: getMessage(key),
       className,
     });
 
