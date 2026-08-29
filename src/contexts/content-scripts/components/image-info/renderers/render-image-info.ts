@@ -1,14 +1,16 @@
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+
 import { buildImageInfo } from './build-image-info';
 
 type ImageInfoFields = Omit<ReturnType<typeof buildImageInfo>, 'element'>;
 
 let fields: ImageInfoFields | undefined;
 
-export const renderImageInfo = (container: Element | DocumentFragment) => {
+export const renderImageInfo = () => {
   const { element, ...rest } = buildImageInfo();
 
   fields = rest;
-  container.append(element);
+  CONTENT_UI.details.append(element);
 };
 
 export const getImageInfoFields = () => {

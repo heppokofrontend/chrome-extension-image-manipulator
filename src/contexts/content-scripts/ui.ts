@@ -1,3 +1,6 @@
+import { SPINNER_SVG } from '@/contexts/content-scripts/assets';
+import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils/non-nullable-query-selector';
+
 export const buildDialogElement = () => {
   const element = document.createElement('dialog');
 
@@ -12,12 +15,43 @@ export const buildDialogElement = () => {
     }
   });
 
+  element.insertAdjacentHTML(
+    'afterbegin',
+    `
+    <div id="canvas">
+      <div id="canvas-inner"></div>
+    </div>
+    <div id="spinner">${SPINNER_SVG}</div>
+    <button type="button" class="close-btn for-portrait">${chrome.i18n.getMessage('button_close')}</button>
+    <div id="details">
+      <p class="close">
+        <button type="button" class="close-btn">${chrome.i18n.getMessage('button_close')}</button>
+      </p>
+      <div class="group">
+        <p class="search-wrapper">
+          <button id="search">
+            🔍 ${chrome.i18n.getMessage('search_in_page')}
+          </button>
+        </p>
+      </div>
+    </div>
+  `,
+  );
+
   return element;
 };
+const dialog = buildDialogElement();
 
 export const CONTENT_UI = {
   imageViewer: document.createElement('heppokofrontend-imagemanipulator'),
-  dialog: buildDialogElement(),
-  canvas: document.createElement('div'),
-  spaceElement: document.createElement('div'),
+  dialog,
+  canvas: nonNullableQuerySelector('#canvas', dialog),
+  spaceElement: nonNullableQuerySelector('#canvas-inner', dialog),
+  details: nonNullableQuerySelector('#details', dialog),
+  closeBtn: nonNullableQuerySelector<HTMLButtonElement>('#details .close .close-btn', dialog),
+  closeBtnForPortrait: nonNullableQuerySelector<HTMLButtonElement>(
+    '.close-btn.for-portrait',
+    dialog,
+  ),
+  searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', dialog),
 };

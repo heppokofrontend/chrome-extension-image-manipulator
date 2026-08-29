@@ -1,4 +1,4 @@
-import { ROTATE_ICON } from '@/contexts/content-scripts/assets';
+import { ROTATE_ICON_SVG } from '@/contexts/content-scripts/assets';
 import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
 
 const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
@@ -64,10 +64,10 @@ export const buildImageController = () => {
         <span class="field">
           <button type="button" id="rotate-reset">RESET</button>
           <button type="button" id="rotate-left" title="${chrome.i18n.getMessage('rotate_left')}">
-            ${ROTATE_ICON}
+            ${ROTATE_ICON_SVG}
           </button>
           <button type="button" id="rotate-right" title="${chrome.i18n.getMessage('rotate_right')}">
-            ${ROTATE_ICON}
+            ${ROTATE_ICON_SVG}
           </button>
           <input
             type="number"

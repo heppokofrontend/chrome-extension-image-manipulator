@@ -1,4 +1,3 @@
-import { SPINNER } from '@/contexts/content-scripts/assets';
 import { onCanvasWheel } from '@/contexts/content-scripts/handlers';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
@@ -43,6 +42,5 @@ export const initCanvas = () => {
   outer.id = 'canvas';
   inner.id = 'canvas-inner';
   outer.append(inner);
-  outer.insertAdjacentHTML('afterend', SPINNER);
   outer.addEventListener('wheel', onCanvasWheel);
 };

@@ -2,28 +2,31 @@ import { renderImageController } from '@/contexts/content-scripts/components/ima
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { renderImageListSection } from '@/contexts/content-scripts/components/image-list-section';
 import { initCanvas } from '@/contexts/content-scripts/effects';
-import { onMessage, onContextmenu, onWindowResize } from '@/contexts/content-scripts/handlers';
+import {
+  onMessage,
+  onContextmenu,
+  onWindowResize,
+  onDetailsClose,
+  onSearchClick,
+} from '@/contexts/content-scripts/handlers';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
-import { buildDetails } from './build-details';
 import { buildStyleElement } from './build-style-element';
 
 export const renderExtension = () => {
-  const { imageViewer, dialog, canvas } = CONTENT_UI;
-
-  const { element: detailsElement, closeBtnForPortrait } = buildDetails();
-
-  renderImageInfo(detailsElement);
-  renderImageController(detailsElement);
-  renderImageListSection(detailsElement);
-  dialog.append(canvas);
-  initCanvas();
-
+  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton } = CONTENT_UI;
   const style = buildStyleElement();
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
 
-  dialog.append(closeBtnForPortrait);
-  dialog.append(detailsElement);
+  closeBtn.addEventListener('click', onDetailsClose);
+  closeBtnForPortrait.addEventListener('click', onDetailsClose);
+  searchButton.addEventListener('click', onSearchClick);
+
+  renderImageInfo();
+  renderImageController();
+  renderImageListSection();
+  initCanvas();
+
   shadowRoot.appendChild(style);
   shadowRoot.appendChild(dialog);
   document.body.appendChild(imageViewer);

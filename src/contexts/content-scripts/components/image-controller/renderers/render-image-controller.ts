@@ -5,6 +5,7 @@ import {
   addEventRotateControllers,
   addEventScaleControllers,
 } from '@/contexts/content-scripts/components/image-controller/effects';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildImageController } from './build-image-controller';
 
@@ -12,11 +13,11 @@ type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'elem
 
 let fields: ImageControllerFields | undefined;
 
-export const renderImageController = (container: Element | DocumentFragment) => {
+export const renderImageController = () => {
   const { element, ...rest } = buildImageController();
 
   fields = rest;
-  container.append(element);
+  CONTENT_UI.details.append(element);
 
   addEventScaleControllers(rest);
   addEventRotateControllers(rest);
