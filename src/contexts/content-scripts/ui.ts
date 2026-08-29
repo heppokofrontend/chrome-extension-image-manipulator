@@ -30,7 +30,32 @@ export const buildDialogElement = () => {
       </p>
       <div id="image-info"></div>
       <div id="image-controller"></div>
-      <div id="image-list-section" role="group" aria-labelledby="image-list-label"></div>
+      <div id="image-list-section" role="group" aria-labelledby="image-list-label">
+        <div id="image-list-header">
+          <p id="image-list-label" class="legend">${getMessage('image_list_title')}</p>
+
+          <div id="image-list-buttons">
+            <p><button type="button" id="image-list-reload">${getMessage(
+              'image_list_reload',
+            )}</button></p>
+            <p><button type="button" id="image-list-prev">${getMessage(
+              'image_list_prev',
+            )}</button></p>
+            <p><button type="button" id="image-list-next">${getMessage(
+              'image_list_next',
+            )}</button></p>
+          </div>
+        </div>
+
+        <div id="image-list-wrapper" title="${getMessage('image_list_description')}">
+          <ul id="image-list"></ul>
+        </div>
+
+        <p id="image-list-info">
+          ${getMessage('image_list_info')}
+          <span id="image-list-info-text" aria-live="polite"></span>
+        </p>
+      </div>
       <div class="group">
         <p class="search-wrapper">
           <button id="search">
@@ -55,6 +80,11 @@ export const CONTENT_UI = {
   imageInfo: nonNullableQuerySelector('#image-info', dialog),
   imageController: nonNullableQuerySelector('#image-controller', dialog),
   imageListSection: nonNullableQuerySelector('#image-list-section', dialog),
+  imageListReload: nonNullableQuerySelector<HTMLButtonElement>('#image-list-reload', dialog),
+  imageListPrev: nonNullableQuerySelector<HTMLButtonElement>('#image-list-prev', dialog),
+  imageListNext: nonNullableQuerySelector<HTMLButtonElement>('#image-list-next', dialog),
+  imageList: nonNullableQuerySelector<HTMLElement>('#image-list', dialog),
+  imageListInfo: nonNullableQuerySelector<HTMLElement>('#image-list-info-text', dialog),
   closeBtn: nonNullableQuerySelector<HTMLButtonElement>('#details .close .close-btn', dialog),
   closeBtnForPortrait: nonNullableQuerySelector<HTMLButtonElement>(
     '.close-btn.for-portrait',

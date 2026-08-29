@@ -14,23 +14,23 @@ export type ImageControllerFields = Omit<ReturnType<typeof buildImageController>
 
 let fields: ImageControllerFields | undefined;
 
+export const initImageController = () => {
+  const { fragment, ...rest } = buildImageController();
+
+  fields = rest;
+  CONTENT_UI.imageController.append(fragment);
+
+  addEventScaleControllers(rest);
+  addEventRotateControllers(rest);
+  addEventReverseAndBorderControllers(rest);
+  addEventRenderControllers(rest);
+  addEventBackgroundControllers(rest);
+};
+
 export const renderImageController = (
-  imageData?: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
+  imageData: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
 ) => {
   if (!fields) {
-    const { fragment, ...rest } = buildImageController();
-
-    fields = rest;
-    CONTENT_UI.imageController.append(fragment);
-
-    addEventScaleControllers(rest);
-    addEventRotateControllers(rest);
-    addEventReverseAndBorderControllers(rest);
-    addEventRenderControllers(rest);
-    addEventBackgroundControllers(rest);
-  }
-
-  if (!imageData) {
     return;
   }
 

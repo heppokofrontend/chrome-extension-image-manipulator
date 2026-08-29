@@ -1,6 +1,6 @@
-import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
-import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
-import { renderImageListSection } from '@/contexts/content-scripts/components/image-list-section';
+import { initImageController } from '@/contexts/content-scripts/components/image-controller';
+import { initImageInfo } from '@/contexts/content-scripts/components/image-info';
+import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list-section';
 import { initCanvas } from '@/contexts/content-scripts/effects';
 import {
   onMessage,
@@ -22,9 +22,9 @@ export const renderExtension = () => {
   closeBtnForPortrait.addEventListener('click', onDetailsClose);
   searchButton.addEventListener('click', onSearchClick);
 
-  renderImageInfo();
-  renderImageController();
-  renderImageListSection();
+  initImageInfo();
+  initImageController();
+  addEventImageListControllers(CONTENT_UI);
   initCanvas();
 
   shadowRoot.appendChild(style);

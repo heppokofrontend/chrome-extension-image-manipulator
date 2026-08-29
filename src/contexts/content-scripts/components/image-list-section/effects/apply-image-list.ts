@@ -1,13 +1,11 @@
-import {
-  getImageListSectionFields,
-  renderImageList,
-} from '@/contexts/content-scripts/components/image-list-section/renderers';
+import { renderImageList } from '@/contexts/content-scripts/components/image-list-section/renderers';
 import type {
   ImageListEntry,
   ResolvableElement,
 } from '@/contexts/content-scripts/components/image-list-section/types';
 import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
 import { IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
   convertDummyElementToImg,
   convertSVGToImg,
@@ -138,10 +136,10 @@ const collectImageListEntries = (): ImageListEntry[] =>
     });
 
 export const applyImageList = (noRecreate: boolean = false) => {
-  const { imageList, imageListInfo } = getImageListSectionFields();
+  const { imageList, imageListInfo } = CONTENT_UI;
   const images = noRecreate ? imagesCache : collectImageListEntries();
 
-  renderImageList(imageList, images);
+  renderImageList(images);
 
   const buttons = [...imageList.querySelectorAll('button')];
   const current = buttons.find((button) => button.getAttribute('aria-current') === 'true');

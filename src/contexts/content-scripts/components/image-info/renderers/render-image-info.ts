@@ -21,17 +21,17 @@ const getAspectRatio = (width: number, height: number) => {
   return `${width / gcd} : ${height / gcd}`;
 };
 
-export const renderImageInfo = (fileData?: Pick<StyleData, 'fileSize' | 'fileType'>) => {
-  if (!fields) {
-    const { fragment, ...rest } = buildImageInfo();
+export const initImageInfo = () => {
+  const { fragment, ...rest } = buildImageInfo();
 
-    fields = rest;
-    CONTENT_UI.imageInfo.append(fragment);
-  }
+  fields = rest;
+  CONTENT_UI.imageInfo.append(fragment);
+};
 
+export const renderImageInfo = (fileData: Pick<StyleData, 'fileSize' | 'fileType'>) => {
   const { currentImageElement: image } = STATE;
 
-  if (!fileData || !image) {
+  if (!fields || !image) {
     return;
   }
 

@@ -1,2 +1,2 @@
-export { getImageListSectionFields, renderImageListSection } from './renderers';
-export { applyImageList } from './effects';
+export { applyImageList, addEventImageListControllers } from './effects';
+export { renderImageList } from './renderers';
