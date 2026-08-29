@@ -1,10 +1,10 @@
-import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import type { ImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 const { dialog } = CONTENT_UI;
 
 type BackgroundFields = Pick<
-  ReturnType<typeof getImageControllerFields>,
+  ImageControllerFields,
   'backgroundCustom' | 'backgroundBright' | 'backgroundDark'
 >;
 

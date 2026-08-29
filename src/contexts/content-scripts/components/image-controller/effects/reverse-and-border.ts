@@ -1,11 +1,8 @@
-import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import type { ImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { STATE } from '@/contexts/content-scripts/state';
 
-type ReverseAndBorderFields = Pick<
-  ReturnType<typeof getImageControllerFields>,
-  'reverse' | 'border'
->;
+type ReverseAndBorderFields = Pick<ImageControllerFields, 'reverse' | 'border'>;
 
 export const addEventReverseAndBorderControllers = ({
   reverse,

@@ -1,12 +1,9 @@
-import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import type { ImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { STATE } from '@/contexts/content-scripts/state';
 import { defaultState, zoomAndScrollInit } from '@/contexts/content-scripts/utils';
 
-type ScaleFields = Pick<
-  ReturnType<typeof getImageControllerFields>,
-  'scale' | 'scaleFit' | 'scale100'
->;
+type ScaleFields = Pick<ImageControllerFields, 'scale' | 'scaleFit' | 'scale100'>;
 
 export const addEventScaleControllers = ({ scale, scaleFit, scale100 }: ScaleFields) => {
   scale.addEventListener('input', () => {

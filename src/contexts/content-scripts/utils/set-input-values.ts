@@ -1,5 +1,5 @@
-import { setImageControllerValues } from '@/contexts/content-scripts/components/image-controller';
-import { setImageInfoValues } from '@/contexts/content-scripts/components/image-info';
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { STATE } from '@/contexts/content-scripts/state';
 
 export const setInputValues = (imageData: StyleData) => {
@@ -8,6 +8,6 @@ export const setInputValues = (imageData: StyleData) => {
   }
 
   // alt 以外のアクセシブルネームをサポートするかどうか
-  setImageInfoValues(imageData);
-  setImageControllerValues(imageData);
+  renderImageInfo(imageData);
+  renderImageController(imageData);
 };
