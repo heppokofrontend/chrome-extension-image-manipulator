@@ -33,7 +33,9 @@ describe('resetCurrent', () => {
     const { resetCurrent, STATE } = await importResetCurrent();
     STATE.currentImageElement = null;
 
-    expect(() => resetCurrent(true)).not.toThrow();
+    expect(() => {
+      resetCurrent(true);
+    }).not.toThrow();
 
     expect(getImageData).not.toHaveBeenCalled();
     expect(setImageData).not.toHaveBeenCalled();

@@ -43,7 +43,9 @@ describe('registerContextMenuClickListener', () => {
     ]);
 
     trigger({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
+    await vi.waitFor(() => {
+      expect(sendMessage).toHaveBeenCalled();
+    });
 
     expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
   });
@@ -54,7 +56,9 @@ describe('registerContextMenuClickListener', () => {
     ]);
 
     trigger({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(sendMessage).toHaveBeenCalled());
+    await vi.waitFor(() => {
+      expect(sendMessage).toHaveBeenCalled();
+    });
 
     expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
   });
@@ -65,7 +69,9 @@ describe('registerContextMenuClickListener', () => {
     ]);
 
     trigger({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(queryTabs).toHaveBeenCalled());
+    await vi.waitFor(() => {
+      expect(queryTabs).toHaveBeenCalled();
+    });
 
     expect(sendMessage).not.toHaveBeenCalled();
   });
@@ -74,7 +80,9 @@ describe('registerContextMenuClickListener', () => {
     const { trigger, queryTabs, sendMessage } = setup([]);
 
     trigger({ menuItemId: '150%' } as OnClickData);
-    await vi.waitFor(() => expect(queryTabs).toHaveBeenCalled());
+    await vi.waitFor(() => {
+      expect(queryTabs).toHaveBeenCalled();
+    });
 
     expect(sendMessage).not.toHaveBeenCalled();
   });
@@ -102,6 +110,8 @@ describe('registerContextMenuClickListener', () => {
     registerContextMenuClickListener();
     onClickedListener?.({ menuItemId: '150%' } as OnClickData);
 
-    await vi.waitFor(() => expect(log).toHaveBeenCalledWith(new Error('network error')));
+    await vi.waitFor(() => {
+      expect(log).toHaveBeenCalledWith(new Error('network error'));
+    });
   });
 });

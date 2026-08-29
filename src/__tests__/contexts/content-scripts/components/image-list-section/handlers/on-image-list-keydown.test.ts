@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import { onImageListKeydown } from '@/contexts/content-scripts/components/image-list-section/handlers/on-image-list-keydown';
 
 // IMAGE_LIST_COLS is 8; grid math below is written against that value
 const COLS = 8;
+
+const nonNullable = <T>(value: T | null | undefined) =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- テストが直前に生成したボタン配列の要素を参照するだけなので、範囲外なら例外でテスト失敗すれば十分
+  value!;
 
 const buildButtons = (count: number) => {
   const ul = document.createElement('ul');
@@ -49,7 +54,9 @@ afterEach(() => {
 describe('onImageListKeydown', () => {
   it('does nothing when altKey is held', () => {
     const { buttons, clicked } = buildButtons(3);
-    const { event, preventDefault } = makeEvent(buttons[0]!, 'ArrowRight', { altKey: true });
+    const { event, preventDefault } = makeEvent(nonNullable(buttons[0]), 'ArrowRight', {
+      altKey: true,
+    });
 
     onImageListKeydown(event);
 
@@ -59,7 +66,7 @@ describe('onImageListKeydown', () => {
 
   it('does nothing when ctrlKey is held', () => {
     const { buttons, clicked } = buildButtons(3);
-    const { event } = makeEvent(buttons[0]!, 'ArrowRight', { ctrlKey: true });
+    const { event } = makeEvent(nonNullable(buttons[0]), 'ArrowRight', { ctrlKey: true });
 
     onImageListKeydown(event);
 
@@ -71,7 +78,9 @@ describe('onImageListKeydown', () => {
     document.body.appendChild(div);
 
     const { event } = makeEvent(div, 'ArrowRight');
-    expect(() => onImageListKeydown(event)).not.toThrow();
+    expect(() => {
+      onImageListKeydown(event);
+    }).not.toThrow();
   });
 
   it('does nothing when the button has no ancestor ul', () => {
@@ -79,12 +88,14 @@ describe('onImageListKeydown', () => {
     document.body.appendChild(button);
 
     const { event } = makeEvent(button, 'ArrowRight');
-    expect(() => onImageListKeydown(event)).not.toThrow();
+    expect(() => {
+      onImageListKeydown(event);
+    }).not.toThrow();
   });
 
   it('ignores keys it does not recognize', () => {
     const { buttons, clicked } = buildButtons(3);
-    const { event } = makeEvent(buttons[1]!, 'a');
+    const { event } = makeEvent(nonNullable(buttons[1]), 'a');
 
     onImageListKeydown(event);
 
@@ -94,11 +105,11 @@ describe('onImageListKeydown', () => {
   it('calls preventDefault for Arrow keys but not for Home/End', () => {
     const { buttons } = buildButtons(3);
 
-    const arrow = makeEvent(buttons[0]!, 'ArrowRight');
+    const arrow = makeEvent(nonNullable(buttons[0]), 'ArrowRight');
     onImageListKeydown(arrow.event);
     expect(arrow.preventDefault).toHaveBeenCalledOnce();
 
-    const home = makeEvent(buttons[0]!, 'Home');
+    const home = makeEvent(nonNullable(buttons[0]), 'Home');
     onImageListKeydown(home.event);
     expect(home.preventDefault).not.toHaveBeenCalled();
   });
@@ -106,7 +117,7 @@ describe('onImageListKeydown', () => {
   it('Home clicks the first button', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[3]!, 'Home').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[3]), 'Home').event);
 
     expect(clicked).toEqual([0]);
   });
@@ -114,7 +125,7 @@ describe('onImageListKeydown', () => {
   it('End clicks the last button', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[1]!, 'End').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[1]), 'End').event);
 
     expect(clicked).toEqual([4]);
   });
@@ -122,7 +133,7 @@ describe('onImageListKeydown', () => {
   it('ArrowRight clicks the next button', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[1]!, 'ArrowRight').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[1]), 'ArrowRight').event);
 
     expect(clicked).toEqual([2]);
   });
@@ -130,7 +141,7 @@ describe('onImageListKeydown', () => {
   it('ArrowRight wraps around to the first button from the last', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[4]!, 'ArrowRight').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[4]), 'ArrowRight').event);
 
     expect(clicked).toEqual([0]);
   });
@@ -138,7 +149,7 @@ describe('onImageListKeydown', () => {
   it('ArrowLeft clicks the previous button', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[3]!, 'ArrowLeft').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[3]), 'ArrowLeft').event);
 
     expect(clicked).toEqual([2]);
   });
@@ -146,7 +157,7 @@ describe('onImageListKeydown', () => {
   it('ArrowLeft wraps around to the last button from the first', () => {
     const { buttons, clicked } = buildButtons(5);
 
-    onImageListKeydown(makeEvent(buttons[0]!, 'ArrowLeft').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[0]), 'ArrowLeft').event);
 
     expect(clicked).toEqual([4]);
   });
@@ -154,7 +165,7 @@ describe('onImageListKeydown', () => {
   it('ArrowDown moves one row down within the grid', () => {
     const { buttons, clicked } = buildButtons(10);
 
-    onImageListKeydown(makeEvent(buttons[0]!, 'ArrowDown').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[0]), 'ArrowDown').event);
 
     expect(clicked).toEqual([COLS]);
   });
@@ -162,7 +173,7 @@ describe('onImageListKeydown', () => {
   it('ArrowDown wraps back to the same column on the first row when there is no row below', () => {
     const { buttons, clicked } = buildButtons(10);
 
-    onImageListKeydown(makeEvent(buttons[8]!, 'ArrowDown').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[8]), 'ArrowDown').event);
 
     expect(clicked).toEqual([0]);
   });
@@ -170,7 +181,7 @@ describe('onImageListKeydown', () => {
   it('ArrowUp moves one row up within the grid', () => {
     const { buttons, clicked } = buildButtons(10);
 
-    onImageListKeydown(makeEvent(buttons[8]!, 'ArrowUp').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[8]), 'ArrowUp').event);
 
     expect(clicked).toEqual([0]);
   });
@@ -178,7 +189,7 @@ describe('onImageListKeydown', () => {
   it('ArrowUp wraps to the matching column on the last row when it exists', () => {
     const { buttons, clicked } = buildButtons(10);
 
-    onImageListKeydown(makeEvent(buttons[0]!, 'ArrowUp').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[0]), 'ArrowUp').event);
 
     expect(clicked).toEqual([COLS]);
   });
@@ -186,7 +197,7 @@ describe('onImageListKeydown', () => {
   it('ArrowUp falls back when the last row has no matching column', () => {
     const { buttons, clicked } = buildButtons(10);
 
-    onImageListKeydown(makeEvent(buttons[2]!, 'ArrowUp').event);
+    onImageListKeydown(makeEvent(nonNullable(buttons[2]), 'ArrowUp').event);
 
     expect(clicked).toEqual([2]);
   });

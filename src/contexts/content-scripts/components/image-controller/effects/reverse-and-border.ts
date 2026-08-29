@@ -1,6 +1,6 @@
+import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { STATE } from '@/contexts/content-scripts/state';
-import type { getImageControllerFields } from '../renderers';
-import { updateState } from '../utils';
 
 type ReverseAndBorderFields = Pick<
   ReturnType<typeof getImageControllerFields>,

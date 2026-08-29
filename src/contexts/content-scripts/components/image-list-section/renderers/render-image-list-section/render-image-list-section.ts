@@ -1,4 +1,5 @@
-import { addEventImageListControllers } from '../../effects';
+import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list-section/effects';
+
 import { buildImageListSection } from './build-image-list-section';
 
 type ImageListSectionFields = Omit<ReturnType<typeof buildImageListSection>, 'element'>;

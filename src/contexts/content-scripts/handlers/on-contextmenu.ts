@@ -1,6 +1,6 @@
 import { SELECTOR } from '@/contexts/content-scripts/constants';
-import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { STATE } from '@/contexts/content-scripts/state';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { convertDummyElementToImg, convertSVGToImg } from '@/contexts/content-scripts/utils';
 
 const getElement = (target: EventTarget | null) => {
@@ -33,9 +33,9 @@ const getElement = (target: EventTarget | null) => {
       return currentNode;
     }
 
-    const imagesFromParent = currentNode?.querySelectorAll(SELECTOR);
+    const imagesFromParent = currentNode.querySelectorAll(SELECTOR);
 
-    if (imagesFromParent?.length !== 0) {
+    if (imagesFromParent.length !== 0) {
       return imagesFromParent[0];
     }
 
@@ -97,7 +97,7 @@ const resolveTarget = (target: EventTarget | null) => {
 };
 
 const dialogContains = (image: HTMLImageElement) => {
-  return image ? CONTENT_UI.spaceElement.contains(image) : false;
+  return CONTENT_UI.spaceElement.contains(image);
 };
 
 export const onContextmenu = ({ target }: MouseEvent) => {
@@ -110,16 +110,13 @@ export const onContextmenu = ({ target }: MouseEvent) => {
     return;
   }
 
-  if (targetImage) {
-    const isInDialog = dialogContains(targetImage);
+  const isInDialog = dialogContains(targetImage);
 
-    if (!isInDialog) {
-      if (typeof targetImage.dataset['imageManipulatorDefaultStyle'] !== 'string') {
-        targetImage.dataset['imageManipulatorDefaultStyle'] =
-          targetImage.getAttribute('style') || '';
-      }
-
-      STATE.currentImageElement = targetImage;
+  if (!isInDialog) {
+    if (typeof targetImage.dataset['imageManipulatorDefaultStyle'] !== 'string') {
+      targetImage.dataset['imageManipulatorDefaultStyle'] = targetImage.getAttribute('style') || '';
     }
+
+    STATE.currentImageElement = targetImage;
   }
 };

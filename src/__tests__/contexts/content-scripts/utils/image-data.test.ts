@@ -24,7 +24,9 @@ describe('setImageData', () => {
   it('does nothing when called without an image', async () => {
     const { setImageData } = await importImageData();
 
-    expect(() => setImageData(null as unknown as HTMLImageElement, {})).not.toThrow();
+    expect(() => {
+      setImageData(null as unknown as HTMLImageElement, {});
+    }).not.toThrow();
     expect(setInputValues).not.toHaveBeenCalled();
   });
 

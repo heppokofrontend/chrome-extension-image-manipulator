@@ -1,5 +1,6 @@
-import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { STATE } from '@/contexts/content-scripts/state';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+
 import { setInputValues } from './set-input-values';
 
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
@@ -29,6 +30,7 @@ export const setImageData = (
   options: Options,
   noNeedInitScreen: boolean = false,
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- 型上は non-null だが、呼び出し元が誤って null を渡した場合の防御
   if (!img) {
     return;
   }
@@ -69,8 +71,8 @@ export const setImageData = (
     const getSize = (img: HTMLImageElement, scale: number) => {
       const width = img.naturalWidth * (scale / 100);
       const height = img.naturalHeight * (scale / 100);
-      const contentWidth = ((canvas.clientWidth ?? 0) + width / 2) * 2 - 10;
-      const contentHeight = ((canvas.clientHeight ?? 0) + height / 2) * 2 - 10;
+      const contentWidth = (canvas.clientWidth + width / 2) * 2 - 10;
+      const contentHeight = (canvas.clientHeight + height / 2) * 2 - 10;
 
       return {
         spaceSize: {
@@ -88,7 +90,7 @@ export const setImageData = (
     img.style.height = '';
     img.style.imageRendering = '';
     img.style.cssText = `
-        ${img.getAttribute('style')}
+        ${img.getAttribute('style') ?? ''}
         width: ${img.naturalWidth * (scale / 100)}px !important;
         height: ${img.naturalHeight * (scale / 100)}px !important;
         image-rendering: ${render} !important;

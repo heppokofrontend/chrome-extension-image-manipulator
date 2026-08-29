@@ -1,3 +1,5 @@
+import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
+
 export const buildImageListSection = () => {
   const element = document.createElement('div');
 
@@ -33,10 +35,10 @@ export const buildImageListSection = () => {
 
   return {
     element,
-    reload: element.querySelector<HTMLButtonElement>('#image-list-reload')!,
-    prev: element.querySelector<HTMLButtonElement>('#image-list-prev')!,
-    next: element.querySelector<HTMLButtonElement>('#image-list-next')!,
-    imageList: element.querySelector<HTMLElement>('#image-list')!,
-    imageListInfo: element.querySelector<HTMLElement>('#image-list-info-text')!,
+    reload: nonNullableQuerySelector<HTMLButtonElement>('#image-list-reload', element),
+    prev: nonNullableQuerySelector<HTMLButtonElement>('#image-list-prev', element),
+    next: nonNullableQuerySelector<HTMLButtonElement>('#image-list-next', element),
+    imageList: nonNullableQuerySelector<HTMLElement>('#image-list', element),
+    imageListInfo: nonNullableQuerySelector<HTMLElement>('#image-list-info-text', element),
   };
 };

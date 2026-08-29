@@ -1,11 +1,10 @@
-import { STATE } from '@/contexts/content-scripts/state';
-
 import {
   imageListItemSourceMap,
   onImageListItemClick,
   onImageListKeydown,
 } from '@/contexts/content-scripts/components/image-list-section/handlers';
 import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list-section/types';
+import { STATE } from '@/contexts/content-scripts/state';
 
 export const buildListItems = (images: ImageListEntry[]): HTMLLIElement[] =>
   images.flatMap((entry) => {

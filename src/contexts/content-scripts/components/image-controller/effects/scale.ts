@@ -1,7 +1,7 @@
+import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { STATE } from '@/contexts/content-scripts/state';
 import { defaultState, zoomAndScrollInit } from '@/contexts/content-scripts/utils';
-import type { getImageControllerFields } from '../renderers';
-import { updateState } from '../utils';
 
 type ScaleFields = Pick<
   ReturnType<typeof getImageControllerFields>,
@@ -28,5 +28,7 @@ export const addEventScaleControllers = ({ scale, scaleFit, scale100 }: ScaleFie
     updateState({ scale: 100 });
   });
 
-  scale.addEventListener('wheel', (e) => e.stopPropagation());
+  scale.addEventListener('wheel', (e) => {
+    e.stopPropagation();
+  });
 };

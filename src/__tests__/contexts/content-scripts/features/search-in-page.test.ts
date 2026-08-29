@@ -55,7 +55,9 @@ describe('searchInPage', () => {
     const { searchInPage, STATE } = await importSearchInPage();
     STATE.currentImageElement = null;
 
-    expect(() => searchInPage()).not.toThrow();
+    expect(() => {
+      searchInPage();
+    }).not.toThrow();
 
     expect(getImageData).not.toHaveBeenCalled();
   });
