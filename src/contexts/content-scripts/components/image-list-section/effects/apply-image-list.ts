@@ -1,3 +1,12 @@
+import {
+  getImageListSectionFields,
+  renderImageList,
+} from '@/contexts/content-scripts/components/image-list-section/renderers';
+import type {
+  ImageListEntry,
+  ResolvableElement,
+} from '@/contexts/content-scripts/components/image-list-section/types';
+import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
 import { IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
 import {
   convertDummyElementToImg,
@@ -5,16 +14,6 @@ import {
   getFileSize,
   setImageData,
 } from '@/contexts/content-scripts/utils';
-
-import {
-  getImageListSectionFields,
-  renderImageList,
-} from '@/contexts/content-scripts/components/image-list-section/renderers';
-import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
-import type {
-  ImageListEntry,
-  ResolvableElement,
-} from '@/contexts/content-scripts/components/image-list-section/types';
 
 // 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
 let imagesCache: ImageListEntry[] = [];
@@ -88,7 +87,7 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
 
   const alt =
     newPseudoImage.getAttribute('aria-label') ??
-    newPseudoImage.querySelector('title')?.textContent?.trim() ??
+    newPseudoImage.querySelector('title')?.textContent.trim() ??
     '';
 
   return makeEntry(newPseudoImage.src, alt, originalElement);

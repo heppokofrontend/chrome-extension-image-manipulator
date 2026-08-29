@@ -23,8 +23,8 @@ export const buildCanvas = () => {
 
     moveState.clientY = e.clientY;
     moveState.clientX = e.clientX;
-    moveState.startX = outer.scrollLeft ?? 0;
-    moveState.startY = outer.scrollTop ?? 0;
+    moveState.startX = outer.scrollLeft;
+    moveState.startY = outer.scrollTop;
     window.addEventListener('mousemove', moveHandler);
   });
 

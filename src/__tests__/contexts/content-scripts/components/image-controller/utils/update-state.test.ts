@@ -40,7 +40,9 @@ describe('updateState', () => {
     const { updateState, STATE } = await importUpdateState();
     STATE.currentImageElement = null;
 
-    expect(() => updateState({ scale: 50 })).not.toThrow();
+    expect(() => {
+      updateState({ scale: 50 });
+    }).not.toThrow();
     expect(setImageData).not.toHaveBeenCalled();
   });
 });

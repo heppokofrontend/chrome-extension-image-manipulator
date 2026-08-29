@@ -1,6 +1,6 @@
+import type { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
+import { updateState } from '@/contexts/content-scripts/components/image-controller/utils';
 import { defaultState } from '@/contexts/content-scripts/utils';
-import type { getImageControllerFields } from '../renderers';
-import { updateState } from '../utils';
 
 type RenderFields = Pick<ReturnType<typeof getImageControllerFields>, 'render'>;
 

@@ -22,7 +22,9 @@ describe('onContextmenu', () => {
   it('clears the tracked image and does not throw when the event has no target', async () => {
     const { onContextmenu, STATE } = await importOnContextmenu();
 
-    expect(() => onContextmenu({ target: null } as unknown as MouseEvent)).not.toThrow();
+    expect(() => {
+      onContextmenu({ target: null } as unknown as MouseEvent);
+    }).not.toThrow();
 
     expect(STATE.currentImageElement).toBeNull();
   });

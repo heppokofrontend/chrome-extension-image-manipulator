@@ -1,4 +1,5 @@
 import { ROTATE_ICON } from '@/contexts/content-scripts/assets';
+import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
 
 const RENDER_MODES: RenderingMode[] = ['crisp-edges', 'pixelated', 'smooth', 'high-quality'];
 
@@ -120,18 +121,18 @@ export const buildImageController = () => {
 
   return {
     element,
-    reverse: element.querySelector<HTMLInputElement>('#reverse')!,
-    border: element.querySelector<HTMLInputElement>('#border')!,
-    scale: element.querySelector<HTMLInputElement>('#scale')!,
-    scaleFit: element.querySelector<HTMLButtonElement>('#scale-fit')!,
-    scale100: element.querySelector<HTMLButtonElement>('#scale-100')!,
-    rotate: element.querySelector<HTMLInputElement>('#rotate')!,
-    rotateReset: element.querySelector<HTMLButtonElement>('#rotate-reset')!,
-    rotateLeft: element.querySelector<HTMLButtonElement>('#rotate-left')!,
-    rotateRight: element.querySelector<HTMLButtonElement>('#rotate-right')!,
-    render: element.querySelector<HTMLSelectElement>('#render')!,
-    backgroundCustom: element.querySelector<HTMLInputElement>('#background-custom')!,
-    backgroundBright: element.querySelector<HTMLButtonElement>('#background-bright')!,
-    backgroundDark: element.querySelector<HTMLButtonElement>('#background-dark')!,
+    reverse: nonNullableQuerySelector<HTMLInputElement>('#reverse', element),
+    border: nonNullableQuerySelector<HTMLInputElement>('#border', element),
+    scale: nonNullableQuerySelector<HTMLInputElement>('#scale', element),
+    scaleFit: nonNullableQuerySelector<HTMLButtonElement>('#scale-fit', element),
+    scale100: nonNullableQuerySelector<HTMLButtonElement>('#scale-100', element),
+    rotate: nonNullableQuerySelector<HTMLInputElement>('#rotate', element),
+    rotateReset: nonNullableQuerySelector<HTMLButtonElement>('#rotate-reset', element),
+    rotateLeft: nonNullableQuerySelector<HTMLButtonElement>('#rotate-left', element),
+    rotateRight: nonNullableQuerySelector<HTMLButtonElement>('#rotate-right', element),
+    render: nonNullableQuerySelector<HTMLSelectElement>('#render', element),
+    backgroundCustom: nonNullableQuerySelector<HTMLInputElement>('#background-custom', element),
+    backgroundBright: nonNullableQuerySelector<HTMLButtonElement>('#background-bright', element),
+    backgroundDark: nonNullableQuerySelector<HTMLButtonElement>('#background-dark', element),
   };
 };

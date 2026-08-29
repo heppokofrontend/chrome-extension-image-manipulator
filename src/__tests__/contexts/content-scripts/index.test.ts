@@ -15,8 +15,9 @@ const importContentScripts = async (
     i18n: { getMessage: (key: string) => key },
     storage: {
       local: {
-        get: (_key: string, callback: (items: { background?: string }) => void) =>
-          callback(options.storedBackground ? { background: options.storedBackground } : {}),
+        get: (_key: string, callback: (items: { background?: string }) => void) => {
+          callback(options.storedBackground ? { background: options.storedBackground } : {});
+        },
         set: () => Promise.resolve(),
       },
     },
@@ -60,6 +61,16 @@ const getShadowRoot = () => {
   return shadowRoot;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- 呼び出し側で要素の型を指定するための意図的な戻り値限定ジェネリクス
+const nonNullableQuerySelector = <T extends Element>(root: ParentNode, selector: string) =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- テストが直前に生成した要素を参照するだけなので、見つからない場合はテスト失敗で十分
+  root.querySelector<T>(selector)!;
+
+const nonNullable = <T>(value: T | null | undefined) =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- テストが直前に生成した値を参照するだけなので、null/undefined なら例外でテスト失敗すれば十分
+  value!;
+
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- 呼び出し側でテスト対象要素の型を指定するための意図的な戻り値限定ジェネリクス
 const getControl = <T extends Element = HTMLElement>(id: string) => {
   const element = getShadowRoot().getElementById(id);
 
@@ -92,14 +103,18 @@ const patchDialogEnvironment = () => {
     patchPrototypeMethod(Element.prototype, 'scrollIntoView', function () {}),
   ];
 
-  const originalSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
+  const originalSrcDescriptor = nonNullable(
+    Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src'),
+  );
 
   Object.defineProperty(HTMLImageElement.prototype, 'src', {
     configurable: true,
     get(this: HTMLImageElement) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- src はアクセサプロパティなので get は必ず存在する
       return originalSrcDescriptor.get!.call(this) as string;
     },
     set(this: HTMLImageElement, value: string) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- src はアクセサプロパティなので set は必ず存在する
       originalSrcDescriptor.set!.call(this, value);
 
       const eventType = value.includes('/error-image') ? 'error' : 'load';
@@ -111,7 +126,11 @@ const patchDialogEnvironment = () => {
     Object.defineProperty(HTMLImageElement.prototype, 'src', originalSrcDescriptor);
   });
 
-  return () => restoreFns.forEach((restore) => restore());
+  return () => {
+    restoreFns.forEach((restore) => {
+      restore();
+    });
+  };
 };
 
 const rightClick = (target: Element) => {
@@ -161,14 +180,12 @@ const openDialog = async (messageListener: MessageListener, img: HTMLImageElemen
 };
 
 const patchNaturalSize = (width: number, height: number) => {
-  const widthDescriptor = Object.getOwnPropertyDescriptor(
-    HTMLImageElement.prototype,
-    'naturalWidth',
-  )!;
-  const heightDescriptor = Object.getOwnPropertyDescriptor(
-    HTMLImageElement.prototype,
-    'naturalHeight',
-  )!;
+  const widthDescriptor = nonNullable(
+    Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'naturalWidth'),
+  );
+  const heightDescriptor = nonNullable(
+    Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'naturalHeight'),
+  );
 
   Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', {
     configurable: true,
@@ -390,7 +407,9 @@ describe('canvas wheel gestures', () => {
     await importContentScripts({ openShadow: true });
     const canvas = getControl('canvas');
 
-    expect(() => dispatchWheel(canvas, -100)).not.toThrow();
+    expect(() => {
+      dispatchWheel(canvas, -100);
+    }).not.toThrow();
   });
 
   it('zooms in and out around the current image, clamping the minimum scale to 1%', async () => {
@@ -567,7 +586,7 @@ describe('dialog background color controls', () => {
   it('applies the bright and dark preset colors and persists the choice', async () => {
     await importContentScripts({ openShadow: true });
 
-    const dialog = getShadowRoot().querySelector('dialog')!;
+    const dialog = nonNullableQuerySelector<HTMLDialogElement>(getShadowRoot(), 'dialog');
     const custom = getControl<HTMLInputElement>('background-custom');
 
     getControl<HTMLButtonElement>('background-bright').click();
@@ -738,7 +757,9 @@ describe('the image list inside an opened dialog', () => {
 
     await openDialog(messageListener, img);
 
-    expect(() => getControl<HTMLButtonElement>('image-list-reload').click()).not.toThrow();
+    expect(() => {
+      getControl<HTMLButtonElement>('image-list-reload').click();
+    }).not.toThrow();
   });
 
   it('navigates via Home/End/Arrow keys, wraps at both ends, and ignores the shortcut while a modifier key (alt or ctrl) is held', async () => {
@@ -758,7 +779,7 @@ describe('the image list inside an opened dialog', () => {
       buttons().findIndex((button) => button.getAttribute('aria-current') === 'true');
 
     const dispatchKey = async (key: string, modifiers: KeyboardEventInit = {}) => {
-      const current = buttons()[currentIndex()]!;
+      const current = nonNullable(buttons()[currentIndex()]);
       current.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...modifiers }));
       await flushAsyncWork();
     };
@@ -805,7 +826,7 @@ describe('the image list inside an opened dialog', () => {
     });
     document.body.append(...images);
 
-    await openDialog(messageListener, images[0]!);
+    await openDialog(messageListener, nonNullable(images[0]));
 
     const buttons = () => [
       ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
@@ -814,7 +835,7 @@ describe('the image list inside an opened dialog', () => {
       buttons().findIndex((button) => button.getAttribute('aria-current') === 'true');
 
     const dispatchKey = async (key: string) => {
-      const current = buttons()[currentIndex()]!;
+      const current = nonNullable(buttons()[currentIndex()]);
       current.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
       await flushAsyncWork();
     };
@@ -873,11 +894,11 @@ describe('the image list inside an opened dialog', () => {
     expect(svgButton?.querySelector('img')?.getAttribute('aria-label')).toBe('image_list_no_alt');
     expect(dummyButton?.querySelector('img')?.getAttribute('aria-label')).toBe('image_list_no_alt');
 
-    svgButton!.click();
+    nonNullable(svgButton).click();
     await flushAsyncWork();
     expect(findButtonBySrc(svgSrcValue)?.getAttribute('aria-current')).toBe('true');
 
-    findButtonBySrc(dummySrcValue)!.click();
+    nonNullable(findButtonBySrc(dummySrcValue)).click();
     await flushAsyncWork();
     expect(findButtonBySrc(dummySrcValue)?.getAttribute('aria-current')).toBe('true');
 
@@ -923,12 +944,16 @@ describe('the image list inside an opened dialog', () => {
       ...getShadowRoot().querySelectorAll<HTMLButtonElement>('#image-list button'),
     ];
 
-    buttons()[1]!.getBoundingClientRect = () => ({ top: 0, bottom: 10 }) as DOMRect;
-    expect(() => buttons()[1]!.click()).not.toThrow();
+    nonNullable(buttons()[1]).getBoundingClientRect = () => ({ top: 0, bottom: 10 }) as DOMRect;
+    expect(() => {
+      nonNullable(buttons()[1]).click();
+    }).not.toThrow();
     await flushAsyncWork();
 
-    buttons()[0]!.getBoundingClientRect = () => ({ top: 500, bottom: 510 }) as DOMRect;
-    expect(() => buttons()[0]!.click()).not.toThrow();
+    nonNullable(buttons()[0]).getBoundingClientRect = () => ({ top: 500, bottom: 510 }) as DOMRect;
+    expect(() => {
+      nonNullable(buttons()[0]).click();
+    }).not.toThrow();
     await flushAsyncWork();
   });
 
@@ -958,7 +983,7 @@ describe('the image list inside an opened dialog', () => {
 
     // imgB の isError は imagesCache 上の result を直接書き換えたもの。別ボタン(imgC)のクリックで
     // noRecreate=true(キャッシュ再利用)を踏むと、listItems 生成時にこのエントリがフィルタされて消える
-    findButtonBySrc(svgSrc('c'))!.click();
+    nonNullable(findButtonBySrc(svgSrc('c'))).click();
     await flushAsyncWork();
 
     expect(findButtonBySrc(imgB.src)).toBeUndefined();
@@ -966,7 +991,9 @@ describe('the image list inside an opened dialog', () => {
 
     // reload(noRecreate=false)は DOM を再走査するため、この操作自体が例外を起こさないことのみ確認する
     // (imgB の合成サムネイルは src に /error-image を含み自身の onerror で即座に再エラー扱いになるため復活しない)
-    expect(() => getControl<HTMLButtonElement>('image-list-reload').click()).not.toThrow();
+    expect(() => {
+      getControl<HTMLButtonElement>('image-list-reload').click();
+    }).not.toThrow();
     await flushAsyncWork();
   });
 });
@@ -1056,7 +1083,7 @@ describe('the search-in-page button', () => {
 
     await openDialog(messageListener, img);
 
-    const dialogEl = getShadowRoot().querySelector('dialog')!;
+    const dialogEl = nonNullableQuerySelector<HTMLDialogElement>(getShadowRoot(), 'dialog');
     expect(dialogEl.open).toBe(true);
 
     getControl<HTMLButtonElement>('search').click();
@@ -1095,7 +1122,9 @@ describe('the search-in-page button', () => {
         right: 0,
       }) as DOMRect;
 
-    expect(() => getControl<HTMLButtonElement>('search').click()).not.toThrow();
+    expect(() => {
+      getControl<HTMLButtonElement>('search').click();
+    }).not.toThrow();
   });
 });
 
@@ -1117,7 +1146,7 @@ describe('the dialog stays open without an image on a 404', () => {
 
     await openDialog(messageListener, img);
 
-    const dialogEl = getShadowRoot().querySelector('dialog')!;
+    const dialogEl = nonNullableQuerySelector<HTMLDialogElement>(getShadowRoot(), 'dialog');
     expect(dialogEl.open).toBe(true);
     expect(dialogEl.hasAttribute('aria-busy')).toBe(false);
     expect(getShadowRoot().getElementById('canvas-inner')?.children.length ?? 0).toBe(0);
@@ -1166,6 +1195,8 @@ describe('the scale-fit button', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    expect(() => getControl<HTMLButtonElement>('scale-fit').click()).not.toThrow();
+    expect(() => {
+      getControl<HTMLButtonElement>('scale-fit').click();
+    }).not.toThrow();
   });
 });

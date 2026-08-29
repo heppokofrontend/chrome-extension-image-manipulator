@@ -6,6 +6,10 @@ import {
   convertedImgToDummyMap,
 } from '@/contexts/content-scripts/utils/convert-dummy-element-to-img';
 
+const nonNullable = <T>(value: T | null | undefined) =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- テストが直前に生成した値を参照するだけなので、null/undefined なら例外でテスト失敗すれば十分
+  value!;
+
 describe('convertDummyElementToImg', () => {
   it('returns null when the element has no background image', () => {
     const div = document.createElement('div');
@@ -24,7 +28,7 @@ describe('convertDummyElementToImg', () => {
     expect(pseudo).not.toBeNull();
     expect(pseudo?.src).toBe('https://example.com/foo.png');
     expect(convertedDummyMap.get(div)).toBe(pseudo);
-    expect(convertedImgToDummyMap.get(pseudo!)).toBe(div);
+    expect(convertedImgToDummyMap.get(nonNullable(pseudo))).toBe(div);
   });
 
   it('returns the cached pseudo image on subsequent calls for the same element', () => {

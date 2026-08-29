@@ -1,4 +1,4 @@
-import { getImageControllerFields } from '../renderers';
+import { getImageControllerFields } from '@/contexts/content-scripts/components/image-controller/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 
 export const setImageControllerValues = (

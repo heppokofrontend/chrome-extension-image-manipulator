@@ -4,7 +4,8 @@ import {
   addEventReverseAndBorderControllers,
   addEventRotateControllers,
   addEventScaleControllers,
-} from '../effects';
+} from '@/contexts/content-scripts/components/image-controller/effects';
+
 import { buildImageController } from './build-image-controller';
 
 type ImageControllerFields = Omit<ReturnType<typeof buildImageController>, 'element'>;

@@ -133,8 +133,8 @@ describe('registerContextMenusListener', () => {
       patterns.every(
         (pattern) =>
           pattern?.includes('http://*/*') &&
-          pattern?.includes('https://*/*') &&
-          pattern?.includes('file://*/*'),
+          pattern.includes('https://*/*') &&
+          pattern.includes('file://*/*'),
       ),
     ).toBe(true);
   });

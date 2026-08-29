@@ -46,8 +46,12 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
         clonedImage.height = STATE.currentImageElement.height;
 
         const isError = await new Promise<boolean>((done) => {
-          clonedImage.onload = () => done(false);
-          clonedImage.onerror = () => done(true);
+          clonedImage.onload = () => {
+            done(false);
+          };
+          clonedImage.onerror = () => {
+            done(true);
+          };
         });
 
         if (isError) {
@@ -100,7 +104,7 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     resolve();
   };
 
-  return await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve) => {
     void showImageInDialog(resolve);
   });
 };

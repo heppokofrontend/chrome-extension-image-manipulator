@@ -1,4 +1,4 @@
-import { getImageInfoFields } from '../renderers';
+import { getImageInfoFields } from '@/contexts/content-scripts/components/image-info/renderers';
 import { STATE } from '@/contexts/content-scripts/state';
 
 const getAspectRatio = (width: number, height: number) => {

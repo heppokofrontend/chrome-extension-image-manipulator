@@ -1,4 +1,5 @@
 import { onDetailsClose, onSearchClick } from '@/contexts/content-scripts/handlers';
+import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
 
 export const buildDetails = () => {
   const element = document.createElement('div');
@@ -31,8 +32,8 @@ export const buildDetails = () => {
     `,
   );
 
-  const closeBtn = element.querySelector<HTMLButtonElement>('.close .close-btn')!;
-  const searchButton = element.querySelector<HTMLButtonElement>('#search')!;
+  const closeBtn = nonNullableQuerySelector<HTMLButtonElement>('.close .close-btn', element);
+  const searchButton = nonNullableQuerySelector<HTMLButtonElement>('#search', element);
 
   closeBtn.addEventListener('click', onDetailsClose);
   searchButton.addEventListener('click', onSearchClick);

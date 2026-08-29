@@ -4,6 +4,8 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import importX, { createNodeResolver } from 'eslint-plugin-import-x';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 
 const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
@@ -18,7 +20,8 @@ export default [
     ],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.strictTypeChecked,
+  importX.flatConfigs.typescript,
   {
     languageOptions: {
       ecmaVersion: 'latest',
@@ -31,6 +34,47 @@ export default [
         ...globals.browser,
         chrome: 'readonly',
       },
+    },
+    settings: {
+      'import-x/resolver-next': [createTypeScriptImportResolver(), createNodeResolver()],
+    },
+    rules: {
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        {
+          allowAny: false,
+          allowBoolean: false,
+          allowNever: false,
+          allowNullish: false,
+          allowNumber: true,
+          allowRegExp: false,
+        },
+      ],
+      'import-x/order': [
+        'error',
+        {
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+          pathGroups: [
+            { pattern: '@/**', group: 'internal' },
+            { pattern: '@package/**', group: 'internal' },
+          ],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              // 同階層（./foo）は許容し、親ディレクトリ越え（../foo）だけ弾く。
+              // ディレクトリ境界を跨ぐ参照はエイリアスで書かせて、ファイル移動に強くする。
+              regex: String.raw`^\.\.(/|$)`,
+              message: 'Use the "@/..." alias instead of a parent-relative import.',
+            },
+          ],
+        },
+      ],
     },
   },
   prettier,
