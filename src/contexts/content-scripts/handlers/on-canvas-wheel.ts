@@ -1,6 +1,52 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
+const rotateImageData = (imageData: StyleData, deltaY: number) => {
+  if (deltaY < 0) {
+    imageData.rotate += 10;
+
+    if (360 <= imageData.rotate) {
+      imageData.rotate -= 360;
+    }
+
+    return;
+  }
+
+  imageData.rotate -= 10;
+
+  if (imageData.rotate < 0) {
+    imageData.rotate += 360;
+  }
+};
+
+const resolveZoomDiff = (scale: number) => {
+  if (scale < 40) {
+    return 3;
+  }
+
+  if (scale < 50) {
+    return 5;
+  }
+
+  return 10;
+};
+
+const zoomImageData = (imageData: StyleData, deltaY: number) => {
+  const diff = resolveZoomDiff(imageData.scale);
+
+  if (deltaY < 0) {
+    imageData.scale = imageData.scale === 1 ? diff : imageData.scale + diff;
+
+    return;
+  }
+
+  imageData.scale -= diff;
+
+  if (imageData.scale <= 0) {
+    imageData.scale = 1;
+  }
+};
+
 export const onCanvasWheel = (e: WheelEvent) => {
   e.preventDefault();
 
@@ -9,47 +55,11 @@ export const onCanvasWheel = (e: WheelEvent) => {
   }
 
   const imageData = getImageData(STATE.currentImageElement);
-  const mode = e.shiftKey ? 'rotate' : 'zoom';
 
-  if (mode === 'rotate') {
-    switch (e.deltaY < 0 ? 'right' : 'left') {
-      case 'right':
-        imageData.rotate += 10;
-
-        if (360 <= imageData.rotate) {
-          imageData.rotate -= 360;
-        }
-
-        break;
-
-      case 'left':
-        imageData.rotate -= 10;
-
-        if (imageData.rotate < 0) {
-          imageData.rotate += 360;
-        }
-        break;
-    }
+  if (e.shiftKey) {
+    rotateImageData(imageData, e.deltaY);
   } else {
-    const diff = imageData.scale < 50 ? (imageData.scale < 40 ? 3 : 5) : 10;
-
-    switch (e.deltaY < 0 ? 'in' : 'out') {
-      case 'in':
-        if (imageData.scale === 1) {
-          imageData.scale = diff;
-        } else {
-          imageData.scale += diff;
-        }
-        break;
-
-      case 'out':
-        imageData.scale -= diff;
-
-        if (imageData.scale <= 0) {
-          imageData.scale = 1;
-        }
-        break;
-    }
+    zoomImageData(imageData, e.deltaY);
   }
 
   setImageData(STATE.currentImageElement, {
