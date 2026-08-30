@@ -1,5 +1,4 @@
-import { applyImageList } from '@/contexts/content-scripts/components/image-list-section';
-import { getImageListSectionFields } from '@/contexts/content-scripts/components/image-list-section/renderers';
+import { applyImageList } from '@/contexts/content-scripts/components/image-list';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
@@ -10,7 +9,7 @@ import {
   zoomAndScrollInit,
 } from '@/contexts/content-scripts/utils';
 
-const { dialog, spaceElement } = CONTENT_UI;
+const { dialog, spaceElement, imageList } = CONTENT_UI;
 
 export const showDialog = async (option?: { noRecreateImageList?: boolean }) => {
   const noRecreateImageList = option?.noRecreateImageList ?? false;
@@ -92,9 +91,7 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     applyImageList(noRecreateImageList);
 
     if (dialog.open) {
-      getImageListSectionFields()
-        .imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')
-        ?.focus();
+      imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
     } else {
       dialog.showModal();
     }

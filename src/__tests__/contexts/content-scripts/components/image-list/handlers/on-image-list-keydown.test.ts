@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { onImageListKeydown } from '@/contexts/content-scripts/components/image-list-section/handlers/on-image-list-keydown';
+import { onImageListKeydown } from '@/contexts/content-scripts/components/image-list/handlers/on-image-list-keydown';
 
 // IMAGE_LIST_COLS is 8; grid math below is written against that value
 const COLS = 8;

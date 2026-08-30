@@ -1,10 +1,10 @@
-import type { getImageListSectionFields } from '@/contexts/content-scripts/components/image-list-section/renderers';
+import type { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { applyImageList } from './apply-image-list';
 
 type ImageListControllerFields = Pick<
-  ReturnType<typeof getImageListSectionFields>,
-  'reload' | 'prev' | 'next' | 'imageList'
+  typeof CONTENT_UI,
+  'imageListReload' | 'imageListPrev' | 'imageListNext' | 'imageList'
 >;
 
 const focusAdjacentImage = (imageList: HTMLElement, direction: 'next' | 'prev') => {
@@ -32,20 +32,20 @@ const focusAdjacentImage = (imageList: HTMLElement, direction: 'next' | 'prev') 
 };
 
 export const addEventImageListControllers = ({
-  reload,
-  prev,
-  next,
+  imageListReload,
+  imageListPrev,
+  imageListNext,
   imageList,
 }: ImageListControllerFields) => {
-  reload.addEventListener('click', () => {
+  imageListReload.addEventListener('click', () => {
     applyImageList();
   });
 
-  next.addEventListener('click', () => {
+  imageListNext.addEventListener('click', () => {
     focusAdjacentImage(imageList, 'next');
   });
 
-  prev.addEventListener('click', () => {
+  imageListPrev.addEventListener('click', () => {
     focusAdjacentImage(imageList, 'prev');
   });
 

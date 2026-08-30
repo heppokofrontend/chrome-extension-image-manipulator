@@ -1,4 +1,4 @@
-import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
+import { resolveImageElement } from '@/contexts/content-scripts/components/image-list/utils';
 import { showDialog } from '@/contexts/content-scripts/show-dialog';
 import { STATE } from '@/contexts/content-scripts/state';
 

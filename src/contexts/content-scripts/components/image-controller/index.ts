@@ -1,1 +1,1 @@
-export { renderImageController } from './renderers';
+export { initImageController, renderImageController } from './renderers';
