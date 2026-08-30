@@ -523,7 +523,7 @@ describe('dialog form controls for a not-yet-in-dialog image', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    // isInDialog が false の間は setInputValues が呼ばれず #rotate の value は
+    // isInDialog が false の間は renderImageController が呼ばれず #rotate の value は
     // ボタン操作後も自動更新されないため、各操作の直前に想定される表示値を
     // 手動で設定してからクリックする。
     const rotate = getControl<HTMLInputElement>('rotate');

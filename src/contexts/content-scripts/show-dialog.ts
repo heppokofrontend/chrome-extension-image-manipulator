@@ -1,3 +1,5 @@
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { applyImageList } from '@/contexts/content-scripts/components/image-list';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
@@ -5,7 +7,6 @@ import {
   getFileSize,
   getImageData,
   setImageData,
-  setInputValues,
   zoomAndScrollInit,
 } from '@/contexts/content-scripts/utils';
 
@@ -97,7 +98,11 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     }
 
     zoomAndScrollInit(STATE.currentImageElement, initialScale || 'init');
-    setInputValues(imageData);
+
+    const clonedImageData = getImageData(STATE.currentImageElement);
+
+    renderImageInfo(clonedImageData);
+    renderImageController(clonedImageData);
     resolve();
   };
 

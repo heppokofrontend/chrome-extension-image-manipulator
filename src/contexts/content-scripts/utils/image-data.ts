@@ -1,7 +1,7 @@
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
-
-import { setInputValues } from './set-input-values';
 
 const imageDataMap: Map<HTMLImageElement, StyleData> = new Map();
 
@@ -110,6 +110,7 @@ export const setImageData = (
       left: scrollLeft - diffWidth,
     });
 
-    setInputValues(imageData);
+    renderImageInfo(imageData);
+    renderImageController(imageData);
   }
 };
