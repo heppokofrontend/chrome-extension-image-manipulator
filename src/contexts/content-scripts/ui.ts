@@ -79,7 +79,6 @@ export const CONTENT_UI = {
   spaceElement: nonNullableQuerySelector('#canvas-inner', dialog),
   imageInfo: nonNullableQuerySelector('#image-info', dialog),
   imageController: nonNullableQuerySelector('#image-controller', dialog),
-  imageListSection: nonNullableQuerySelector('#image-list-section', dialog),
   imageListReload: nonNullableQuerySelector<HTMLButtonElement>('#image-list-reload', dialog),
   imageListPrev: nonNullableQuerySelector<HTMLButtonElement>('#image-list-prev', dialog),
   imageListNext: nonNullableQuerySelector<HTMLButtonElement>('#image-list-next', dialog),
