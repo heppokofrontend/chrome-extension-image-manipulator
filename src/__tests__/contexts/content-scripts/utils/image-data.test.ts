@@ -1,11 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { setInputValues } = vi.hoisted(() => ({
-  setInputValues: vi.fn(),
+const { renderImageInfo, renderImageController } = vi.hoisted(() => ({
+  renderImageInfo: vi.fn(),
+  renderImageController: vi.fn(),
 }));
 
-vi.mock('@/contexts/content-scripts/utils/set-input-values', () => ({
-  setInputValues,
+vi.mock('@/contexts/content-scripts/components/image-info', () => ({
+  renderImageInfo,
+}));
+
+vi.mock('@/contexts/content-scripts/components/image-controller', () => ({
+  renderImageController,
 }));
 
 const importImageData = async () => {
@@ -17,7 +22,8 @@ const importImageData = async () => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
-  setInputValues.mockClear();
+  renderImageInfo.mockClear();
+  renderImageController.mockClear();
 });
 
 describe('setImageData', () => {
@@ -27,7 +33,8 @@ describe('setImageData', () => {
     expect(() => {
       setImageData(null as unknown as HTMLImageElement, {});
     }).not.toThrow();
-    expect(setInputValues).not.toHaveBeenCalled();
+    expect(renderImageInfo).not.toHaveBeenCalled();
+    expect(renderImageController).not.toHaveBeenCalled();
   });
 
   it('stores the image data without touching the DOM when noNeedInitScreen is true', async () => {
@@ -37,7 +44,8 @@ describe('setImageData', () => {
     setImageData(img, { scale: 42 }, true);
 
     expect(img.style.transform).toBe('');
-    expect(setInputValues).not.toHaveBeenCalled();
+    expect(renderImageInfo).not.toHaveBeenCalled();
+    expect(renderImageController).not.toHaveBeenCalled();
     expect(getImageData(img).scale).toBe(42);
   });
 });

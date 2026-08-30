@@ -1,15 +1,16 @@
+import { renderCanvas } from '@/contexts/content-scripts/components/canvas';
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { applyImageList } from '@/contexts/content-scripts/components/image-list';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
-  getFileSize,
   getImageData,
-  setImageData,
-  setInputValues,
+  resolveDialogImage,
   zoomAndScrollInit,
 } from '@/contexts/content-scripts/utils';
 
-const { dialog, spaceElement, imageList } = CONTENT_UI;
+const { dialog, imageList } = CONTENT_UI;
 
 export const showDialog = async (option?: { noRecreateImageList?: boolean }) => {
   const noRecreateImageList = option?.noRecreateImageList ?? false;
@@ -18,90 +19,32 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     dialog.showModal();
   }
 
-  const showImageInDialog = async (resolve: () => void) => {
-    if (!STATE.currentImageElement) {
-      return;
-    }
+  if (!STATE.currentImageElement) {
+    return;
+  }
 
-    const imageData = getImageData(STATE.currentImageElement);
-    const initialScale = (() => {
-      if (!('clonedImage' in imageData) || !(imageData.clonedImage instanceof HTMLImageElement)) {
-        return null;
-      }
+  const originalImageData = getImageData(STATE.currentImageElement);
+  const resolved = await resolveDialogImage(STATE.currentImageElement, originalImageData);
 
-      return getImageData(imageData.clonedImage).scale;
-    })();
+  if (!resolved) {
+    return;
+  }
 
-    if (!imageData.isInDialog) {
-      if (imageData.clonedImage === null) {
-        dialog.setAttribute('aria-busy', 'true');
-        spaceElement.classList.add('loading');
+  renderCanvas();
+  applyImageList(noRecreateImageList);
 
-        const clonedImage = new Image();
+  if (dialog.open) {
+    imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
+  } else {
+    dialog.showModal();
+  }
 
-        clonedImage.alt = STATE.currentImageElement.alt;
-        clonedImage.src = STATE.currentImageElement.src;
-        clonedImage.width = STATE.currentImageElement.width;
-        clonedImage.height = STATE.currentImageElement.height;
+  zoomAndScrollInit(STATE.currentImageElement, resolved.initialScale ?? 'init');
 
-        const isError = await new Promise<boolean>((done) => {
-          clonedImage.onload = () => {
-            done(false);
-          };
-          clonedImage.onerror = () => {
-            done(true);
-          };
-        });
+  // resolveDialogImage/zoomAndScrollInit を経て STATE.currentImageElement は
+  // ダイアログ用クローンに切り替わっているため、そのクローンの最新データで描画する。
+  const clonedImageData = getImageData(STATE.currentImageElement);
 
-        if (isError) {
-          console.log('Chrome Extension Image Manipulator: 404 ERROR', STATE.currentImageElement);
-          dialog.removeAttribute('aria-busy');
-          spaceElement.classList.remove('loading');
-          return;
-        }
-
-        // ダイアログ用の画像は別で管理する
-        setImageData(clonedImage, {
-          ...imageData,
-          isInDialog: true,
-          origin: STATE.currentImageElement,
-        });
-
-        setImageData(STATE.currentImageElement, {
-          clonedImage,
-        });
-
-        STATE.currentImageElement = clonedImage;
-
-        // 容量の解決
-        await getFileSize(clonedImage).finally(() => {
-          dialog.removeAttribute('aria-busy');
-          spaceElement.classList.remove('loading');
-          zoomAndScrollInit(clonedImage, imageData.scale);
-        });
-      } else {
-        STATE.currentImageElement = imageData.clonedImage;
-        resolve();
-      }
-    }
-
-    spaceElement.textContent = '';
-    spaceElement.append(STATE.currentImageElement);
-
-    applyImageList(noRecreateImageList);
-
-    if (dialog.open) {
-      imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();
-    } else {
-      dialog.showModal();
-    }
-
-    zoomAndScrollInit(STATE.currentImageElement, initialScale || 'init');
-    setInputValues(imageData);
-    resolve();
-  };
-
-  await new Promise<void>((resolve) => {
-    void showImageInDialog(resolve);
-  });
+  renderImageInfo(clonedImageData);
+  renderImageController(clonedImageData);
 };
