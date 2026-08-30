@@ -1,4 +1,4 @@
-import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list-section/types';
+import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list/types';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildListItems } from './build-list-items';

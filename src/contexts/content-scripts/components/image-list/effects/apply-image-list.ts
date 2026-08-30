@@ -1,9 +1,9 @@
-import { renderImageList } from '@/contexts/content-scripts/components/image-list-section/renderers';
+import { renderImageList } from '@/contexts/content-scripts/components/image-list/renderers';
 import type {
   ImageListEntry,
   ResolvableElement,
-} from '@/contexts/content-scripts/components/image-list-section/types';
-import { resolveImageElement } from '@/contexts/content-scripts/components/image-list-section/utils';
+} from '@/contexts/content-scripts/components/image-list/types';
+import { resolveImageElement } from '@/contexts/content-scripts/components/image-list/utils';
 import { IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {

@@ -1,6 +1,6 @@
 import { initImageController } from '@/contexts/content-scripts/components/image-controller';
 import { initImageInfo } from '@/contexts/content-scripts/components/image-info';
-import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list-section';
+import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list';
 import { initCanvas } from '@/contexts/content-scripts/effects';
 import {
   onMessage,

@@ -2,8 +2,8 @@ import {
   imageListItemSourceMap,
   onImageListItemClick,
   onImageListKeydown,
-} from '@/contexts/content-scripts/components/image-list-section/handlers';
-import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list-section/types';
+} from '@/contexts/content-scripts/components/image-list/handlers';
+import type { ImageListEntry } from '@/contexts/content-scripts/components/image-list/types';
 import { STATE } from '@/contexts/content-scripts/state';
 import { getMessage } from '@/utils';
 

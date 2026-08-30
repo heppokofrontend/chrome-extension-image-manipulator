@@ -1,4 +1,4 @@
-import { applyImageList } from '@/contexts/content-scripts/components/image-list-section';
+import { applyImageList } from '@/contexts/content-scripts/components/image-list';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
