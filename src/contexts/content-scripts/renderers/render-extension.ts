@@ -2,13 +2,7 @@ import { initImageController } from '@/contexts/content-scripts/components/image
 import { initImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list';
 import { initCanvas } from '@/contexts/content-scripts/effects';
-import {
-  onMessage,
-  onContextmenu,
-  onWindowResize,
-  onDetailsClose,
-  onSearchClick,
-} from '@/contexts/content-scripts/handlers';
+import { onDetailsClose, onSearchClick } from '@/contexts/content-scripts/handlers';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { buildStyleElement } from './build-style-element';
@@ -30,17 +24,4 @@ export const renderExtension = () => {
   shadowRoot.appendChild(style);
   shadowRoot.appendChild(dialog);
   document.body.appendChild(imageViewer);
-
-  window.addEventListener('load', () => {
-    // for front-end frameworks
-    if (!document.body.contains(imageViewer)) {
-      document.body.appendChild(imageViewer);
-    }
-  });
-
-  window.addEventListener('resize', onWindowResize);
-
-  chrome.runtime.onMessage.addListener(onMessage);
-
-  window.addEventListener('contextmenu', onContextmenu);
 };

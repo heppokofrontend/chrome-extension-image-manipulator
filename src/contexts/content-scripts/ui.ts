@@ -1,4 +1,4 @@
-import { SPINNER_SVG } from '@/contexts/content-scripts/assets';
+import { SPINNER_SVG } from '@/contexts/content-scripts/constants';
 import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils/non-nullable-query-selector';
 import { getMessage } from '@/utils';
 

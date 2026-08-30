@@ -1,4 +1,4 @@
-import { ROTATE_ICON_SVG } from '@/contexts/content-scripts/assets';
+import { ROTATE_ICON_SVG } from '@/contexts/content-scripts/constants';
 import { nonNullableQuerySelector } from '@/contexts/content-scripts/utils';
 import { getMessage } from '@/utils';
 
