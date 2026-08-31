@@ -161,6 +161,47 @@ describe('searchInPage', () => {
     expect(origin.classList).toHaveLength(0);
   });
 
+  it('treats the origin as invisible when only its right edge overflows the viewport width', async () => {
+    const { searchInPage, STATE, CONTENT_UI } = await importSearchInPage();
+    CONTENT_UI.dialog.close = vi.fn();
+    STATE.currentImageElement = document.createElement('img');
+    const origin = document.createElement('img');
+    document.body.appendChild(origin);
+    // top/left/bottom はすべてビューポート内に収まるが、right だけが innerWidth を超える矩形にする
+    origin.getBoundingClientRect = () =>
+      ({ top: 0, left: 0, bottom: 10, right: window.innerWidth + 1 }) as DOMRect;
+    getImageData.mockReturnValue({ isInDialog: true, origin });
+
+    searchInPage();
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- referenced only as a mock call-record, never invoked unbound
+    expect(origin.scrollIntoView).toHaveBeenCalledOnce();
+    expect(origin.classList).toHaveLength(0);
+  });
+
+  it('falls back to document.documentElement.clientWidth when window.innerWidth is falsy', async () => {
+    const { searchInPage, STATE, CONTENT_UI } = await importSearchInPage();
+    CONTENT_UI.dialog.close = vi.fn();
+    STATE.currentImageElement = document.createElement('img');
+    const origin = document.createElement('img');
+    document.body.appendChild(origin);
+    const originalInnerWidth = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+    Object.defineProperty(window, 'innerWidth', { value: 0, configurable: true });
+    // jsdom の documentElement.clientWidth は既定で 0 のため、right>0 なら fallback 分岐でも非表示判定になる
+    origin.getBoundingClientRect = () => ({ top: 0, left: 0, bottom: 10, right: 5 }) as DOMRect;
+    getImageData.mockReturnValue({ isInDialog: true, origin });
+
+    searchInPage();
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- referenced only as a mock call-record, never invoked unbound
+    expect(origin.scrollIntoView).toHaveBeenCalledOnce();
+    expect(origin.classList).toHaveLength(0);
+
+    if (originalInnerWidth) {
+      Object.defineProperty(window, 'innerWidth', originalInnerWidth);
+    }
+  });
+
   it('scrolls the origin into view and focuses it once scrolling settles when it is off-screen', async () => {
     const { searchInPage, STATE, CONTENT_UI } = await importSearchInPage();
     CONTENT_UI.dialog.close = vi.fn();
