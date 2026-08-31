@@ -7,7 +7,7 @@ const {
   renderImageController,
   renderImageInfo,
   resolveDialogImage,
-  zoomAndScrollInit,
+  applyZoomAndScroll,
 } = vi.hoisted(() => ({
   applyImageList: vi.fn(),
   getImageData: vi.fn(),
@@ -15,7 +15,7 @@ const {
   renderImageController: vi.fn(),
   renderImageInfo: vi.fn(),
   resolveDialogImage: vi.fn(),
-  zoomAndScrollInit: vi.fn(),
+  applyZoomAndScroll: vi.fn(),
 }));
 
 vi.mock('@/contexts/content-scripts/components/canvas', () => ({ renderCanvas }));
@@ -27,7 +27,7 @@ vi.mock('@/contexts/content-scripts/components/image-list', () => ({ applyImageL
 vi.mock('@/contexts/content-scripts/utils', () => ({
   getImageData,
   resolveDialogImage,
-  zoomAndScrollInit,
+  applyZoomAndScroll,
 }));
 
 const patchPrototypeMethod = <T extends object, K extends keyof T>(
@@ -86,7 +86,7 @@ afterEach(() => {
   renderImageController.mockReset();
   renderImageInfo.mockReset();
   resolveDialogImage.mockReset();
-  zoomAndScrollInit.mockReset();
+  applyZoomAndScroll.mockReset();
 });
 
 describe('showDialog', () => {
@@ -117,7 +117,7 @@ describe('showDialog', () => {
 
     expect(renderCanvas).not.toHaveBeenCalled();
     expect(applyImageList).not.toHaveBeenCalled();
-    expect(zoomAndScrollInit).not.toHaveBeenCalled();
+    expect(applyZoomAndScroll).not.toHaveBeenCalled();
   });
 
   it('focuses the current image-list item without re-opening when the dialog stays open', async () => {
@@ -144,7 +144,10 @@ describe('showDialog', () => {
 
     expect(showModal).toHaveBeenCalledTimes(1);
     expect(focus).toHaveBeenCalledTimes(1);
-    expect(zoomAndScrollInit).toHaveBeenCalledWith(clonedImage, 'init');
+    expect(applyZoomAndScroll).toHaveBeenCalledWith({
+      targetImage: clonedImage,
+      scaleValue: 'init',
+    });
     expect(renderCanvas).toHaveBeenCalledTimes(1);
     expect(applyImageList).toHaveBeenCalledWith(false);
   });

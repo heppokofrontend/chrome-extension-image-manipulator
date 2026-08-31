@@ -1,9 +1,9 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
+import { applyZoomAndScroll } from './apply-zoom-and-scroll';
 import { getFileSize } from './get-file-size';
 import { getImageData, setImageData } from './image-data';
-import { zoomAndScrollInit } from './zoom-and-scroll';
 
 const { dialog, spaceElement } = CONTENT_UI;
 
@@ -63,7 +63,7 @@ const createClonedImage = async (
   // 容量の解決
   await getFileSize(clonedImage).finally(() => {
     setDialogLoading(false);
-    zoomAndScrollInit(clonedImage, imageData.scale);
+    applyZoomAndScroll({ targetImage: clonedImage, scaleValue: imageData.scale });
   });
 
   return clonedImage;
