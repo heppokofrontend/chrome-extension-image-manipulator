@@ -62,6 +62,10 @@ const createClonedImage = async (
     clonedImage,
   });
 
+  // クローン生成直後に代入しないと、getFileSize 待機中は STATE.currentImageElement が
+  // 元の <img> のままになり、待機中の操作(ホイール操作等)が誤って元画像を書き換える
+  STATE.currentImageElement = clonedImage;
+
   // 容量の解決
   await getFileSize(clonedImage).finally(() => {
     setDialogLoading(false);
@@ -98,8 +102,6 @@ const resolveDialogImage = async (
   if (!clonedImage) {
     return null;
   }
-
-  STATE.currentImageElement = clonedImage;
 
   return { initialScale };
 };
