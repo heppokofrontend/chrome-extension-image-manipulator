@@ -75,7 +75,10 @@ describe('addEventScaleControllers', () => {
     fields.scaleFit.dispatchEvent(new Event('click'));
 
     expect(updateState).toHaveBeenCalledWith({ scale: 100 });
-    expect(applyZoomAndScroll).toHaveBeenCalledWith(image, 'fit');
+    expect(applyZoomAndScroll).toHaveBeenCalledWith({
+      targetImage: image,
+      scaleValue: 'fit',
+    });
   });
 
   it('does nothing on fit-click when there is no currently tracked image', async () => {

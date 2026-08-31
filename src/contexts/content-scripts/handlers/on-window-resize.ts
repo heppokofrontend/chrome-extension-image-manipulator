@@ -13,7 +13,7 @@ export const onWindowResize = () => {
   setTimeoutId = setTimeout(() => {
     if (dialog.open && STATE.currentImageElement) {
       canvas.dispatchEvent(wheelEvent);
-      applyZoomAndScroll(STATE.currentImageElement);
+      applyZoomAndScroll({ targetImage: STATE.currentImageElement });
     }
   }, 300);
 };

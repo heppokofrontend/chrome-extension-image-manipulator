@@ -9,7 +9,7 @@ const { getFileSize, getImageData, setImageData, applyZoomAndScroll } = vi.hoist
 
 vi.mock('@/contexts/content-scripts/utils/get-file-size', () => ({ getFileSize }));
 vi.mock('@/contexts/content-scripts/utils/image-data', () => ({ getImageData, setImageData }));
-vi.mock('@/contexts/content-scripts/utils/zoom-and-scroll', () => ({ applyZoomAndScroll }));
+vi.mock('@/contexts/content-scripts/utils/apply-zoom-and-scroll', () => ({ applyZoomAndScroll }));
 
 const importResolveDialogImage = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });

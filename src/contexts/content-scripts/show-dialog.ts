@@ -39,7 +39,10 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     dialog.showModal();
   }
 
-  applyZoomAndScroll(STATE.currentImageElement, resolved.initialScale ?? 'init');
+  applyZoomAndScroll({
+    targetImage: STATE.currentImageElement,
+    scaleValue: resolved.initialScale ?? 'init',
+  });
 
   // resolveDialogImage/applyZoomAndScroll を経て STATE.currentImageElement は
   // ダイアログ用クローンに切り替わっているため、そのクローンの最新データで描画する。

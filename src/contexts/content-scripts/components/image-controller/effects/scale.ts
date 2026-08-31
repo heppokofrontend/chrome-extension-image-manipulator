@@ -17,7 +17,7 @@ export const addEventScaleControllers = ({ scale, scaleFit, scale100 }: ScaleFie
   scaleFit.addEventListener('click', () => {
     if (STATE.currentImageElement) {
       updateState({ scale: 100 });
-      applyZoomAndScroll(STATE.currentImageElement, 'fit');
+      applyZoomAndScroll({ targetImage: STATE.currentImageElement, scaleValue: 'fit' });
     }
   });
 

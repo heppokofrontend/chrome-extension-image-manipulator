@@ -63,7 +63,7 @@ const createClonedImage = async (
   // 容量の解決
   await getFileSize(clonedImage).finally(() => {
     setDialogLoading(false);
-    applyZoomAndScroll(clonedImage, imageData.scale);
+    applyZoomAndScroll({ targetImage: clonedImage, scaleValue: imageData.scale });
   });
 
   return clonedImage;

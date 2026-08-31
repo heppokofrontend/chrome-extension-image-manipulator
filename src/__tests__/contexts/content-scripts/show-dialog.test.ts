@@ -144,7 +144,10 @@ describe('showDialog', () => {
 
     expect(showModal).toHaveBeenCalledTimes(1);
     expect(focus).toHaveBeenCalledTimes(1);
-    expect(applyZoomAndScroll).toHaveBeenCalledWith(clonedImage, 'init');
+    expect(applyZoomAndScroll).toHaveBeenCalledWith({
+      targetImage: clonedImage,
+      scaleValue: 'init',
+    });
     expect(renderCanvas).toHaveBeenCalledTimes(1);
     expect(applyImageList).toHaveBeenCalledWith(false);
   });

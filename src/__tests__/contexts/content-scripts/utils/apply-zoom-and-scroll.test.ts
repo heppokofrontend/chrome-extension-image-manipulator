@@ -38,7 +38,7 @@ describe('applyZoomAndScroll', () => {
     Object.defineProperty(img, 'naturalWidth', { value: 10, configurable: true });
     Object.defineProperty(img, 'naturalHeight', { value: 10, configurable: true });
 
-    applyZoomAndScroll(img, 'init');
+    applyZoomAndScroll({ targetImage: img, scaleValue: 'init' });
 
     expect(setImageData).toHaveBeenCalledWith(img, { scale: 5000 });
   });
@@ -55,7 +55,7 @@ describe('applyZoomAndScroll', () => {
     Object.defineProperty(img, 'naturalWidth', { value: 20, configurable: true });
     Object.defineProperty(img, 'naturalHeight', { value: 10, configurable: true });
 
-    applyZoomAndScroll(img, 'init');
+    applyZoomAndScroll({ targetImage: img, scaleValue: 'init' });
 
     expect(setImageData).toHaveBeenCalledWith(img, { scale: 2500 });
   });
@@ -71,7 +71,7 @@ describe('applyZoomAndScroll', () => {
     Object.defineProperty(img, 'naturalWidth', { value: 10, configurable: true });
     Object.defineProperty(img, 'naturalHeight', { value: 10, configurable: true });
 
-    applyZoomAndScroll(img, 'fit');
+    applyZoomAndScroll({ targetImage: img, scaleValue: 'fit' });
 
     expect(setImageData).toHaveBeenCalledWith(img, { scale: 9000 });
   });
