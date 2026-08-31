@@ -90,9 +90,9 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
   return makeEntry(newPseudoImage.src, alt, originalElement);
 };
 
-// noRecreate: true の場合はDOM走査をスキップしてキャッシュを返す(呼び出し側の再生成要否判断をここに閉じ込める)
-export const collectImageListEntries = (noRecreate: boolean): ImageListEntry[] => {
-  if (noRecreate) {
+// useCache: true の場合はDOM走査をスキップしてキャッシュを返す(呼び出し側の再生成要否判断をここに閉じ込める)
+export const collectImageListEntries = (useCache: boolean): ImageListEntry[] => {
+  if (useCache) {
     return imagesCache;
   }
 

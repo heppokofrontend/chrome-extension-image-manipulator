@@ -43,9 +43,9 @@ const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement |
 // 前回分をキャンセルしてから予約し直し、古いクロージャが新しいDOMに対して発火するのを防ぐ。
 let invisibleTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
-export const applyImageList = (noRecreate: boolean = false) => {
+export const applyImageList = (useCache: boolean = false) => {
   const { imageList, imageListInfo } = CONTENT_UI;
-  const images = collectImageListEntries(noRecreate);
+  const images = collectImageListEntries(useCache);
 
   renderImageList(images);
 
@@ -56,7 +56,7 @@ export const applyImageList = (noRecreate: boolean = false) => {
     imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
   };
 
-  if (noRecreate) {
+  if (useCache) {
     viewCurrentIndex();
     scheduleScrollAdjustment(imageList, current);
 
