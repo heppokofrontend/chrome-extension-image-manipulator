@@ -43,6 +43,23 @@ describe('zoomAndScrollInit', () => {
     expect(setImageData).toHaveBeenCalledWith(img, { scale: 5000 });
   });
 
+  it('halves the fit-to-canvas scale when a wide image is width-constrained and would cover more than half the canvas on init', async () => {
+    const { zoomAndScrollInit, CONTENT_UI } = await importZoomAndScroll();
+
+    Object.defineProperty(CONTENT_UI.canvas, 'offsetHeight', { value: 1000, configurable: true });
+    Object.defineProperty(CONTENT_UI.canvas, 'offsetWidth', { value: 1000, configurable: true });
+    CONTENT_UI.canvas.scroll = vi.fn();
+
+    // 横長画像(naturalWidth > naturalHeight)にして fitWidth <= fitHeight 側の分岐を通す
+    const img = document.createElement('img');
+    Object.defineProperty(img, 'naturalWidth', { value: 20, configurable: true });
+    Object.defineProperty(img, 'naturalHeight', { value: 10, configurable: true });
+
+    zoomAndScrollInit(img, 'init');
+
+    expect(setImageData).toHaveBeenCalledWith(img, { scale: 2500 });
+  });
+
   it('fits the image to the canvas without halving when scaleValue is "fit"', async () => {
     const { zoomAndScrollInit, CONTENT_UI } = await importZoomAndScroll();
 

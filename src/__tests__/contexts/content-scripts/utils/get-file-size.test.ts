@@ -36,6 +36,28 @@ describe('getFileSize', () => {
     });
   });
 
+  it('falls back to error_fileSize for a data URL when the computed Blob size is falsy', async () => {
+    const { getFileSize } = await importGetFileSize();
+    const img = document.createElement('img');
+    img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+    // image.src は常に 'data:image/svg+xml' から始まる非空文字列のため、
+    // new Blob([image.src]).size が 0 になるケースは自然には再現できない。
+    // size ? ... : getMessage('error_fileSize') の右辺を通すため Blob だけ差し替える
+    vi.stubGlobal(
+      'Blob',
+      vi.fn().mockImplementation(function MockBlob(this: { size: number }) {
+        this.size = 0;
+      }),
+    );
+
+    await getFileSize(img);
+
+    expect(setImageData).toHaveBeenCalledWith(img, {
+      fileSize: 'error_fileSize',
+      fileType: 'image/svg+xml (in HTML)',
+    });
+  });
+
   it('falls back to error_fileSize when Content-Length is absent on success', async () => {
     const { getFileSize } = await importGetFileSize();
     vi.stubGlobal(

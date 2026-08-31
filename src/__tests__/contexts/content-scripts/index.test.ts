@@ -238,6 +238,19 @@ describe('content-scripts entry point', () => {
 
     expect(document.body.contains(host)).toBe(true);
   });
+
+  it('does not re-append the custom element on window load when it is already in the body', async () => {
+    await importContentScripts();
+
+    const host = nonNullable(document.body.querySelector('heppokofrontend-imagemanipulator'));
+    // 同一 window に他テストの 'load' リスナーも累積して残り、構造が同一な
+    // 別インスタンスの imageViewer も toHaveBeenCalledWith の深い等価比較で
+    // 一致してしまうため、参照の同一性で検証する
+    const appendChild = vi.spyOn(document.body, 'appendChild');
+    window.dispatchEvent(new Event('load'));
+
+    expect(appendChild.mock.calls.some((call) => call[0] === host)).toBe(false);
+  });
 });
 
 describe('contextmenu target resolution', () => {

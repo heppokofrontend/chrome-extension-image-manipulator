@@ -88,6 +88,19 @@ describe('onContextmenu', () => {
     expect(STATE.currentImageElement).toBe(pic);
   });
 
+  it('leaves the tracked image untouched when the resolved image is already inside the dialog', async () => {
+    const { onContextmenu, CONTENT_UI, STATE } = await importOnContextmenu();
+    const alreadyTracked = document.createElement('img');
+    STATE.currentImageElement = alreadyTracked;
+    const imageInDialog = document.createElement('img');
+    CONTENT_UI.spaceElement.appendChild(imageInDialog);
+
+    onContextmenu({ target: imageInDialog } as unknown as MouseEvent);
+
+    expect(STATE.currentImageElement).toBe(alreadyTracked);
+    expect(imageInDialog.dataset['imageManipulatorDefaultStyle']).toBeUndefined();
+  });
+
   it('gives up after walking 100 ancestors without finding an image', async () => {
     const { onContextmenu, STATE } = await importOnContextmenu();
     let current: HTMLElement = document.body;
