@@ -68,9 +68,17 @@ export const setImageData = (
   }
 
   if (isInDialog) {
-    const getSize = (img: HTMLImageElement, scale: number) => {
-      const width = img.naturalWidth * (scale / 100);
-      const height = img.naturalHeight * (scale / 100);
+    const getSize = ({
+      naturalWidth,
+      naturalHeight,
+      scale,
+    }: {
+      naturalWidth: number;
+      naturalHeight: number;
+      scale: number;
+    }) => {
+      const width = naturalWidth * (scale / 100);
+      const height = naturalHeight * (scale / 100);
       const contentWidth = (canvas.clientWidth + width / 2) * 2 - 10;
       const contentHeight = (canvas.clientHeight + height / 2) * 2 - 10;
 
@@ -82,9 +90,10 @@ export const setImageData = (
       };
     };
 
+    const { naturalWidth, naturalHeight } = img;
     const { scale, oldScale, render } = imageData;
-    const { spaceSize } = getSize(img, scale);
-    const olsSpaceSize = getSize(img, oldScale).spaceSize;
+    const { spaceSize } = getSize({ naturalWidth, naturalHeight, scale });
+    const olsSpaceSize = getSize({ naturalWidth, naturalHeight, scale: oldScale }).spaceSize;
 
     img.style.width = '';
     img.style.height = '';
