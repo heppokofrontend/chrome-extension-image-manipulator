@@ -25,6 +25,29 @@ export const getImageData = (key: HTMLImageElement) => {
   return { ...imageDataMap.get(key) } as StyleData;
 };
 
+const getSize = ({
+  naturalWidth,
+  naturalHeight,
+  scale,
+}: {
+  naturalWidth: number;
+  naturalHeight: number;
+  scale: number;
+}) => {
+  const { canvas } = CONTENT_UI;
+  const width = naturalWidth * (scale / 100);
+  const height = naturalHeight * (scale / 100);
+  const contentWidth = (canvas.clientWidth + width / 2) * 2 - 10;
+  const contentHeight = (canvas.clientHeight + height / 2) * 2 - 10;
+
+  return {
+    spaceSize: {
+      width: contentWidth,
+      height: contentHeight,
+    },
+  };
+};
+
 export const setImageData = (
   img: HTMLImageElement,
   options: Options,
@@ -68,38 +91,25 @@ export const setImageData = (
   }
 
   if (isInDialog) {
-    const getSize = (img: HTMLImageElement, scale: number) => {
-      const width = img.naturalWidth * (scale / 100);
-      const height = img.naturalHeight * (scale / 100);
-      const contentWidth = (canvas.clientWidth + width / 2) * 2 - 10;
-      const contentHeight = (canvas.clientHeight + height / 2) * 2 - 10;
-
-      return {
-        spaceSize: {
-          width: contentWidth,
-          height: contentHeight,
-        },
-      };
-    };
-
+    const { naturalWidth, naturalHeight } = img;
     const { scale, oldScale, render } = imageData;
-    const { spaceSize } = getSize(img, scale);
-    const olsSpaceSize = getSize(img, oldScale).spaceSize;
+    const { spaceSize } = getSize({ naturalWidth, naturalHeight, scale });
+    const olsSpaceSize = getSize({ naturalWidth, naturalHeight, scale: oldScale }).spaceSize;
 
     img.style.width = '';
     img.style.height = '';
     img.style.imageRendering = '';
     img.style.cssText = `
-        ${img.getAttribute('style') ?? ''}
-        width: ${img.naturalWidth * (scale / 100)}px !important;
-        height: ${img.naturalHeight * (scale / 100)}px !important;
-        image-rendering: ${render} !important;
-      `;
+      ${img.getAttribute('style') ?? ''}
+      width: ${img.naturalWidth * (scale / 100)}px !important;
+      height: ${img.naturalHeight * (scale / 100)}px !important;
+      image-rendering: ${render} !important;
+    `;
 
     spaceElement.style.cssText = `
-        width: ${spaceSize.width}px !important;
-        height: ${spaceSize.height}px !important;
-      `;
+      width: ${spaceSize.width}px !important;
+      height: ${spaceSize.height}px !important;
+    `;
 
     const diffWidth = (olsSpaceSize.width - spaceSize.width) / 2;
     const diffHeight = (olsSpaceSize.height - spaceSize.height) / 2;
