@@ -1,7 +1,7 @@
+import { renderCanvas } from '@/contexts/content-scripts/components/canvas';
 import { initImageController } from '@/contexts/content-scripts/components/image-controller';
 import { initImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list';
-import { initCanvas } from '@/contexts/content-scripts/effects';
 import { onDetailsClose, onSearchClick } from '@/contexts/content-scripts/handlers';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
@@ -19,7 +19,7 @@ export const renderExtension = () => {
   initImageInfo();
   initImageController();
   addEventImageListControllers(CONTENT_UI);
-  initCanvas();
+  renderCanvas();
 
   shadowRoot.appendChild(style);
   shadowRoot.appendChild(dialog);
