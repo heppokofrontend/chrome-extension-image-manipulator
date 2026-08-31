@@ -1,95 +1,7 @@
 import { renderImageList } from '@/contexts/content-scripts/components/image-list/renderers';
-import type {
-  ImageListEntry,
-  ResolvableElement,
-} from '@/contexts/content-scripts/components/image-list/types';
-import { resolveImageElement } from '@/contexts/content-scripts/components/image-list/utils';
-import { IMAGE_LIST_GAP, SELECTOR } from '@/contexts/content-scripts/constants';
+import { collectImageListEntries } from '@/contexts/content-scripts/components/image-list/utils';
+import { IMAGE_LIST_GAP } from '@/contexts/content-scripts/constants';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
-import {
-  convertDummyElementToImg,
-  convertSVGToImg,
-  getFileSize,
-  setImageData,
-} from '@/contexts/content-scripts/utils';
-
-// 404の画像があったり、bodyスクロール時に画像が追加されたりすると、画像を切り替えるたびにリストを再生成してチカチカしたりするのでキャッシュしておく
-let imagesCache: ImageListEntry[] = [];
-
-// lazyload対応で load 発火のたびに呼ぶため、要素ごとに閉じ込めずモジュールスコープに置く
-const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: ImageListEntry) => {
-  const clonedImage = document.createElement('img');
-  result.src = originalElement.src;
-  result.alt = originalElement.alt;
-  clonedImage.src = originalElement.src;
-  clonedImage.alt = originalElement.alt;
-
-  setImageData(
-    originalElement,
-    {
-      clonedImage,
-    },
-    true,
-  );
-  await getFileSize(clonedImage);
-  setImageData(
-    clonedImage,
-    {
-      isInDialog: true,
-      origin: originalElement,
-    },
-    true,
-  );
-};
-
-const makeEntry = (
-  src: string,
-  alt: string,
-  originalElement: ResolvableElement,
-): ImageListEntry => ({
-  src,
-  alt,
-  isError: false,
-  originalElement,
-});
-
-const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | null => {
-  if (originalElement instanceof HTMLImageElement) {
-    const result = makeEntry(originalElement.src, originalElement.alt.trim(), originalElement);
-
-    // support lazyload by script
-    originalElement.addEventListener('load', () => {
-      void handleLazyLoadedImage(originalElement, result);
-    });
-    originalElement.addEventListener('error', () => {
-      result.isError = true;
-    });
-
-    return result;
-  }
-
-  const pseudoImage = resolveImageElement(originalElement);
-
-  if (pseudoImage) {
-    return makeEntry(pseudoImage.src, pseudoImage.alt, originalElement);
-  }
-
-  const newPseudoImage =
-    originalElement instanceof SVGElement
-      ? convertSVGToImg(originalElement)
-      : convertDummyElementToImg(originalElement);
-
-  if (!newPseudoImage) {
-    return null;
-  }
-
-  const alt =
-    newPseudoImage.getAttribute('aria-label') ??
-    newPseudoImage.querySelector('title')?.textContent.trim() ??
-    '';
-
-  return makeEntry(newPseudoImage.src, alt, originalElement);
-};
 
 // scrollIntoView() だと常に上辺か下辺に張り付くため、自前で実装
 const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement | undefined) => {
@@ -127,17 +39,13 @@ const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement |
   }, 0);
 };
 
-const collectImageListEntries = (): ImageListEntry[] =>
-  [...document.querySelectorAll<ResolvableElement>(SELECTOR)]
-    .map(toImageListEntry)
-    .filter((current): current is ImageListEntry => current !== null)
-    .filter((current, index, self) => {
-      return self.findIndex((entry) => entry.src === current.src) === index;
-    });
+// 新規描画直後の一瞬(高さ再計算やスクロール位置のズレ)を隠すための猶予。連続呼び出し時は
+// 前回分をキャンセルしてから予約し直し、古いクロージャが新しいDOMに対して発火するのを防ぐ。
+let invisibleTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
-export const applyImageList = (noRecreate: boolean = false) => {
+export const applyImageList = (useCache: boolean = false) => {
   const { imageList, imageListInfo } = CONTENT_UI;
-  const images = noRecreate ? imagesCache : collectImageListEntries();
+  const images = collectImageListEntries(useCache);
 
   renderImageList(images);
 
@@ -148,20 +56,21 @@ export const applyImageList = (noRecreate: boolean = false) => {
     imageListInfo.textContent = `${currentIndex + 1} / ${buttons.length}`;
   };
 
-  if (noRecreate) {
+  if (useCache) {
     viewCurrentIndex();
     scheduleScrollAdjustment(imageList, current);
 
     return;
   }
 
-  imagesCache = images;
   imageList.classList.add('invisible');
 
-  // FIXME: 300ms以内に applyImageList が連続で呼ばれると、この setTimeout が古い
-  // current/currentIndex のクロージャのまま新しいDOMに対して発火し、表示が一瞬チラつく恐れがある。
-  // 前回分の setTimeout を clearTimeout してから予約し直すのが本筋。
-  setTimeout(() => {
+  if (invisibleTimeoutId !== undefined) {
+    clearTimeout(invisibleTimeoutId);
+  }
+
+  invisibleTimeoutId = setTimeout(() => {
+    invisibleTimeoutId = undefined;
     imageList.classList.remove('invisible');
     viewCurrentIndex();
     current?.scrollIntoView(false);

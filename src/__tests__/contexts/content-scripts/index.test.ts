@@ -162,7 +162,7 @@ const flushAsyncWork = async () => {
 
 /**
  * ダイアログを最後まで開き切るテスト用ヘルパー。
- * applyImageList の noRecreate:false 分岐は 300ms 後に実タイマーで
+ * applyImageList の useCache:false 分岐は 300ms 後に実タイマーで
  * リストを可視化するため、afterEach の DOM 破棄より前にそれを消化しておかないと
  * カバレッジ計測時に限りテアダウン後の要素操作で例外が漏れる。
  */
@@ -401,7 +401,7 @@ describe('opening the dialog via the context menu message', () => {
     expect(result).toBe(true);
 
     await flushAsyncWork();
-    // applyImageList の noRecreate:false 分岐が実タイマー(300ms)でリストを
+    // applyImageList の useCache:false 分岐が実タイマー(300ms)でリストを
     // 可視化するため、afterEach のテアダウン前にそれを消化しておく。
     await new Promise((resolve) => setTimeout(resolve, 300));
   });
@@ -983,7 +983,7 @@ describe('the image list inside an opened dialog', () => {
     await flushAsyncWork();
   });
 
-  it('picks up a lazily-loaded image update when the source <img> fires load/error after the list is already built, and filters the errored entry out of the noRecreate cache on the next selection', async () => {
+  it('picks up a lazily-loaded image update when the source <img> fires load/error after the list is already built, and filters the errored entry out of the cache on the next selection', async () => {
     const { messageListener } = await importContentScripts({ openShadow: true });
     const imgA = document.createElement('img');
     imgA.src = svgSrc('a');
@@ -1008,14 +1008,14 @@ describe('the image list inside an opened dialog', () => {
       );
 
     // imgB の isError は imagesCache 上の result を直接書き換えたもの。別ボタン(imgC)のクリックで
-    // noRecreate=true(キャッシュ再利用)を踏むと、listItems 生成時にこのエントリがフィルタされて消える
+    // useCache=true(キャッシュ再利用)を踏むと、listItems 生成時にこのエントリがフィルタされて消える
     nonNullable(findButtonBySrc(svgSrc('c'))).click();
     await flushAsyncWork();
 
     expect(findButtonBySrc(imgB.src)).toBeUndefined();
     expect(findButtonBySrc(svgSrc('c'))?.getAttribute('aria-current')).toBe('true');
 
-    // reload(noRecreate=false)は DOM を再走査するため、この操作自体が例外を起こさないことのみ確認する
+    // reload(useCache=false)は DOM を再走査するため、この操作自体が例外を起こさないことのみ確認する
     // (imgB の合成サムネイルは src に /error-image を含み自身の onerror で即座に再エラー扱いになるため復活しない)
     expect(() => {
       getControl<HTMLButtonElement>('image-list-reload').click();
