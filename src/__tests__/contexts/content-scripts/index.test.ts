@@ -1242,8 +1242,6 @@ describe('the scale-fit button', () => {
 
 describe('the generated dialog DOM keeps a stable id structure', () => {
   // [id, 最も近い祖先要素の id (無ければ null)] を文書順に列挙したもの。
-  // rotate-left/rotate-right は同じ ROTATE_ICON アセットを埋め込むため、
-  // svg#_x32_ が意図的に重複する。
   const EXPECTED_ID_TREE: Array<[id: string, parentId: string | null]> = [
     ['canvas', null],
     ['canvas-inner', 'canvas'],
@@ -1268,9 +1266,7 @@ describe('the generated dialog DOM keeps a stable id structure', () => {
     ['rotate-legend', 'image-controller'],
     ['rotate-reset', 'image-controller'],
     ['rotate-left', 'image-controller'],
-    ['_x32_', 'rotate-left'],
     ['rotate-right', 'image-controller'],
-    ['_x32_', 'rotate-right'],
     ['rotate', 'image-controller'],
     ['render', 'image-controller'],
     ['color', 'image-controller'],
