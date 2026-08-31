@@ -7,7 +7,7 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
   getImageData,
   resolveDialogImage,
-  zoomAndScrollInit,
+  applyZoomAndScroll,
 } from '@/contexts/content-scripts/utils';
 
 const { dialog, imageList } = CONTENT_UI;
@@ -39,9 +39,9 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
     dialog.showModal();
   }
 
-  zoomAndScrollInit(STATE.currentImageElement, resolved.initialScale ?? 'init');
+  applyZoomAndScroll(STATE.currentImageElement, resolved.initialScale ?? 'init');
 
-  // resolveDialogImage/zoomAndScrollInit を経て STATE.currentImageElement は
+  // resolveDialogImage/applyZoomAndScroll を経て STATE.currentImageElement は
   // ダイアログ用クローンに切り替わっているため、そのクローンの最新データで描画する。
   const clonedImageData = getImageData(STATE.currentImageElement);
 

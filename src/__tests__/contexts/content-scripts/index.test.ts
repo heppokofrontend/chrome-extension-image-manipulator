@@ -83,7 +83,7 @@ const getControl = <T extends Element = HTMLElement>(id: string) => {
 
 /**
  * ダイアログ・スクロール・画像読み込みは jsdom が未実装のため、
- * showDialog / zoomAndScrollInit / getFileSize の到達に必要な最小限をパッチする。
+ * showDialog / applyZoomAndScroll / getFileSize の到達に必要な最小限をパッチする。
  * src に "/error-image" を含めると load の代わりに error を発火させる（404 系分岐の検証用）。
  */
 const patchDialogEnvironment = () => {

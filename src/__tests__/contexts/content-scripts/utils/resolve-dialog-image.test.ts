@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { getFileSize, getImageData, setImageData, zoomAndScrollInit } = vi.hoisted(() => ({
+const { getFileSize, getImageData, setImageData, applyZoomAndScroll } = vi.hoisted(() => ({
   getFileSize: vi.fn(),
   getImageData: vi.fn(),
   setImageData: vi.fn(),
-  zoomAndScrollInit: vi.fn(),
+  applyZoomAndScroll: vi.fn(),
 }));
 
 vi.mock('@/contexts/content-scripts/utils/get-file-size', () => ({ getFileSize }));
 vi.mock('@/contexts/content-scripts/utils/image-data', () => ({ getImageData, setImageData }));
-vi.mock('@/contexts/content-scripts/utils/zoom-and-scroll', () => ({ zoomAndScrollInit }));
+vi.mock('@/contexts/content-scripts/utils/zoom-and-scroll', () => ({ applyZoomAndScroll }));
 
 const importResolveDialogImage = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
@@ -65,7 +65,7 @@ afterEach(() => {
   getFileSize.mockReset();
   getImageData.mockReset();
   setImageData.mockReset();
-  zoomAndScrollInit.mockReset();
+  applyZoomAndScroll.mockReset();
 });
 
 describe('resolveDialogImage', () => {

@@ -1,7 +1,7 @@
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { getImageData, setImageData } from '@/contexts/content-scripts/utils/image-data';
 
-export const zoomAndScrollInit = (
+export const applyZoomAndScroll = (
   targetImage: HTMLImageElement,
   scaleValue?: number | 'init' | 'fit',
 ) => {

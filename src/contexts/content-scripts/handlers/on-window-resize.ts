@@ -1,6 +1,6 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
-import { zoomAndScrollInit } from '@/contexts/content-scripts/utils';
+import { applyZoomAndScroll } from '@/contexts/content-scripts/utils';
 
 const { dialog, canvas } = CONTENT_UI;
 
@@ -13,7 +13,7 @@ export const onWindowResize = () => {
   setTimeoutId = setTimeout(() => {
     if (dialog.open && STATE.currentImageElement) {
       canvas.dispatchEvent(wheelEvent);
-      zoomAndScrollInit(STATE.currentImageElement);
+      applyZoomAndScroll(STATE.currentImageElement);
     }
   }, 300);
 };

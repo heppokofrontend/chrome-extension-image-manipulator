@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { updateState, zoomAndScrollInit } = vi.hoisted(() => ({
+const { updateState, applyZoomAndScroll } = vi.hoisted(() => ({
   updateState: vi.fn(),
-  zoomAndScrollInit: vi.fn(),
+  applyZoomAndScroll: vi.fn(),
 }));
 
 vi.mock('@/contexts/content-scripts/components/image-controller/utils', () => ({ updateState }));
 vi.mock('@/contexts/content-scripts/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/content-scripts/utils')>()),
-  zoomAndScrollInit,
+  applyZoomAndScroll,
 }));
 
 const importScale = async () => {
@@ -27,7 +27,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
   updateState.mockReset();
-  zoomAndScrollInit.mockReset();
+  applyZoomAndScroll.mockReset();
 });
 
 describe('addEventScaleControllers', () => {
@@ -63,7 +63,7 @@ describe('addEventScaleControllers', () => {
     fields.scale100.dispatchEvent(new Event('click'));
 
     expect(updateState).toHaveBeenCalledWith({ scale: 100 });
-    expect(zoomAndScrollInit).not.toHaveBeenCalled();
+    expect(applyZoomAndScroll).not.toHaveBeenCalled();
   });
 
   it('fits the currently tracked image to the viewer', async () => {
@@ -75,7 +75,7 @@ describe('addEventScaleControllers', () => {
     fields.scaleFit.dispatchEvent(new Event('click'));
 
     expect(updateState).toHaveBeenCalledWith({ scale: 100 });
-    expect(zoomAndScrollInit).toHaveBeenCalledWith(image, 'fit');
+    expect(applyZoomAndScroll).toHaveBeenCalledWith(image, 'fit');
   });
 
   it('does nothing on fit-click when there is no currently tracked image', async () => {
@@ -86,6 +86,6 @@ describe('addEventScaleControllers', () => {
     fields.scaleFit.dispatchEvent(new Event('click'));
 
     expect(updateState).not.toHaveBeenCalled();
-    expect(zoomAndScrollInit).not.toHaveBeenCalled();
+    expect(applyZoomAndScroll).not.toHaveBeenCalled();
   });
 });
