@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const importInitCanvas = async () => {
+const importRenderCanvas = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
-  const { initCanvas } = await import('@/contexts/content-scripts/effects/canvas');
+  const { renderCanvas } = await import('@/contexts/content-scripts/components/canvas');
   const { CONTENT_UI } = await import('@/contexts/content-scripts/ui');
 
   document.body.appendChild(CONTENT_UI.canvas);
 
-  return { initCanvas, CONTENT_UI };
+  return { renderCanvas, CONTENT_UI };
 };
 
 afterEach(() => {
@@ -17,11 +17,11 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe('initCanvas', () => {
+describe('renderCanvas', () => {
   it('wires the shared canvas to contain a nested space element', async () => {
-    const { initCanvas, CONTENT_UI } = await importInitCanvas();
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
 
-    initCanvas();
+    renderCanvas();
 
     expect(CONTENT_UI.canvas.id).toBe('canvas');
     expect(CONTENT_UI.spaceElement.id).toBe('canvas-inner');
@@ -29,11 +29,11 @@ describe('initCanvas', () => {
   });
 
   it('drags the canvas by scrolling relative to the mousedown origin while the primary button is held', async () => {
-    const { initCanvas, CONTENT_UI } = await importInitCanvas();
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
     const { canvas } = CONTENT_UI;
     const scroll = vi.fn();
 
-    initCanvas();
+    renderCanvas();
     canvas.scroll = scroll;
     canvas.scrollLeft = 10;
     canvas.scrollTop = 20;
@@ -45,11 +45,11 @@ describe('initCanvas', () => {
   });
 
   it('ignores mousedown from a non-primary button', async () => {
-    const { initCanvas, CONTENT_UI } = await importInitCanvas();
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
     const { canvas } = CONTENT_UI;
     const scroll = vi.fn();
 
-    initCanvas();
+    renderCanvas();
     canvas.scroll = scroll;
 
     canvas.dispatchEvent(new MouseEvent('mousedown', { button: 1, clientX: 0, clientY: 0 }));
@@ -59,11 +59,11 @@ describe('initCanvas', () => {
   });
 
   it('stops tracking mousemove once the mouse button is released', async () => {
-    const { initCanvas, CONTENT_UI } = await importInitCanvas();
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
     const { canvas } = CONTENT_UI;
     const scroll = vi.fn();
 
-    initCanvas();
+    renderCanvas();
     canvas.scroll = scroll;
 
     canvas.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 0, clientY: 0 }));
@@ -74,11 +74,11 @@ describe('initCanvas', () => {
   });
 
   it('stops tracking mousemove once the mouse leaves the window', async () => {
-    const { initCanvas, CONTENT_UI } = await importInitCanvas();
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
     const { canvas } = CONTENT_UI;
     const scroll = vi.fn();
 
-    initCanvas();
+    renderCanvas();
     canvas.scroll = scroll;
 
     canvas.dispatchEvent(new MouseEvent('mousedown', { button: 0, clientX: 0, clientY: 0 }));

@@ -1,3 +1,4 @@
+import { renderCanvas } from '@/contexts/content-scripts/components/canvas';
 import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { applyImageList } from '@/contexts/content-scripts/components/image-list';
@@ -86,8 +87,7 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
       }
     }
 
-    spaceElement.textContent = '';
-    spaceElement.append(STATE.currentImageElement);
+    renderCanvas();
 
     applyImageList(noRecreateImageList);
 

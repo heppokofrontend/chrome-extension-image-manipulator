@@ -1,7 +1,10 @@
-import { onCanvasWheel } from '@/contexts/content-scripts/handlers';
+import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
-export const initCanvas = () => {
+import { onCanvasWheel } from './handlers';
+
+let isInitialized = false;
+const initCanvas = () => {
   const outer = CONTENT_UI.canvas;
   const inner = CONTENT_UI.spaceElement;
   const moveState = {
@@ -43,4 +46,19 @@ export const initCanvas = () => {
   inner.id = 'canvas-inner';
   outer.append(inner);
   outer.addEventListener('wheel', onCanvasWheel);
+};
+
+export const renderCanvas = () => {
+  if (!isInitialized) {
+    isInitialized = true;
+    initCanvas();
+  }
+
+  const spaceElement = CONTENT_UI.spaceElement;
+
+  spaceElement.textContent = '';
+
+  if (STATE.currentImageElement) {
+    spaceElement.append(STATE.currentImageElement);
+  }
 };
