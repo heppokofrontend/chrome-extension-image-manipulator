@@ -7,5 +7,4 @@ export { convertSVGToImg, convertedSvgMap, convertedImgToSVGMap } from './conver
 export { getFileSize } from './get-file-size';
 export { defaultState, getImageData, setImageData } from './image-data';
 export { nonNullableQuerySelector } from './non-nullable-query-selector';
-export { setInputValues } from './set-input-values';
 export { zoomAndScrollInit } from './zoom-and-scroll';

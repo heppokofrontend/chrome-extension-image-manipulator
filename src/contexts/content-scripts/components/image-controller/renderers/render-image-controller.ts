@@ -30,7 +30,7 @@ export const initImageController = () => {
 export const renderImageController = (
   imageData: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
 ) => {
-  if (!fields) {
+  if (!fields || !STATE.currentImageElement) {
     return;
   }
 
