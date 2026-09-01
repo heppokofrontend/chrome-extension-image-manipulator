@@ -16,14 +16,14 @@ const scheduleScrollAdjustment = (imageList: HTMLElement, current: HTMLElement |
   const imageListRect = imageList.getBoundingClientRect();
   const targetRect = current.getBoundingClientRect();
   const scrollDelta = (() => {
-    const isNotVisibleTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
-    const isNotVisibleBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
+    const isOverflowingTop = targetRect.top < imageListRect.top - IMAGE_LIST_GAP;
+    const isOverflowingBottom = imageListRect.bottom < targetRect.top + IMAGE_LIST_GAP;
 
-    if (isNotVisibleTop) {
+    if (isOverflowingTop) {
       return targetRect.top - imageListRect.top - IMAGE_LIST_GAP;
     }
 
-    if (isNotVisibleBottom) {
+    if (isOverflowingBottom) {
       return targetRect.bottom - imageListRect.bottom + IMAGE_LIST_GAP;
     }
 

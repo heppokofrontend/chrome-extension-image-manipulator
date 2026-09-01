@@ -1,3 +1,3 @@
-export * from './reset-all';
-export * from './reset-current';
-export * from './search-in-page';
+export { resetAll } from './reset-all';
+export { resetCurrent } from './reset-current';
+export { searchInPage } from './search-in-page';

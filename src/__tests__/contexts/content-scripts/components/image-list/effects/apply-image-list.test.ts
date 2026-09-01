@@ -29,7 +29,7 @@ const appendButton = (imageList: HTMLElement, current: boolean) => {
   return button;
 };
 
-// isNotVisibleTop/isNotVisibleBottom のどちらも偽になるよう、対象がリスト範囲内に完全に収まる矩形を返す
+// isOverflowingTop/isOverflowingBottom のどちらも偽になるよう、対象がリスト範囲内に完全に収まる矩形を返す
 const stubFullyVisible = (imageList: HTMLElement, current: HTMLElement) => {
   imageList.getBoundingClientRect = () => ({ top: 0, bottom: 100 }) as DOMRect;
   current.getBoundingClientRect = () => ({ top: 10, bottom: 20 }) as DOMRect;

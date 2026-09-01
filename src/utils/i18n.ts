@@ -1,4 +1,4 @@
-type Options = { allowEmpty: boolean };
+type Options = { isEmptyAllowed: boolean };
 
 const resolveArgs = (a?: string | string[] | Options, b?: Options) => {
   if (typeof a === 'object' && !Array.isArray(a)) {
@@ -22,7 +22,7 @@ export const getMessage = (
   const { substitutions, options } = resolveArgs(option1, option2);
   const message = chrome.i18n.getMessage(key, substitutions);
 
-  if (message === '' && options?.allowEmpty !== true) {
+  if (message === '' && options?.isEmptyAllowed !== true) {
     throw new Error(`i18n message not found: ${key}`);
   }
 

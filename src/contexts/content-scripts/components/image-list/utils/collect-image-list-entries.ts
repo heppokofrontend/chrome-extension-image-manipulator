@@ -28,7 +28,7 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
     {
       clonedImage,
     },
-    true,
+    false,
   );
   await getFileSize(clonedImage);
   setImageData(
@@ -37,15 +37,19 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
       isInDialog: true,
       origin: originalElement,
     },
-    true,
+    false,
   );
 };
 
-const makeEntry = (
-  src: string,
-  alt: string,
-  originalElement: ResolvableElement,
-): ImageListEntry => ({
+const makeEntry = ({
+  src,
+  alt,
+  originalElement,
+}: {
+  src: string;
+  alt: string;
+  originalElement: ResolvableElement;
+}): ImageListEntry => ({
   src,
   alt,
   isError: false,
@@ -54,7 +58,11 @@ const makeEntry = (
 
 const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | null => {
   if (originalElement instanceof HTMLImageElement) {
-    const result = makeEntry(originalElement.src, originalElement.alt.trim(), originalElement);
+    const result = makeEntry({
+      src: originalElement.src,
+      alt: originalElement.alt.trim(),
+      originalElement,
+    });
 
     // support lazyload by script
     originalElement.addEventListener('load', () => {
@@ -70,7 +78,7 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
   const pseudoImage = resolveImageElement(originalElement);
 
   if (pseudoImage) {
-    return makeEntry(pseudoImage.src, pseudoImage.alt, originalElement);
+    return makeEntry({ src: pseudoImage.src, alt: pseudoImage.alt, originalElement });
   }
 
   const newPseudoImage =
@@ -87,7 +95,7 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
     newPseudoImage.querySelector('title')?.textContent.trim() ??
     '';
 
-  return makeEntry(newPseudoImage.src, alt, originalElement);
+  return makeEntry({ src: newPseudoImage.src, alt, originalElement });
 };
 
 // useCache: true の場合はDOM走査をスキップしてキャッシュを返す(呼び出し側の再生成要否判断をここに閉じ込める)

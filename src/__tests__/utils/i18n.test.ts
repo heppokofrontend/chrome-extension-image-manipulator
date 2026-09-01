@@ -26,13 +26,13 @@ describe('getMessage', () => {
     stubChromeI18n(getMessageMock);
     const { getMessage } = await import('@/utils/i18n');
 
-    const result = getMessage('optional_message', { allowEmpty: true });
+    const result = getMessage('optional_message', { isEmptyAllowed: true });
 
     expect(result).toBe('');
     expect(getMessageMock).toHaveBeenCalledWith('optional_message', undefined);
   });
 
-  it('throws when the resolved message is empty and allowEmpty was not set', async () => {
+  it('throws when the resolved message is empty and isEmptyAllowed was not set', async () => {
     stubChromeI18n(() => '');
     const { getMessage } = await import('@/utils/i18n');
 
@@ -41,12 +41,12 @@ describe('getMessage', () => {
     }).toThrow('i18n message not found: missing_key');
   });
 
-  it('does not throw when the message is empty and allowEmpty is set', async () => {
+  it('does not throw when the message is empty and isEmptyAllowed is set', async () => {
     stubChromeI18n(() => '');
     const { getMessage } = await import('@/utils/i18n');
 
     expect(() => {
-      getMessage('missing_key', { allowEmpty: true });
+      getMessage('missing_key', { isEmptyAllowed: true });
     }).not.toThrow();
   });
 });

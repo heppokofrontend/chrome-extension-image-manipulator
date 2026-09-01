@@ -1,1 +1,1 @@
-export * from './renderers';
+export { renderCanvas } from './renderers';

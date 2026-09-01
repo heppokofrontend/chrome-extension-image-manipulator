@@ -1,1 +1,1 @@
-export * from './on-canvas-wheel';
+export { onCanvasWheel } from './on-canvas-wheel';
