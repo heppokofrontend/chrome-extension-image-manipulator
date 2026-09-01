@@ -1,18 +1,18 @@
 import { IMAGE_LIST_COLS } from '@/contexts/content-scripts/constants';
 
 export const onImageListKeydown = (e: KeyboardEvent) => {
-  const self = e.currentTarget;
+  const button = e.currentTarget;
 
   if (e.altKey || e.ctrlKey) {
     return;
   }
 
-  if (!(self instanceof HTMLButtonElement)) {
+  if (!(button instanceof HTMLButtonElement)) {
     return;
   }
 
-  const buttons = [...(self.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
-  const index = buttons.indexOf(self);
+  const buttons = [...(button.closest('ul')?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
+  const index = buttons.indexOf(button);
 
   if (e.key.startsWith('Arrow')) {
     e.preventDefault();
