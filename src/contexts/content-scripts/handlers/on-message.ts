@@ -26,16 +26,22 @@ export const onMessage = (
   const { isInDialog } = imageData;
 
   if (menuItemId.endsWith('%')) {
-    setImageData(targetElement, {
-      scale: Number(menuItemId.replace(/[^0-9.]/g, '')),
+    setImageData({
+      image: targetElement,
+      options: {
+        scale: Number(menuItemId.replace(/[^0-9.]/g, '')),
+      },
     });
 
     return true;
   }
 
   if (menuItemId.endsWith('deg')) {
-    setImageData(targetElement, {
-      rotate: Number(menuItemId.replace(/[^0-9.]/g, '')),
+    setImageData({
+      image: targetElement,
+      options: {
+        rotate: Number(menuItemId.replace(/[^0-9.]/g, '')),
+      },
     });
 
     return true;
@@ -47,8 +53,11 @@ export const onMessage = (
       break;
 
     case 'reverse':
-      setImageData(targetElement, {
-        isReversed: !imageData.isReversed,
+      setImageData({
+        image: targetElement,
+        options: {
+          isReversed: !imageData.isReversed,
+        },
       });
 
       break;

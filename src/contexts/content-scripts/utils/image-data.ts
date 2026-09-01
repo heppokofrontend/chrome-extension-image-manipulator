@@ -48,19 +48,23 @@ const getSize = ({
   };
 };
 
-export const setImageData = (
-  img: HTMLImageElement,
-  options: Options,
-  shouldUpdateScreen: boolean = true,
-) => {
+export const setImageData = ({
+  image,
+  options,
+  shouldUpdateScreen = true,
+}: {
+  image: HTMLImageElement;
+  options: Options;
+  shouldUpdateScreen?: boolean;
+}) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- 型上は non-null だが、呼び出し元が誤って null を渡した場合の防御
-  if (!img) {
+  if (!image) {
     return;
   }
 
   const { canvas, spaceElement } = CONTENT_UI;
 
-  const baseImageData = getImageData(img);
+  const baseImageData = getImageData(image);
   const oldScale = baseImageData.scale;
   const imageData = {
     ...baseImageData,
@@ -68,7 +72,7 @@ export const setImageData = (
     oldScale,
   } as StyleData;
 
-  imageDataMap.set(img, {
+  imageDataMap.set(image, {
     ...imageData,
   });
 
@@ -82,19 +86,19 @@ export const setImageData = (
   const reverse = imageData.isReversed ? 'rotateY(180deg)' : '';
   const scale = `scale(${imageData.scale / 100})`;
 
-  img.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
+  image.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
 
   if (STATE.hasBorder) {
-    img.classList.add('has-border');
+    image.classList.add('has-border');
   } else {
-    img.classList.remove('has-border');
+    image.classList.remove('has-border');
   }
 
   if (!isInDialog) {
     return;
   }
 
-  const { naturalWidth, naturalHeight } = img;
+  const { naturalWidth, naturalHeight } = image;
   const { scale: dialogScale, oldScale: dialogOldScale, render } = imageData;
   const { spaceSize } = getSize({ naturalWidth, naturalHeight, scale: dialogScale });
   const oldSpaceSize = getSize({
@@ -103,13 +107,13 @@ export const setImageData = (
     scale: dialogOldScale,
   }).spaceSize;
 
-  img.style.width = '';
-  img.style.height = '';
-  img.style.imageRendering = '';
-  img.style.cssText = `
-    ${img.getAttribute('style') ?? ''}
-    width: ${img.naturalWidth * (dialogScale / 100)}px !important;
-    height: ${img.naturalHeight * (dialogScale / 100)}px !important;
+  image.style.width = '';
+  image.style.height = '';
+  image.style.imageRendering = '';
+  image.style.cssText = `
+    ${image.getAttribute('style') ?? ''}
+    width: ${image.naturalWidth * (dialogScale / 100)}px !important;
+    height: ${image.naturalHeight * (dialogScale / 100)}px !important;
     image-rendering: ${render} !important;
   `;
 

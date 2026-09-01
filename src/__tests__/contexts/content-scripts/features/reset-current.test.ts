@@ -51,11 +51,14 @@ describe('resetCurrent', () => {
     resetCurrent(true);
 
     expect(img.getAttribute('style')).toBeNull();
-    expect(setImageData).toHaveBeenCalledWith(img, {
-      ...defaultState,
-      isInDialog: true,
-      oldScale: 40,
-      fileSize: '5 byte',
+    expect(setImageData).toHaveBeenCalledWith({
+      image: img,
+      options: {
+        ...defaultState,
+        isInDialog: true,
+        oldScale: 40,
+        fileSize: '5 byte',
+      },
     });
   });
 

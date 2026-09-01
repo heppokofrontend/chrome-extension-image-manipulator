@@ -46,14 +46,20 @@ const createClonedImage = async (
   }
 
   // ダイアログ用の画像は別で管理する
-  setImageData(clonedImage, {
-    ...imageData,
-    isInDialog: true,
-    origin: originalImage,
+  setImageData({
+    image: clonedImage,
+    options: {
+      ...imageData,
+      isInDialog: true,
+      origin: originalImage,
+    },
   });
 
-  setImageData(originalImage, {
-    clonedImage,
+  setImageData({
+    image: originalImage,
+    options: {
+      clonedImage,
+    },
   });
 
   // クローン生成直後に代入しないと、getFileSize 待機中は STATE.currentImageElement が
@@ -61,10 +67,11 @@ const createClonedImage = async (
   STATE.currentImageElement = clonedImage;
 
   // 容量の解決
-  await getFileSize(clonedImage).finally(() => {
-    setDialogLoading(false);
-    applyZoomAndScroll({ targetImage: clonedImage, scaleValue: imageData.scale });
-  });
+  const fileInfo = await getFileSize(clonedImage);
+
+  setImageData({ image: clonedImage, options: fileInfo });
+  setDialogLoading(false);
+  applyZoomAndScroll({ targetImage: clonedImage, scaleValue: imageData.scale });
 
   return clonedImage;
 };

@@ -13,11 +13,14 @@ export const resetCurrent = (isInDialog: boolean) => {
 
     targetElement.removeAttribute('style');
 
-    setImageData(targetElement, {
-      ...defaultState,
-      isInDialog,
-      oldScale: imageData.oldScale,
-      fileSize: imageData.fileSize,
+    setImageData({
+      image: targetElement,
+      options: {
+        ...defaultState,
+        isInDialog,
+        oldScale: imageData.oldScale,
+        fileSize: imageData.fileSize,
+      },
     });
 
     return;

@@ -11,20 +11,26 @@ export const resetAll = () => {
   nodeList.forEach((image) => {
     const imageData = getImageData(image);
 
-    setImageData(image, {
-      ...defaultState,
-      oldScale: imageData.oldScale,
-      fileSize: imageData.fileSize,
+    setImageData({
+      image,
+      options: {
+        ...defaultState,
+        oldScale: imageData.oldScale,
+        fileSize: imageData.fileSize,
+      },
     });
 
     if (!imageData.isInDialog && imageData.clonedImage) {
       const clonedImageData = getImageData(imageData.clonedImage);
 
-      setImageData(imageData.clonedImage, {
-        ...defaultState,
-        isInDialog: true,
-        oldScale: clonedImageData.oldScale,
-        fileSize: clonedImageData.fileSize,
+      setImageData({
+        image: imageData.clonedImage,
+        options: {
+          ...defaultState,
+          isInDialog: true,
+          oldScale: clonedImageData.oldScale,
+          fileSize: clonedImageData.fileSize,
+        },
       });
     }
 

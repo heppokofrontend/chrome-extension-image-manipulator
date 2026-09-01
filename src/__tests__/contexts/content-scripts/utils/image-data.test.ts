@@ -31,7 +31,7 @@ describe('setImageData', () => {
     const { setImageData } = await importImageData();
 
     expect(() => {
-      setImageData(null as unknown as HTMLImageElement, {});
+      setImageData({ image: null as unknown as HTMLImageElement, options: {} });
     }).not.toThrow();
     expect(renderImageInfo).not.toHaveBeenCalled();
     expect(renderImageController).not.toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe('setImageData', () => {
     const { setImageData, getImageData } = await importImageData();
     const img = document.createElement('img');
 
-    setImageData(img, { scale: 42 }, false);
+    setImageData({ image: img, options: { scale: 42 }, shouldUpdateScreen: false });
 
     expect(img.style.transform).toBe('');
     expect(renderImageInfo).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('setImageData', () => {
     // jsdom は Element.scroll を実装していないため直接差し込む
     CONTENT_UI.canvas.scroll = vi.fn();
 
-    setImageData(img, { isInDialog: true, scale: 100, oldScale: 100 });
+    setImageData({ image: img, options: { isInDialog: true, scale: 100, oldScale: 100 } });
 
     expect(img.style.cssText.startsWith('null')).toBe(false);
     expect(renderImageInfo).toHaveBeenCalledOnce();

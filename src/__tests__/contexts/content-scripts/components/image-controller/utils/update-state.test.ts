@@ -33,7 +33,7 @@ describe('updateState', () => {
 
     updateState({ scale: 50 });
 
-    expect(setImageData).toHaveBeenCalledWith(img, { scale: 50 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 50 } });
   });
 
   it('does nothing when there is no currently tracked image', async () => {
