@@ -112,11 +112,13 @@ export const onContextmenu = ({ target }: MouseEvent) => {
 
   const isInDialog = dialogContains(targetImage);
 
-  if (!isInDialog) {
-    if (typeof targetImage.dataset['imageManipulatorDefaultStyle'] !== 'string') {
-      targetImage.dataset['imageManipulatorDefaultStyle'] = targetImage.getAttribute('style') || '';
-    }
-
-    STATE.currentImageElement = targetImage;
+  if (isInDialog) {
+    return;
   }
+
+  if (targetImage.dataset['imageManipulatorDefaultStyle'] === undefined) {
+    targetImage.dataset['imageManipulatorDefaultStyle'] = targetImage.getAttribute('style') || '';
+  }
+
+  STATE.currentImageElement = targetImage;
 };
