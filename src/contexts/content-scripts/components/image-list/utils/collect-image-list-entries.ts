@@ -28,7 +28,7 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
     {
       clonedImage,
     },
-    true,
+    false,
   );
   await getFileSize(clonedImage);
   setImageData(
@@ -37,7 +37,7 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
       isInDialog: true,
       origin: originalElement,
     },
-    true,
+    false,
   );
 };
 

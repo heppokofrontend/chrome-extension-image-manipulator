@@ -37,11 +37,11 @@ describe('setImageData', () => {
     expect(renderImageController).not.toHaveBeenCalled();
   });
 
-  it('stores the image data without touching the DOM when noNeedInitScreen is true', async () => {
+  it('stores the image data without touching the DOM when shouldUpdateScreen is false', async () => {
     const { setImageData, getImageData } = await importImageData();
     const img = document.createElement('img');
 
-    setImageData(img, { scale: 42 }, true);
+    setImageData(img, { scale: 42 }, false);
 
     expect(img.style.transform).toBe('');
     expect(renderImageInfo).not.toHaveBeenCalled();
