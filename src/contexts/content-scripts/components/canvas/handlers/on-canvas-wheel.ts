@@ -1,5 +1,5 @@
 import { STATE } from '@/contexts/content-scripts/state';
-import { getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import { applyImageStyle, getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
 const resolveNextRotate = (rotate: number, deltaY: number) => {
   if (deltaY < 0) {
@@ -56,4 +56,5 @@ export const onCanvasWheel = (e: WheelEvent) => {
       scale,
     },
   });
+  applyImageStyle(STATE.currentImageElement);
 };

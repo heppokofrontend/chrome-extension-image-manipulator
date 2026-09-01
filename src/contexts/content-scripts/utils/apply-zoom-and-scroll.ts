@@ -1,5 +1,9 @@
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
-import { getImageData, setImageData } from '@/contexts/content-scripts/utils/image-data';
+import {
+  applyImageStyle,
+  getImageData,
+  setImageData,
+} from '@/contexts/content-scripts/utils/image-data';
 
 type ScaleValue = number | 'init' | 'fit';
 
@@ -58,6 +62,7 @@ export const applyZoomAndScroll = ({ targetImage, scaleValue }: Params) => {
       }),
     },
   });
+  applyImageStyle(targetImage);
 
   const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;
 

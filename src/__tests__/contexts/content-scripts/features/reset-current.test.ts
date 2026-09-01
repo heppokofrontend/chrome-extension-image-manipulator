@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { getImageData, setImageData } = vi.hoisted(() => ({
+const { applyImageStyle, getImageData, setImageData } = vi.hoisted(() => ({
+  applyImageStyle: vi.fn(),
   getImageData: vi.fn(),
   setImageData: vi.fn(),
 }));
 
 vi.mock('@/contexts/content-scripts/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/content-scripts/utils')>()),
+  applyImageStyle,
   getImageData,
   setImageData,
 }));
@@ -24,6 +26,7 @@ const importResetCurrent = async () => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
+  applyImageStyle.mockClear();
   getImageData.mockClear();
   setImageData.mockClear();
 });
@@ -60,6 +63,7 @@ describe('resetCurrent', () => {
         fileSize: '5 byte',
       },
     });
+    expect(applyImageStyle).toHaveBeenCalledWith(img);
   });
 
   it('restores the default inline style outside a dialog without calling setImageData', async () => {

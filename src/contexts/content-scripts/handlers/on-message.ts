@@ -1,7 +1,7 @@
 import { resetAll, resetCurrent } from '@/contexts/content-scripts/features';
 import { showDialog } from '@/contexts/content-scripts/show-dialog';
 import { STATE } from '@/contexts/content-scripts/state';
-import { getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import { applyImageStyle, getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
 export const onMessage = (
   { menuItemId }: { menuItemId: string },
@@ -32,6 +32,7 @@ export const onMessage = (
         scale: Number(menuItemId.replace(/[^0-9.]/g, '')),
       },
     });
+    applyImageStyle(targetElement);
 
     return true;
   }
@@ -43,6 +44,7 @@ export const onMessage = (
         rotate: Number(menuItemId.replace(/[^0-9.]/g, '')),
       },
     });
+    applyImageStyle(targetElement);
 
     return true;
   }
@@ -59,6 +61,7 @@ export const onMessage = (
           isReversed: !imageData.isReversed,
         },
       });
+      applyImageStyle(targetElement);
 
       break;
 

@@ -28,7 +28,6 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
     options: {
       clonedImage,
     },
-    shouldUpdateScreen: false,
   });
   const fileInfo = await getFileSize(clonedImage);
 
@@ -39,7 +38,6 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
       origin: originalElement,
       ...fileInfo,
     },
-    shouldUpdateScreen: false,
   });
 };
 

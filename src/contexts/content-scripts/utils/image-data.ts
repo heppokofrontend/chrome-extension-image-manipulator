@@ -48,21 +48,11 @@ const getSize = ({
   };
 };
 
-export const setImageData = ({
-  image,
-  options,
-  shouldUpdateScreen = true,
-}: {
-  image: HTMLImageElement;
-  options: Options;
-  shouldUpdateScreen?: boolean;
-}) => {
+export const setImageData = ({ image, options }: { image: HTMLImageElement; options: Options }) => {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- 型上は non-null だが、呼び出し元が誤って null を渡した場合の防御
   if (!image) {
     return;
   }
-
-  const { canvas, spaceElement } = CONTENT_UI;
 
   const baseImageData = getImageData(image);
   const oldScale = baseImageData.scale;
@@ -75,10 +65,16 @@ export const setImageData = ({
   imageDataMap.set(image, {
     ...imageData,
   });
+};
 
-  if (!shouldUpdateScreen) {
+export const applyImageStyle = (image: HTMLImageElement) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- 型上は non-null だが、呼び出し元が誤って null を渡した場合の防御
+  if (!image) {
     return;
   }
+
+  const { canvas, spaceElement } = CONTENT_UI;
+  const imageData = getImageData(image);
 
   // TODO: ダイアログの外でいじったのを中に伝搬させる。内から外は対応しない。
   const { isInDialog } = imageData;
