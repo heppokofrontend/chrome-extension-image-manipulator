@@ -23,7 +23,6 @@ export const convertSVGToImg = (img: SVGElement) => {
 
   img.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-  const svgData = img.outerHTML;
-  pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(svgData);
+  pseudoImage.src = 'data:image/svg+xml,' + encodeURIComponent(img.outerHTML);
   return pseudoImage;
 };

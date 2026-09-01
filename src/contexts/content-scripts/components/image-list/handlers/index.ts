@@ -1,2 +1,2 @@
-export * from './on-image-list-item-click';
-export * from './on-image-list-keydown';
+export { imageListItemSourceMap, onImageListItemClick } from './on-image-list-item-click';
+export { onImageListKeydown } from './on-image-list-keydown';

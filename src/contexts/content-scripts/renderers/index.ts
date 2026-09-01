@@ -1,1 +1,1 @@
-export * from './render-extension';
+export { renderExtension } from './render-extension';
