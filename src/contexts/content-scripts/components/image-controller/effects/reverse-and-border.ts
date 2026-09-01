@@ -10,7 +10,7 @@ export const addEventReverseAndBorderControllers = ({
 }: ReverseAndBorderFields) => {
   reverse.addEventListener('input', () => {
     updateState({
-      reverse: reverse.checked,
+      isReversed: reverse.checked,
     });
   });
 

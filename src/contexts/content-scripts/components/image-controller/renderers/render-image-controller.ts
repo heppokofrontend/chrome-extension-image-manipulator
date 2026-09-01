@@ -28,7 +28,7 @@ export const initImageController = () => {
 };
 
 export const renderImageController = (
-  imageData: Pick<StyleData, 'scale' | 'rotate' | 'reverse' | 'render'>,
+  imageData: Pick<StyleData, 'scale' | 'rotate' | 'isReversed' | 'render'>,
 ) => {
   if (!fields || !STATE.currentImageElement) {
     return;
@@ -36,7 +36,7 @@ export const renderImageController = (
 
   fields.scale.value = String(imageData.scale);
   fields.rotate.value = String(imageData.rotate);
-  fields.reverse.checked = imageData.reverse;
+  fields.reverse.checked = imageData.isReversed;
   fields.border.checked = STATE.hasBorder;
   fields.render.value = imageData.render;
 };

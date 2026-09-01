@@ -48,7 +48,7 @@ export const onMessage = (
 
     case 'reverse':
       setImageData(targetElement, {
-        reverse: !imageData.reverse,
+        isReversed: !imageData.isReversed,
       });
 
       break;

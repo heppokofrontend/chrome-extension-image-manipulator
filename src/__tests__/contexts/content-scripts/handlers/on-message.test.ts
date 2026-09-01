@@ -103,11 +103,11 @@ describe('onMessage', () => {
     const { onMessage, STATE } = await importOnMessage();
     const img = document.createElement('img');
     STATE.currentImageElement = img;
-    getImageData.mockReturnValue({ isInDialog: false, reverse: false });
+    getImageData.mockReturnValue({ isInDialog: false, isReversed: false });
 
     onMessage({ menuItemId: 'reverse' }, sender, vi.fn());
 
-    expect(setImageData).toHaveBeenCalledWith(img, { reverse: true });
+    expect(setImageData).toHaveBeenCalledWith(img, { isReversed: true });
   });
 
   it('invokes showDialog for the dialog menu item', async () => {

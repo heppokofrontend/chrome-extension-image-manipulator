@@ -11,7 +11,7 @@ export const defaultState: StyleData = {
   scale: 100,
   oldScale: 100,
   rotate: 0,
-  reverse: false,
+  isReversed: false,
   render: 'crisp-edges',
   fileSize: 'loading...',
   fileType: 'loading...',
@@ -79,7 +79,7 @@ export const setImageData = (
   // TODO: ダイアログの外でいじったのを中に伝搬させる。内から外は対応しない。
   const { isInDialog } = imageData;
   const rotate = `rotateZ(${imageData.rotate}deg)`;
-  const reverse = imageData.reverse ? 'rotateY(180deg)' : '';
+  const reverse = imageData.isReversed ? 'rotateY(180deg)' : '';
   const scale = `scale(${imageData.scale / 100})`;
 
   img.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
