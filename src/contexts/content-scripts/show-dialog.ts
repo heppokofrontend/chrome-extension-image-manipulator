@@ -12,8 +12,8 @@ import {
 
 const { dialog, imageList } = CONTENT_UI;
 
-export const showDialog = async (option?: { noRecreateImageList?: boolean }) => {
-  const noRecreateImageList = option?.noRecreateImageList ?? false;
+export const showDialog = async (option?: { useCache?: boolean }) => {
+  const useCache = option?.useCache ?? false;
 
   if (!dialog.open) {
     dialog.showModal();
@@ -31,7 +31,7 @@ export const showDialog = async (option?: { noRecreateImageList?: boolean }) => 
   }
 
   renderCanvas();
-  applyImageList(noRecreateImageList);
+  applyImageList(useCache);
 
   if (dialog.open) {
     imageList.querySelector<HTMLButtonElement>('[aria-current="true"]')?.focus();

@@ -73,7 +73,7 @@ describe('onImageListItemClick', () => {
     onImageListItemClick(makeClickEvent(button));
 
     expect(STATE.currentImageElement).toBe(image);
-    expect(showDialog).toHaveBeenCalledWith({ noRecreateImageList: true });
+    expect(showDialog).toHaveBeenCalledWith({ useCache: true });
   });
 
   it('does not re-open the dialog when the clicked item is already the current one', async () => {

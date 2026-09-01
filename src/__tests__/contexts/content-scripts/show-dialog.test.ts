@@ -171,7 +171,7 @@ describe('showDialog', () => {
     expect(CONTENT_UI.dialog.open).toBe(true);
   });
 
-  it('passes noRecreateImageList through to applyImageList', async () => {
+  it('passes useCache through to applyImageList', async () => {
     patchShowModal();
     const { showDialog, STATE } = await importShowDialog();
     const image = document.createElement('img');
@@ -180,7 +180,7 @@ describe('showDialog', () => {
     getImageData.mockReturnValue({});
     resolveDialogImage.mockResolvedValue({ initialScale: null });
 
-    await showDialog({ noRecreateImageList: true });
+    await showDialog({ useCache: true });
 
     expect(applyImageList).toHaveBeenCalledWith(true);
   });

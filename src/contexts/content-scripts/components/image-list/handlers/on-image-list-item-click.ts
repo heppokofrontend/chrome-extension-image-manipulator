@@ -37,6 +37,6 @@ export const onImageListItemClick = (e: MouseEvent) => {
   }
 
   if (button.getAttribute('aria-current') !== 'true') {
-    void showDialog({ noRecreateImageList: true });
+    void showDialog({ useCache: true });
   }
 };
