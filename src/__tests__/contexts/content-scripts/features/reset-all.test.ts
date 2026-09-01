@@ -40,10 +40,13 @@ describe('resetAll', () => {
 
     resetAll();
 
-    expect(setImageData).toHaveBeenCalledWith(img, {
-      ...defaultState,
-      oldScale: 50,
-      fileSize: '1 byte',
+    expect(setImageData).toHaveBeenCalledWith({
+      image: img,
+      options: {
+        ...defaultState,
+        oldScale: 50,
+        fileSize: '1 byte',
+      },
     });
     expect(img.getAttribute('style')).toBe('width: 10px;');
   });
@@ -58,7 +61,7 @@ describe('resetAll', () => {
 
     resetAll();
 
-    expect(setImageData).toHaveBeenCalledWith(other, { ...defaultState });
+    expect(setImageData).toHaveBeenCalledWith({ image: other, options: { ...defaultState } });
     expect(other.getAttribute('style')).toBe('width: 20px;');
   });
 
@@ -73,7 +76,7 @@ describe('resetAll', () => {
     resetAll();
 
     expect(setImageData).toHaveBeenCalledTimes(1);
-    expect(setImageData).not.toHaveBeenCalledWith(clonedImage, expect.anything());
+    expect(setImageData).not.toHaveBeenCalledWith(expect.objectContaining({ image: clonedImage }));
   });
 
   it('resets the cloned image with isInDialog true when the source image is not in a dialog', async () => {
@@ -89,16 +92,22 @@ describe('resetAll', () => {
 
     resetAll();
 
-    expect(setImageData).toHaveBeenCalledWith(img, {
-      ...defaultState,
-      oldScale: 75,
-      fileSize: '2 byte',
+    expect(setImageData).toHaveBeenCalledWith({
+      image: img,
+      options: {
+        ...defaultState,
+        oldScale: 75,
+        fileSize: '2 byte',
+      },
     });
-    expect(setImageData).toHaveBeenCalledWith(clonedImage, {
-      ...defaultState,
-      isInDialog: true,
-      oldScale: 25,
-      fileSize: '3 byte',
+    expect(setImageData).toHaveBeenCalledWith({
+      image: clonedImage,
+      options: {
+        ...defaultState,
+        isInDialog: true,
+        oldScale: 25,
+        fileSize: '3 byte',
+      },
     });
   });
 });

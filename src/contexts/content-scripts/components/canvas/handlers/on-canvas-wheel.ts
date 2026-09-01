@@ -1,7 +1,7 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
-const rotateImageData = (rotate: number, deltaY: number) => {
+const resolveNextRotate = (rotate: number, deltaY: number) => {
   if (deltaY < 0) {
     const next = rotate + 10;
 
@@ -25,7 +25,7 @@ const resolveZoomDiff = (scale: number) => {
   return 10;
 };
 
-const zoomImageData = (scale: number, deltaY: number) => {
+const resolveNextScale = (scale: number, deltaY: number) => {
   const diff = resolveZoomDiff(scale);
 
   if (deltaY < 0) {
@@ -45,12 +45,15 @@ export const onCanvasWheel = (e: WheelEvent) => {
   }
 
   const imageData = getImageData(STATE.currentImageElement);
-  const rotate = e.shiftKey ? rotateImageData(imageData.rotate, e.deltaY) : imageData.rotate;
-  const scale = e.shiftKey ? imageData.scale : zoomImageData(imageData.scale, e.deltaY);
+  const rotate = e.shiftKey ? resolveNextRotate(imageData.rotate, e.deltaY) : imageData.rotate;
+  const scale = e.shiftKey ? imageData.scale : resolveNextScale(imageData.scale, e.deltaY);
 
-  setImageData(STATE.currentImageElement, {
-    ...imageData,
-    rotate,
-    scale,
+  setImageData({
+    image: STATE.currentImageElement,
+    options: {
+      ...imageData,
+      rotate,
+      scale,
+    },
   });
 };

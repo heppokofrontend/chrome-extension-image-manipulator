@@ -40,7 +40,7 @@ describe('applyZoomAndScroll', () => {
 
     applyZoomAndScroll({ targetImage: img, scaleValue: 'init' });
 
-    expect(setImageData).toHaveBeenCalledWith(img, { scale: 5000 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 5000 } });
   });
 
   it('halves the fit-to-canvas scale when a wide image is width-constrained and would cover more than half the canvas on init', async () => {
@@ -57,7 +57,7 @@ describe('applyZoomAndScroll', () => {
 
     applyZoomAndScroll({ targetImage: img, scaleValue: 'init' });
 
-    expect(setImageData).toHaveBeenCalledWith(img, { scale: 2500 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 2500 } });
   });
 
   it('fits the image to the canvas without halving when scaleValue is "fit"', async () => {
@@ -73,6 +73,6 @@ describe('applyZoomAndScroll', () => {
 
     applyZoomAndScroll({ targetImage: img, scaleValue: 'fit' });
 
-    expect(setImageData).toHaveBeenCalledWith(img, { scale: 9000 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 9000 } });
   });
 });

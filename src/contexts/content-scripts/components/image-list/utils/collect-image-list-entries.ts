@@ -23,22 +23,24 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
   clonedImage.src = originalElement.src;
   clonedImage.alt = originalElement.alt;
 
-  setImageData(
-    originalElement,
-    {
+  setImageData({
+    image: originalElement,
+    options: {
       clonedImage,
     },
-    false,
-  );
-  await getFileSize(clonedImage);
-  setImageData(
-    clonedImage,
-    {
+    shouldUpdateScreen: false,
+  });
+  const fileInfo = await getFileSize(clonedImage);
+
+  setImageData({
+    image: clonedImage,
+    options: {
       isInDialog: true,
       origin: originalElement,
+      ...fileInfo,
     },
-    false,
-  );
+    shouldUpdateScreen: false,
+  });
 };
 
 const makeEntry = ({

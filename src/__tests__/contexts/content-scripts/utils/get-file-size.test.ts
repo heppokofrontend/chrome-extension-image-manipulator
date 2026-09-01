@@ -1,13 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { setImageData } = vi.hoisted(() => ({
-  setImageData: vi.fn(),
-}));
-
-vi.mock('@/contexts/content-scripts/utils/image-data', () => ({
-  setImageData,
-}));
-
 const importGetFileSize = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
@@ -19,7 +11,6 @@ const importGetFileSize = async () => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
-  setImageData.mockClear();
 });
 
 describe('getFileSize', () => {
@@ -28,9 +19,7 @@ describe('getFileSize', () => {
     const img = document.createElement('img');
     img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 
-    await getFileSize(img);
-
-    expect(setImageData).toHaveBeenCalledWith(img, {
+    await expect(getFileSize(img)).resolves.toEqual({
       fileSize: '65 byte',
       fileType: 'image/svg+xml (in HTML)',
     });
@@ -50,9 +39,7 @@ describe('getFileSize', () => {
       }),
     );
 
-    await getFileSize(img);
-
-    expect(setImageData).toHaveBeenCalledWith(img, {
+    await expect(getFileSize(img)).resolves.toEqual({
       fileSize: 'error_fileSize',
       fileType: 'image/svg+xml (in HTML)',
     });
@@ -67,9 +54,7 @@ describe('getFileSize', () => {
     const img = document.createElement('img');
     img.src = 'https://example.com/foo.png';
 
-    await getFileSize(img);
-
-    expect(setImageData).toHaveBeenCalledWith(img, {
+    await expect(getFileSize(img)).resolves.toEqual({
       fileSize: 'error_fileSize',
       fileType: 'image/png',
     });
@@ -84,9 +69,7 @@ describe('getFileSize', () => {
     const img = document.createElement('img');
     img.src = 'https://example.com/foo.png';
 
-    await getFileSize(img);
-
-    expect(setImageData).toHaveBeenCalledWith(img, {
+    await expect(getFileSize(img)).resolves.toEqual({
       fileSize: '1234 byte',
       fileType: 'error_fileType',
     });
@@ -98,9 +81,7 @@ describe('getFileSize', () => {
     const img = document.createElement('img');
     img.src = 'https://example.com/bar.png';
 
-    await getFileSize(img);
-
-    expect(setImageData).toHaveBeenCalledWith(img, {
+    await expect(getFileSize(img)).resolves.toEqual({
       fileSize: 'error_fileSize',
       fileType: 'error_fileType',
     });

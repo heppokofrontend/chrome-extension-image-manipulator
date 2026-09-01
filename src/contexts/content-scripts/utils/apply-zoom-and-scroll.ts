@@ -48,12 +48,15 @@ interface Params {
 export const applyZoomAndScroll = ({ targetImage, scaleValue }: Params) => {
   const { canvas } = CONTENT_UI;
 
-  setImageData(targetImage, {
-    scale: resolveScale({
-      naturalWidth: targetImage.naturalWidth,
-      naturalHeight: targetImage.naturalHeight,
-      scaleValue: scaleValue ?? getImageData(targetImage).scale,
-    }),
+  setImageData({
+    image: targetImage,
+    options: {
+      scale: resolveScale({
+        naturalWidth: targetImage.naturalWidth,
+        naturalHeight: targetImage.naturalHeight,
+        scaleValue: scaleValue ?? getImageData(targetImage).scale,
+      }),
+    },
   });
 
   const { scrollWidth, offsetWidth, scrollHeight, offsetHeight } = canvas;

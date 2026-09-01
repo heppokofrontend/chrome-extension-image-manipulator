@@ -74,7 +74,7 @@ describe('onMessage', () => {
 
     onMessage({ menuItemId: '150%' }, sender, vi.fn());
 
-    expect(setImageData).toHaveBeenCalledWith(img, { scale: 150 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 150 } });
   });
 
   it('sets rotate from a degree menu item', async () => {
@@ -85,7 +85,7 @@ describe('onMessage', () => {
 
     onMessage({ menuItemId: '90deg' }, sender, vi.fn());
 
-    expect(setImageData).toHaveBeenCalledWith(img, { rotate: 90 });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { rotate: 90 } });
   });
 
   it('delegates reset to resetCurrent with the current isInDialog flag', async () => {
@@ -107,7 +107,7 @@ describe('onMessage', () => {
 
     onMessage({ menuItemId: 'reverse' }, sender, vi.fn());
 
-    expect(setImageData).toHaveBeenCalledWith(img, { isReversed: true });
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { isReversed: true } });
   });
 
   it('invokes showDialog for the dialog menu item', async () => {
