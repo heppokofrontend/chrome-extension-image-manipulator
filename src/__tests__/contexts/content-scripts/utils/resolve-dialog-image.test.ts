@@ -11,8 +11,8 @@ const { applyImageStyle, getFileSize, getImageData, setImageData, applyZoomAndSc
 );
 
 vi.mock('@/contexts/content-scripts/utils/get-file-size', () => ({ getFileSize }));
+vi.mock('@/contexts/content-scripts/utils/effects', () => ({ applyImageStyle }));
 vi.mock('@/contexts/content-scripts/utils/image-data', () => ({
-  applyImageStyle,
   getImageData,
   setImageData,
 }));

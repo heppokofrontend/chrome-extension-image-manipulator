@@ -2,8 +2,9 @@ import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { applyZoomAndScroll } from './apply-zoom-and-scroll';
+import { applyImageStyle } from './effects';
 import { getFileSize } from './get-file-size';
-import { applyImageStyle, getImageData, setImageData } from './image-data';
+import { getImageData, setImageData } from './image-data';
 
 const { dialog, spaceElement } = CONTENT_UI;
 
