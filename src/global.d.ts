@@ -5,7 +5,7 @@ type StyleData =
       scale: number;
       oldScale: number;
       rotate: number;
-      reverse: boolean;
+      isReversed: boolean;
       fileSize: string;
       fileType: string;
       render: RenderingMode;
@@ -17,7 +17,7 @@ type StyleData =
       scale: number;
       oldScale: number;
       rotate: number;
-      reverse: boolean;
+      isReversed: boolean;
       fileSize: string;
       fileType: string;
       render: RenderingMode;
@@ -28,7 +28,7 @@ type Options = {
   scale?: StyleData['scale'];
   oldScale?: StyleData['scale'];
   rotate?: StyleData['rotate'];
-  reverse?: StyleData['reverse'];
+  isReversed?: StyleData['isReversed'];
   render?: StyleData['render'];
   fileSize?: StyleData['fileSize'];
   fileType?: StyleData['fileType'];

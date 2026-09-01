@@ -23,7 +23,7 @@ const importRenderImageController = async () => {
 const baseImageData = () => ({
   scale: 50,
   rotate: 90,
-  reverse: true,
+  isReversed: true,
   render: 'pixelated' as RenderingMode,
 });
 
