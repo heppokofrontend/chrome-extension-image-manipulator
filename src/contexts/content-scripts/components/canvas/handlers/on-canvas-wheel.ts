@@ -1,22 +1,16 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
-const rotateImageData = (imageData: StyleData, deltaY: number) => {
+const rotateImageData = (rotate: number, deltaY: number) => {
   if (deltaY < 0) {
-    imageData.rotate += 10;
+    const next = rotate + 10;
 
-    if (360 <= imageData.rotate) {
-      imageData.rotate -= 360;
-    }
-
-    return;
+    return 360 <= next ? next - 360 : next;
   }
 
-  imageData.rotate -= 10;
+  const next = rotate - 10;
 
-  if (imageData.rotate < 0) {
-    imageData.rotate += 360;
-  }
+  return next < 0 ? next + 360 : next;
 };
 
 const resolveZoomDiff = (scale: number) => {
@@ -31,20 +25,16 @@ const resolveZoomDiff = (scale: number) => {
   return 10;
 };
 
-const zoomImageData = (imageData: StyleData, deltaY: number) => {
-  const diff = resolveZoomDiff(imageData.scale);
+const zoomImageData = (scale: number, deltaY: number) => {
+  const diff = resolveZoomDiff(scale);
 
   if (deltaY < 0) {
-    imageData.scale = imageData.scale === 1 ? diff : imageData.scale + diff;
-
-    return;
+    return scale === 1 ? diff : scale + diff;
   }
 
-  imageData.scale -= diff;
+  const next = scale - diff;
 
-  if (imageData.scale <= 0) {
-    imageData.scale = 1;
-  }
+  return next <= 0 ? 1 : next;
 };
 
 export const onCanvasWheel = (e: WheelEvent) => {
@@ -55,14 +45,12 @@ export const onCanvasWheel = (e: WheelEvent) => {
   }
 
   const imageData = getImageData(STATE.currentImageElement);
-
-  if (e.shiftKey) {
-    rotateImageData(imageData, e.deltaY);
-  } else {
-    zoomImageData(imageData, e.deltaY);
-  }
+  const rotate = e.shiftKey ? rotateImageData(imageData.rotate, e.deltaY) : imageData.rotate;
+  const scale = e.shiftKey ? imageData.scale : zoomImageData(imageData.scale, e.deltaY);
 
   setImageData(STATE.currentImageElement, {
     ...imageData,
+    rotate,
+    scale,
   });
 };
