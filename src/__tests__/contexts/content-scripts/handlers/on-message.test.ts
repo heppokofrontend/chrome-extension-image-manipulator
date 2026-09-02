@@ -66,24 +66,24 @@ describe('onMessage', () => {
     expect(setImageData).not.toHaveBeenCalled();
   });
 
-  it('sets scale from a percentage menu item', async () => {
+  it('sets scale from a scale message', async () => {
     const { onMessage, STATE } = await importOnMessage();
     const img = document.createElement('img');
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false });
 
-    onMessage({ menuItemId: '150%' }, sender, vi.fn());
+    onMessage({ menuItemId: 'scale', value: 150 }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 150 } });
   });
 
-  it('sets rotate from a degree menu item', async () => {
+  it('sets rotate from a rotate message', async () => {
     const { onMessage, STATE } = await importOnMessage();
     const img = document.createElement('img');
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false });
 
-    onMessage({ menuItemId: '90deg' }, sender, vi.fn());
+    onMessage({ menuItemId: 'rotate', value: 90 }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { rotate: 90 } });
   });

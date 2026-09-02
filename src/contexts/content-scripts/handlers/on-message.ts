@@ -4,7 +4,7 @@ import { STATE } from '@/contexts/content-scripts/state';
 import { applyImageStyle, getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
 export const onMessage = (
-  { menuItemId }: { menuItemId: string },
+  message: ContextMenuMessage,
   _: chrome.runtime.MessageSender,
   sendResponse: (response?: boolean) => void,
 ) => {
@@ -12,7 +12,7 @@ export const onMessage = (
 
   const targetElement = STATE.currentImageElement;
 
-  if (menuItemId === 'reset-all') {
+  if (message.menuItemId === 'reset-all') {
     resetAll();
 
     return true;
@@ -25,33 +25,23 @@ export const onMessage = (
   const imageData = getImageData(targetElement);
   const { isInDialog } = imageData;
 
-  if (menuItemId.endsWith('%')) {
-    setImageData({
-      image: targetElement,
-      options: {
-        scale: Number(menuItemId.replace(/[^0-9.]/g, '')),
-      },
-    });
-    applyImageStyle(targetElement);
+  switch (message.menuItemId) {
+    case 'scale':
+      setImageData({
+        image: targetElement,
+        options: { scale: message.value },
+      });
+      applyImageStyle(targetElement);
 
-    return true;
-  }
+      break;
 
-  if (menuItemId.endsWith('deg')) {
-    setImageData({
-      image: targetElement,
-      options: {
-        rotate: Number(menuItemId.replace(/[^0-9.]/g, '')),
-      },
-    });
-    applyImageStyle(targetElement);
+    case 'rotate':
+      setImageData({
+        image: targetElement,
+        options: { rotate: message.value },
+      });
+      applyImageStyle(targetElement);
 
-    return true;
-  }
-
-  switch (menuItemId) {
-    case 'reset':
-      resetCurrent(isInDialog);
       break;
 
     case 'reverse':
@@ -67,6 +57,10 @@ export const onMessage = (
 
     case 'dialog':
       void showDialog();
+      break;
+
+    case 'reset':
+      resetCurrent(isInDialog);
       break;
   }
 
