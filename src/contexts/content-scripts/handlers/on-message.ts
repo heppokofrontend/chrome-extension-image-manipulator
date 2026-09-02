@@ -26,12 +26,19 @@ export const onMessage = (
   const { isInDialog } = imageData;
 
   switch (message.actionId) {
+    case 'dialog':
+      void showDialog();
+      return true;
+
+    case 'reset':
+      resetCurrent(isInDialog);
+      return true;
+
     case 'scale':
       setImageData({
         image: targetElement,
         options: { scale: message.value },
       });
-      applyImageStyle(targetElement);
 
       break;
 
@@ -40,7 +47,6 @@ export const onMessage = (
         image: targetElement,
         options: { rotate: message.value },
       });
-      applyImageStyle(targetElement);
 
       break;
 
@@ -51,18 +57,11 @@ export const onMessage = (
           isReversed: !imageData.isReversed,
         },
       });
-      applyImageStyle(targetElement);
 
-      break;
-
-    case 'dialog':
-      void showDialog();
-      break;
-
-    case 'reset':
-      resetCurrent(isInDialog);
       break;
   }
+
+  applyImageStyle(targetElement);
 
   return true;
 };
