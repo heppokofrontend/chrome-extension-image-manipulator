@@ -47,7 +47,7 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: 'scale', value: 150 });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'scale', value: 150 });
   });
 
   it('forwards the menu click to the active tab, including file:// pages', async () => {
@@ -60,7 +60,7 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: 'scale', value: 150 });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'scale', value: 150 });
   });
 
   it('forwards a rotate menu click as a rotate message', async () => {
@@ -73,7 +73,7 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: 'rotate', value: 90 });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'rotate', value: 90 });
   });
 
   it('forwards a fixed-action menu click unchanged', async () => {
@@ -86,7 +86,7 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: 'reverse' });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'reverse' });
   });
 
   it('does not forward when the active tab has no id', async () => {

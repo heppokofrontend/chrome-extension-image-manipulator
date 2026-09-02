@@ -50,7 +50,7 @@ describe('onMessage', () => {
     const img = document.createElement('img');
     STATE.currentImageElement = img;
 
-    onMessage({ menuItemId: 'reset-all' }, sender, vi.fn());
+    onMessage({ actionId: 'reset-all' }, sender, vi.fn());
 
     expect(resetAll).toHaveBeenCalledWith();
     expect(getImageData).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('onMessage', () => {
     const { onMessage, STATE } = await importOnMessage();
     STATE.currentImageElement = null;
 
-    onMessage({ menuItemId: 'reverse' }, sender, vi.fn());
+    onMessage({ actionId: 'reverse' }, sender, vi.fn());
 
     expect(getImageData).not.toHaveBeenCalled();
     expect(setImageData).not.toHaveBeenCalled();
@@ -72,7 +72,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false });
 
-    onMessage({ menuItemId: 'scale', value: 150 }, sender, vi.fn());
+    onMessage({ actionId: 'scale', value: 150 }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 150 } });
   });
@@ -83,7 +83,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false });
 
-    onMessage({ menuItemId: 'rotate', value: 90 }, sender, vi.fn());
+    onMessage({ actionId: 'rotate', value: 90 }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { rotate: 90 } });
   });
@@ -94,7 +94,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: true });
 
-    onMessage({ menuItemId: 'reset' }, sender, vi.fn());
+    onMessage({ actionId: 'reset' }, sender, vi.fn());
 
     expect(resetCurrent).toHaveBeenCalledWith(true);
   });
@@ -105,7 +105,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false, isReversed: false });
 
-    onMessage({ menuItemId: 'reverse' }, sender, vi.fn());
+    onMessage({ actionId: 'reverse' }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { isReversed: true } });
   });
@@ -116,7 +116,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = img;
     getImageData.mockReturnValue({ isInDialog: false });
 
-    onMessage({ menuItemId: 'dialog' }, sender, vi.fn());
+    onMessage({ actionId: 'dialog' }, sender, vi.fn());
 
     expect(showDialog).toHaveBeenCalled();
   });
@@ -126,7 +126,7 @@ describe('onMessage', () => {
     STATE.currentImageElement = null;
     const sendResponse = vi.fn();
 
-    const result = onMessage({ menuItemId: 'reverse' }, sender, sendResponse);
+    const result = onMessage({ actionId: 'reverse' }, sender, sendResponse);
 
     expect(sendResponse).toHaveBeenCalledWith(true);
     expect(result).toBe(true);

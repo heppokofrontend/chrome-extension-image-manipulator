@@ -13,20 +13,20 @@ const resolveContentScriptMessage = (menuItemId: unknown): ContextMenuMessage | 
 
   if (menuItemId.endsWith('%')) {
     return {
-      menuItemId: 'scale',
+      actionId: 'scale',
       value: parseInt(menuItemId, 10),
     };
   }
 
   if (menuItemId.endsWith('deg')) {
     return {
-      menuItemId: 'rotate',
+      actionId: 'rotate',
       value: parseInt(menuItemId, 10),
     };
   }
 
   if (isValuelessActionId(menuItemId)) {
-    return { menuItemId };
+    return { actionId: menuItemId };
   }
 
   return null;

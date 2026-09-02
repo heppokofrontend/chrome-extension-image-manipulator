@@ -12,7 +12,7 @@ export const onMessage = (
 
   const targetElement = STATE.currentImageElement;
 
-  if (message.menuItemId === 'reset-all') {
+  if (message.actionId === 'reset-all') {
     resetAll();
 
     return true;
@@ -25,7 +25,7 @@ export const onMessage = (
   const imageData = getImageData(targetElement);
   const { isInDialog } = imageData;
 
-  switch (message.menuItemId) {
+  switch (message.actionId) {
     case 'scale':
       setImageData({
         image: targetElement,

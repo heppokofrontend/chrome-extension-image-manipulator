@@ -23,8 +23,8 @@ type StyleData =
       render: RenderingMode;
     };
 type ContextMenuMessage =
-  | { menuItemId: 'scale' | 'rotate'; value: number }
-  | { menuItemId: 'reset-all' | 'reset' | 'reverse' | 'dialog' };
+  | { actionId: 'scale' | 'rotate'; value: number }
+  | { actionId: 'reset-all' | 'reset' | 'reverse' | 'dialog' };
 type Options = {
   isInDialog?: StyleData['isInDialog'];
   clonedImage?: HTMLImageElement | null;
