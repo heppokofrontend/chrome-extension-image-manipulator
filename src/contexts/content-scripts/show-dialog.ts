@@ -41,7 +41,7 @@ export const showDialog = async (option?: { useCache?: boolean }) => {
 
   applyZoomAndScroll({
     targetImage: STATE.currentImageElement,
-    scaleValue: resolved.initialScale ?? 'init',
+    scaleValue: resolved.initialScale || 'init',
   });
 
   // resolveDialogImage/applyZoomAndScroll を経て STATE.currentImageElement は
