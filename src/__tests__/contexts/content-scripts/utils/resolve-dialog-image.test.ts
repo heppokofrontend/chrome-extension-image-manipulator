@@ -1,14 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { getFileSize, getImageData, setImageData, applyZoomAndScroll } = vi.hoisted(() => ({
-  getFileSize: vi.fn(),
-  getImageData: vi.fn(),
-  setImageData: vi.fn(),
-  applyZoomAndScroll: vi.fn(),
-}));
+const { applyImageStyle, getFileSize, getImageData, setImageData, applyZoomAndScroll } = vi.hoisted(
+  () => ({
+    applyImageStyle: vi.fn(),
+    getFileSize: vi.fn(),
+    getImageData: vi.fn(),
+    setImageData: vi.fn(),
+    applyZoomAndScroll: vi.fn(),
+  }),
+);
 
 vi.mock('@/contexts/content-scripts/utils/get-file-size', () => ({ getFileSize }));
-vi.mock('@/contexts/content-scripts/utils/image-data', () => ({ getImageData, setImageData }));
+vi.mock('@/contexts/content-scripts/utils/effects', () => ({ applyImageStyle }));
+vi.mock('@/contexts/content-scripts/utils/image-data', () => ({
+  getImageData,
+  setImageData,
+}));
 vi.mock('@/contexts/content-scripts/utils/apply-zoom-and-scroll', () => ({ applyZoomAndScroll }));
 
 const importResolveDialogImage = async () => {
@@ -62,6 +69,7 @@ const baseImageData = (): Extract<StyleData, { isInDialog: false }> => ({
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
+  applyImageStyle.mockReset();
   getFileSize.mockReset();
   getImageData.mockReset();
   setImageData.mockReset();

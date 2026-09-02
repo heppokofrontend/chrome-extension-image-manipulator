@@ -28,7 +28,6 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
     options: {
       clonedImage,
     },
-    shouldUpdateScreen: false,
   });
   const fileInfo = await getFileSize(clonedImage);
 
@@ -39,7 +38,6 @@ const handleLazyLoadedImage = async (originalElement: HTMLImageElement, result: 
       origin: originalElement,
       ...fileInfo,
     },
-    shouldUpdateScreen: false,
   });
 };
 
@@ -80,7 +78,11 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
   const pseudoImage = resolveImageElement(originalElement);
 
   if (pseudoImage) {
-    return makeEntry({ src: pseudoImage.src, alt: pseudoImage.alt, originalElement });
+    return makeEntry({
+      src: pseudoImage.src,
+      alt: pseudoImage.alt,
+      originalElement,
+    });
   }
 
   const newPseudoImage =
@@ -97,7 +99,11 @@ const toImageListEntry = (originalElement: ResolvableElement): ImageListEntry | 
     newPseudoImage.querySelector('title')?.textContent.trim() ??
     '';
 
-  return makeEntry({ src: newPseudoImage.src, alt, originalElement });
+  return makeEntry({
+    src: newPseudoImage.src,
+    alt,
+    originalElement,
+  });
 };
 
 // useCache: true の場合はDOM走査をスキップしてキャッシュを返す(呼び出し側の再生成要否判断をここに閉じ込める)

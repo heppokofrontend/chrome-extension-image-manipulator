@@ -1,5 +1,10 @@
 import { STATE } from '@/contexts/content-scripts/state';
-import { defaultState, getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import {
+  applyImageStyle,
+  defaultState,
+  getImageData,
+  setImageData,
+} from '@/contexts/content-scripts/utils';
 
 export const resetCurrent = (isInDialog: boolean) => {
   const targetElement = STATE.currentImageElement;
@@ -22,6 +27,7 @@ export const resetCurrent = (isInDialog: boolean) => {
         fileSize: imageData.fileSize,
       },
     });
+    applyImageStyle(targetElement);
 
     return;
   }

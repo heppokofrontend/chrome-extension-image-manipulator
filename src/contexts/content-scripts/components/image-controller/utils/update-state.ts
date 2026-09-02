@@ -1,5 +1,5 @@
 import { STATE } from '@/contexts/content-scripts/state';
-import { setImageData } from '@/contexts/content-scripts/utils';
+import { applyImageStyle, setImageData } from '@/contexts/content-scripts/utils';
 
 export const updateState = (options: Options) => {
   if (STATE.currentImageElement) {
@@ -9,5 +9,6 @@ export const updateState = (options: Options) => {
         ...options,
       },
     });
+    applyImageStyle(STATE.currentImageElement);
   }
 };

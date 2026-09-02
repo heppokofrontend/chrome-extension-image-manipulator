@@ -2,6 +2,7 @@ import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { applyZoomAndScroll } from './apply-zoom-and-scroll';
+import { applyImageStyle } from './effects';
 import { getFileSize } from './get-file-size';
 import { getImageData, setImageData } from './image-data';
 
@@ -54,6 +55,7 @@ const createClonedImage = async (
       origin: originalImage,
     },
   });
+  applyImageStyle(clonedImage);
 
   setImageData({
     image: originalImage,
@@ -61,6 +63,7 @@ const createClonedImage = async (
       clonedImage,
     },
   });
+  applyImageStyle(originalImage);
 
   // クローン生成直後に代入しないと、getFileSize 待機中は STATE.currentImageElement が
   // 元の <img> のままになり、待機中の操作(ホイール操作等)が誤って元画像を書き換える
@@ -70,6 +73,7 @@ const createClonedImage = async (
   const fileInfo = await getFileSize(clonedImage);
 
   setImageData({ image: clonedImage, options: fileInfo });
+  applyImageStyle(clonedImage);
   setDialogLoading(false);
   applyZoomAndScroll({ targetImage: clonedImage, scaleValue: imageData.scale });
 

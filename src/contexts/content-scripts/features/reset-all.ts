@@ -1,5 +1,10 @@
 import { STATE } from '@/contexts/content-scripts/state';
-import { defaultState, getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import {
+  applyImageStyle,
+  defaultState,
+  getImageData,
+  setImageData,
+} from '@/contexts/content-scripts/utils';
 
 export const resetAll = () => {
   const targetElement = STATE.currentImageElement;
@@ -19,6 +24,7 @@ export const resetAll = () => {
         fileSize: imageData.fileSize,
       },
     });
+    applyImageStyle(image);
 
     if (!imageData.isInDialog && imageData.clonedImage) {
       const clonedImageData = getImageData(imageData.clonedImage);
@@ -32,6 +38,7 @@ export const resetAll = () => {
           fileSize: clonedImageData.fileSize,
         },
       });
+      applyImageStyle(imageData.clonedImage);
     }
 
     if (typeof image.dataset['imageManipulatorDefaultStyle'] === 'string') {
