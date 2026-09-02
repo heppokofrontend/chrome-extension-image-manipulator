@@ -171,6 +171,23 @@ describe('showDialog', () => {
     expect(CONTENT_UI.dialog.open).toBe(true);
   });
 
+  it('falls back to init scale when initialScale resolves to 0', async () => {
+    patchShowModal();
+    const { showDialog, STATE } = await importShowDialog();
+    const image = document.createElement('img');
+
+    STATE.currentImageElement = image;
+    getImageData.mockReturnValue({});
+    resolveDialogImage.mockResolvedValue({ initialScale: 0 });
+
+    await showDialog();
+
+    expect(applyZoomAndScroll).toHaveBeenCalledWith({
+      targetImage: image,
+      scaleValue: 'init',
+    });
+  });
+
   it('passes useCache through to applyImageList', async () => {
     patchShowModal();
     const { showDialog, STATE } = await importShowDialog();
