@@ -1,3 +1,4 @@
+import { formatRotateMenuId, formatScaleMenuId } from '@/contexts/worker/utils';
 import { getMessage } from '@/utils';
 
 interface MenuItem {
@@ -11,7 +12,7 @@ export const createMenuDefinitions = (): MenuItem[] => [
     id: 'zoom',
     title: getMessage('context_zoom'),
     children: Array.from({ length: 12 }, (_, index) => {
-      const value = `${(index + 1) * 0.25 * 100}%`;
+      const value = formatScaleMenuId((index + 1) * 0.25 * 100);
 
       return { id: value, title: value };
     }),
@@ -20,7 +21,7 @@ export const createMenuDefinitions = (): MenuItem[] => [
     id: 'rotate',
     title: getMessage('context_rotate'),
     children: Array.from({ length: 9 }, (_, index) => {
-      const value = `${index * 45}deg`;
+      const value = formatRotateMenuId(index * 45);
 
       return { id: value, title: value };
     }),

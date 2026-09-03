@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type MessageListener = (
-  message: { menuItemId: string },
+  message: ContextMenuMessage,
   sender: unknown,
   sendResponse: (response: boolean) => void,
 ) => boolean | undefined;
@@ -173,7 +173,7 @@ const openDialog = async (messageListener: MessageListener, img: HTMLImageElemen
 
   rightClick(img);
 
-  messageListener({ menuItemId: 'dialog' }, {}, vi.fn());
+  messageListener({ actionId: 'dialog' }, {}, vi.fn());
 
   await flushAsyncWork();
   await new Promise((resolve) => setTimeout(resolve, 300));
@@ -222,7 +222,7 @@ describe('content-scripts entry point', () => {
     const { messageListener } = await importContentScripts();
     const sendResponse = vi.fn();
 
-    const result = messageListener({ menuItemId: 'reset-all' }, {}, sendResponse);
+    const result = messageListener({ actionId: 'reset-all' }, {}, sendResponse);
 
     expect(sendResponse).toHaveBeenCalledWith(true);
     expect(result).toBe(true);
@@ -302,7 +302,7 @@ describe('resolving svg and background-image targets via contextmenu', () => {
 
     expect(svg.getAttribute('xmlns')).toBe('http://www.w3.org/2000/svg');
 
-    messageListener({ menuItemId: '150%' }, {}, vi.fn());
+    messageListener({ actionId: 'scale', value: 150 }, {}, vi.fn());
 
     expect(svg.getAttribute('style')).toBeNull();
   });
@@ -315,7 +315,7 @@ describe('resolving svg and background-image targets via contextmenu', () => {
 
     rightClick(div);
 
-    messageListener({ menuItemId: '150%' }, {}, vi.fn());
+    messageListener({ actionId: 'scale', value: 150 }, {}, vi.fn());
 
     expect(div.style.backgroundImage).toBe('url("https://example.com/foo.png")');
     expect(div.style.transform).toBe('');
@@ -329,7 +329,7 @@ describe('applying style changes via the context menu message', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    messageListener({ menuItemId: '150%' }, {}, vi.fn());
+    messageListener({ actionId: 'scale', value: 150 }, {}, vi.fn());
 
     expect(img.style.transform).toContain('scale(1.5)');
   });
@@ -340,7 +340,7 @@ describe('applying style changes via the context menu message', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    messageListener({ menuItemId: '90deg' }, {}, vi.fn());
+    messageListener({ actionId: 'rotate', value: 90 }, {}, vi.fn());
 
     expect(img.style.transform).toContain('rotateZ(90deg)');
   });
@@ -351,7 +351,7 @@ describe('applying style changes via the context menu message', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    messageListener({ menuItemId: 'reverse' }, {}, vi.fn());
+    messageListener({ actionId: 'reverse' }, {}, vi.fn());
 
     expect(img.style.transform).toContain('rotateY(180deg)');
   });
@@ -363,10 +363,10 @@ describe('applying style changes via the context menu message', () => {
     document.body.appendChild(img);
     rightClick(img);
 
-    messageListener({ menuItemId: '90deg' }, {}, vi.fn());
+    messageListener({ actionId: 'rotate', value: 90 }, {}, vi.fn());
     expect(img.getAttribute('style')).not.toBe('width: 30px;');
 
-    messageListener({ menuItemId: 'reset' }, {}, vi.fn());
+    messageListener({ actionId: 'reset' }, {}, vi.fn());
 
     expect(img.getAttribute('style')).toBe('width: 30px;');
   });
@@ -381,8 +381,8 @@ describe('applying style changes via the context menu message', () => {
     rightClick(imgA);
     rightClick(imgB);
 
-    messageListener({ menuItemId: '90deg' }, {}, vi.fn());
-    messageListener({ menuItemId: 'reset-all' }, {}, vi.fn());
+    messageListener({ actionId: 'rotate', value: 90 }, {}, vi.fn());
+    messageListener({ actionId: 'reset-all' }, {}, vi.fn());
 
     expect(imgA.getAttribute('style')).toBe('width: 40px;');
     expect(imgB.getAttribute('style')).toBe('width: 50px;');
@@ -408,7 +408,7 @@ describe('opening the dialog via the context menu message', () => {
     rightClick(img);
 
     const sendResponse = vi.fn();
-    const result = messageListener({ menuItemId: 'dialog' }, {}, sendResponse);
+    const result = messageListener({ actionId: 'dialog' }, {}, sendResponse);
 
     expect(sendResponse).toHaveBeenCalledWith(true);
     expect(result).toBe(true);
@@ -1210,7 +1210,7 @@ describe('resetting an in-dialog image via the "reset" menu item', () => {
 
     await openDialog(messageListener, img);
 
-    messageListener({ menuItemId: 'reset' }, {}, vi.fn());
+    messageListener({ actionId: 'reset' }, {}, vi.fn());
 
     expect(getControl<HTMLInputElement>('scale').value).toBe('100');
     expect(getControl<HTMLInputElement>('rotate').value).toBe('0');

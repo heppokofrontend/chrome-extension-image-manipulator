@@ -22,6 +22,9 @@ type StyleData =
       fileType: string;
       render: RenderingMode;
     };
+type ContextMenuMessage =
+  | { actionId: 'scale' | 'rotate'; value: number }
+  | { actionId: 'reset-all' | 'reset' | 'reverse' | 'dialog' };
 type Options = {
   isInDialog?: StyleData['isInDialog'];
   clonedImage?: HTMLImageElement | null;

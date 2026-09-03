@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
-import { registerContextMenuClickListener } from '@/contexts/worker/features/forward-menu-click';
+import {
+  registerContextMenuClickListener,
+  VALUELESS_ACTION_ID_LIST,
+} from '@/contexts/worker/features/forward-menu-click';
 
 type OnClickData = chrome.contextMenus.OnClickData;
 
@@ -36,6 +39,16 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('VALUELESS_ACTION_ID_LIST', () => {
+  it('stays in sync with the valueless actionId union declared on ContextMenuMessage', () => {
+    // 型エラーが出たら VALUELESS_ACTION_ID_LIST と global.d.ts の ContextMenuMessage が食い違っている合図。
+    type ValuelessActionId = (typeof VALUELESS_ACTION_ID_LIST)[number];
+    type DeclaredValuelessActionId = Exclude<ContextMenuMessage['actionId'], 'scale' | 'rotate'>;
+
+    expectTypeOf<ValuelessActionId>().toEqualTypeOf<DeclaredValuelessActionId>();
+  });
+});
+
 describe('registerContextMenuClickListener', () => {
   it('forwards the menu click to the active http(s) tab', async () => {
     const { trigger, sendMessage } = setup([
@@ -47,7 +60,7 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'scale', value: 150 });
   });
 
   it('forwards the menu click to the active tab, including file:// pages', async () => {
@@ -60,7 +73,33 @@ describe('registerContextMenuClickListener', () => {
       expect(sendMessage).toHaveBeenCalled();
     });
 
-    expect(sendMessage).toHaveBeenCalledWith(42, { menuItemId: '150%' });
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'scale', value: 150 });
+  });
+
+  it('forwards a rotate menu click as a rotate message', async () => {
+    const { trigger, sendMessage } = setup([
+      { id: 42, url: 'https://example.com' } as chrome.tabs.Tab,
+    ]);
+
+    trigger({ menuItemId: '90deg' } as OnClickData);
+    await vi.waitFor(() => {
+      expect(sendMessage).toHaveBeenCalled();
+    });
+
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'rotate', value: 90 });
+  });
+
+  it('forwards a fixed-action menu click unchanged', async () => {
+    const { trigger, sendMessage } = setup([
+      { id: 42, url: 'https://example.com' } as chrome.tabs.Tab,
+    ]);
+
+    trigger({ menuItemId: 'reverse' } as OnClickData);
+    await vi.waitFor(() => {
+      expect(sendMessage).toHaveBeenCalled();
+    });
+
+    expect(sendMessage).toHaveBeenCalledWith(42, { actionId: 'reverse' });
   });
 
   it('does not forward when the active tab has no id', async () => {
