@@ -23,6 +23,9 @@
   "error_fileType": {
     "message": "Unable to read"
   },
+  "error_imageNotDetected": {
+    "message": "Image could not be detected"
+  },
   "readOnly_naturalWidth": {
     "message": "Natural width"
   },

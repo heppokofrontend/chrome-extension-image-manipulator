@@ -28,6 +28,23 @@ describe('renderCanvas', () => {
     expect(CONTENT_UI.canvas.contains(CONTENT_UI.spaceElement)).toBe(true);
   });
 
+  it('shows the not-detected message when rendered as empty', async () => {
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
+
+    renderCanvas({ isEmpty: true });
+
+    expect(CONTENT_UI.spaceElement.textContent).toBe('error_imageNotDetected');
+  });
+
+  it('clears the space element when rendered as non-empty', async () => {
+    const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
+
+    renderCanvas({ isEmpty: true });
+    renderCanvas();
+
+    expect(CONTENT_UI.spaceElement.textContent).toBe('');
+  });
+
   it('drags the canvas by scrolling relative to the mousedown origin while the primary button is held', async () => {
     const { renderCanvas, CONTENT_UI } = await importRenderCanvas();
     const { canvas } = CONTENT_UI;

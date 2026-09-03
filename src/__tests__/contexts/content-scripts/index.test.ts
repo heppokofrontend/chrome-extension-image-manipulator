@@ -1188,7 +1188,7 @@ describe('the dialog stays open without an image on a 404', () => {
     const dialogEl = nonNullableQuerySelector<HTMLDialogElement>(getShadowRoot(), 'dialog');
     expect(dialogEl.open).toBe(true);
     expect(dialogEl.hasAttribute('aria-busy')).toBe(false);
-    expect(getShadowRoot().getElementById('canvas-inner')?.children.length ?? 0).toBe(0);
+    expect(getShadowRoot().getElementById('canvas-inner')?.querySelector('img')).toBeNull();
   });
 });
 

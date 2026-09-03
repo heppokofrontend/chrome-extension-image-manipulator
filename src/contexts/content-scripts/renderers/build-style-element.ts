@@ -116,6 +116,10 @@ export const buildStyleElement = (): HTMLStyleElement => {
       position: 'relative',
       transition: 'opacity 100ms ease-in, visibility 100ms ease-in',
     },
+    '#canvas-inner span': {
+      'overflow-wrap': 'anywhere',
+      'mix-blend-mode': 'difference',
+    },
     '#canvas-inner.loading': {
       opacity: 0,
       visibility: 'hidden',

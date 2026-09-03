@@ -23,6 +23,9 @@
   "error_fileType": {
     "message": "読み込めませんでした"
   },
+  "error_imageNotDetected": {
+    "message": "画像が検出できませんでした"
+  },
   "readOnly_naturalWidth": {
     "message": "元々の横幅"
   },
