@@ -49,17 +49,17 @@ describe('addEventRotateControllers', () => {
     expect(updateState).toHaveBeenCalledWith({ rotate: defaultState.rotate });
   });
 
-  it('rotates left and right by 90deg increments relative to the current value', async () => {
+  it('rotates left and right by 45deg increments relative to the current value', async () => {
     const { addEventRotateControllers, fields } = await importRotate();
     addEventRotateControllers(fields);
 
     fields.rotate.value = '30';
     fields.rotateLeft.dispatchEvent(new Event('click'));
-    expect(updateState).toHaveBeenCalledWith({ rotate: -60 });
+    expect(updateState).toHaveBeenCalledWith({ rotate: -15 });
 
     fields.rotate.value = '30';
     fields.rotateRight.dispatchEvent(new Event('click'));
-    expect(updateState).toHaveBeenCalledWith({ rotate: 120 });
+    expect(updateState).toHaveBeenCalledWith({ rotate: 75 });
   });
 
   it('treats an empty rotate value as 0 when rotating left/right', async () => {
@@ -68,11 +68,11 @@ describe('addEventRotateControllers', () => {
 
     fields.rotate.value = '';
     fields.rotateLeft.dispatchEvent(new Event('click'));
-    expect(updateState).toHaveBeenCalledWith({ rotate: -90 });
+    expect(updateState).toHaveBeenCalledWith({ rotate: -45 });
 
     fields.rotate.value = '';
     fields.rotateRight.dispatchEvent(new Event('click'));
-    expect(updateState).toHaveBeenCalledWith({ rotate: 90 });
+    expect(updateState).toHaveBeenCalledWith({ rotate: 45 });
   });
 
   it('resets rotate to 0', async () => {

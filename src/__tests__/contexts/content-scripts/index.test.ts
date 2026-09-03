@@ -545,9 +545,9 @@ describe('dialog form controls for a not-yet-in-dialog image', () => {
     expect(img.style.transform).toContain('rotateZ(45deg)');
 
     getControl<HTMLButtonElement>('rotate-right').click();
-    expect(img.style.transform).toContain('rotateZ(135deg)');
+    expect(img.style.transform).toContain('rotateZ(90deg)');
 
-    rotate.value = '135';
+    rotate.value = '90';
     getControl<HTMLButtonElement>('rotate-left').click();
     expect(img.style.transform).toContain('rotateZ(45deg)');
 
