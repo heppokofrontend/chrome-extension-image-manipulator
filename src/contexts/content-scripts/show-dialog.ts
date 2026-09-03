@@ -69,6 +69,9 @@ export const showDialog = async (option?: { useCache?: boolean }) => {
   const result = await loadImage();
 
   if (!result.isSuccess) {
+    renderCanvas({
+      isEmpty: true,
+    });
     return;
   }
 

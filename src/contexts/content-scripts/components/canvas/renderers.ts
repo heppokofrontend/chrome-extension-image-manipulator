@@ -1,5 +1,6 @@
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+import { getMessage } from '@/utils';
 
 import { onCanvasWheel } from './handlers';
 
@@ -48,17 +49,31 @@ const initCanvas = () => {
   outer.addEventListener('wheel', onCanvasWheel);
 };
 
-export const renderCanvas = () => {
+interface Params {
+  isEmpty: boolean;
+}
+
+export const renderCanvas = (params?: Params) => {
   if (!isInitialized) {
     isInitialized = true;
     initCanvas();
   }
 
   const spaceElement = CONTENT_UI.spaceElement;
+  const isEmpty = params?.isEmpty === true;
 
   spaceElement.textContent = '';
 
-  if (STATE.currentImageElement) {
+  if (isEmpty) {
+    spaceElement.insertAdjacentHTML(
+      'afterbegin',
+      `<span>${getMessage('error_imageNotDetected')}</span>`,
+    );
+  }
+
+  // isEmpty のときは STATE.currentImageElement が 404 前の古い画像を指したままの
+  // こともあるため、空状態メッセージだけを表示し画像は付け直さない。
+  if (!isEmpty && STATE.currentImageElement) {
     spaceElement.append(STATE.currentImageElement);
   }
 };

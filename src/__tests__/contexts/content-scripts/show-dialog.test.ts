@@ -101,7 +101,7 @@ describe('showDialog', () => {
     expect(CONTENT_UI.dialog.open).toBe(true);
     expect(showModal).toHaveBeenCalledTimes(1);
     expect(resolveDialogImage).not.toHaveBeenCalled();
-    expect(renderCanvas).not.toHaveBeenCalled();
+    expect(renderCanvas).toHaveBeenCalledWith({ isEmpty: true });
   });
 
   it('renders nothing further when resolveDialogImage fails to resolve (404)', async () => {
@@ -115,7 +115,7 @@ describe('showDialog', () => {
 
     await showDialog();
 
-    expect(renderCanvas).not.toHaveBeenCalled();
+    expect(renderCanvas).toHaveBeenCalledWith({ isEmpty: true });
     expect(applyImageList).not.toHaveBeenCalled();
     expect(applyZoomAndScroll).not.toHaveBeenCalled();
   });

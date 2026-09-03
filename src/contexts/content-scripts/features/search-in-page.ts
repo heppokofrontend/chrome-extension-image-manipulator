@@ -49,22 +49,22 @@ export const searchInPage = () => {
   )}`;
 
   style.textContent = `
-        @keyframes ${uniqueString} {
-          0% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.2;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
+    @keyframes ${uniqueString} {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.2;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
 
-        .${uniqueString} {
-          animation: ${uniqueString} 333ms ease-in-out 3;
-        }
-      `;
+    .${uniqueString} {
+      animation: ${uniqueString} 333ms ease-in-out 3;
+    }
+  `;
 
   point.tabIndex = 0;
   point.textContent = getMessage('searched_image_message');
