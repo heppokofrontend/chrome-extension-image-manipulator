@@ -23,13 +23,13 @@ export const addEventRotateControllers = ({
 
   rotateLeft.addEventListener('click', () => {
     updateState({
-      rotate: (Number(rotate.value) || 0) + -90,
+      rotate: (Number(rotate.value) || 0) + -45,
     });
   });
 
   rotateRight.addEventListener('click', () => {
     updateState({
-      rotate: (Number(rotate.value) || 0) + 90,
+      rotate: (Number(rotate.value) || 0) + 45,
     });
   });
 
