@@ -1,6 +1,6 @@
-import { getTab } from '@/contexts/worker/utils';
+import { getTab, parseRotateMenuId, parseScaleMenuId } from '@/contexts/worker/utils';
 
-const VALUELESS_ACTION_ID_LIST = ['reset-all', 'reset', 'reverse', 'dialog'] as const;
+export const VALUELESS_ACTION_ID_LIST = ['reset-all', 'reset', 'reverse', 'dialog'] as const;
 type ValuelessActionId = (typeof VALUELESS_ACTION_ID_LIST)[number];
 
 const isValuelessActionId = (value: string): value is ValuelessActionId =>
@@ -11,18 +11,16 @@ const resolveContentScriptMessage = (menuItemId: unknown): ContextMenuMessage | 
     return null;
   }
 
-  if (menuItemId.endsWith('%')) {
-    return {
-      actionId: 'scale',
-      value: parseInt(menuItemId, 10),
-    };
+  const scaleValue = parseScaleMenuId(menuItemId);
+
+  if (scaleValue !== null) {
+    return { actionId: 'scale', value: scaleValue };
   }
 
-  if (menuItemId.endsWith('deg')) {
-    return {
-      actionId: 'rotate',
-      value: parseInt(menuItemId, 10),
-    };
+  const rotateValue = parseRotateMenuId(menuItemId);
+
+  if (rotateValue !== null) {
+    return { actionId: 'rotate', value: rotateValue };
   }
 
   if (isValuelessActionId(menuItemId)) {

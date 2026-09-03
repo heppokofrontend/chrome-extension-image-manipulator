@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
-import { registerContextMenuClickListener } from '@/contexts/worker/features/forward-menu-click';
+import {
+  registerContextMenuClickListener,
+  VALUELESS_ACTION_ID_LIST,
+} from '@/contexts/worker/features/forward-menu-click';
 
 type OnClickData = chrome.contextMenus.OnClickData;
 
@@ -34,6 +37,16 @@ const setup = (queryResult: chrome.tabs.Tab[]) => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('VALUELESS_ACTION_ID_LIST', () => {
+  it('stays in sync with the valueless actionId union declared on ContextMenuMessage', () => {
+    // 型エラーが出たら VALUELESS_ACTION_ID_LIST と global.d.ts の ContextMenuMessage が食い違っている合図。
+    type ValuelessActionId = (typeof VALUELESS_ACTION_ID_LIST)[number];
+    type DeclaredValuelessActionId = Exclude<ContextMenuMessage['actionId'], 'scale' | 'rotate'>;
+
+    expectTypeOf<ValuelessActionId>().toEqualTypeOf<DeclaredValuelessActionId>();
+  });
 });
 
 describe('registerContextMenuClickListener', () => {
