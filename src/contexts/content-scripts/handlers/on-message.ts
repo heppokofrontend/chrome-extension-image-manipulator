@@ -18,6 +18,12 @@ export const onMessage = (
     return true;
   }
 
+  if (message.actionId === 'dialog') {
+    void showDialog();
+
+    return true;
+  }
+
   if (!targetElement) {
     return true;
   }
@@ -26,10 +32,6 @@ export const onMessage = (
   const { isInDialog } = imageData;
 
   switch (message.actionId) {
-    case 'dialog':
-      void showDialog();
-      return true;
-
     case 'reset':
       resetCurrent(isInDialog);
       return true;

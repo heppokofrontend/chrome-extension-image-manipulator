@@ -121,6 +121,16 @@ describe('onMessage', () => {
     expect(showDialog).toHaveBeenCalled();
   });
 
+  it('invokes showDialog for the dialog menu item even without a tracked image', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    STATE.currentImageElement = null;
+
+    onMessage({ actionId: 'dialog' }, sender, vi.fn());
+
+    expect(showDialog).toHaveBeenCalled();
+    expect(getImageData).not.toHaveBeenCalled();
+  });
+
   it('responds with true synchronously and does not keep the message channel open', async () => {
     const { onMessage, STATE } = await importOnMessage();
     STATE.currentImageElement = null;
