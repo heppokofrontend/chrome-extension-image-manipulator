@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA index</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 700px;
+        margin: 2rem auto;
+        line-height: 1.7;
+      }
+      li {
+        margin-bottom: 0.5rem;
+      }
+      code {
+        background: #f0f0f0;
+        padding: 0 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Image Manipulator QA fixtures</h1>
+    <p>Dummy pages for running through the manual QA checklist in <code>README.md</code>.</p>
+
+    <ul>
+      <li>
+        <a href="basic.html">basic.html</a> — img / inline svg / background-image / transparent /
+        square / tiny / huge / degenerate cases, covering most of §1–§8
+      </li>
+      <li>
+        <a href="no-image.html">no-image.html</a> — a page with no images at all (§1: confirm the
+        menu doesn't appear)
+      </li>
+      <li><a href="lazy.html">lazy.html</a> — a <code>loading="lazy"</code> image (§10)</li>
+      <li>
+        <a href="grid-7.html">grid-7.html</a> / <a href="grid-8.html">grid-8.html</a> /
+        <a href="grid-9.html">grid-9.html</a> / <a href="grid-16.html">grid-16.html</a> — image-list
+        8-column grid boundary checks (§10)
+      </li>
+    </ul>
+
+    <h2>Notes</h2>
+    <ul>
+      <li>
+        Checking that state isn't shared across tabs (§12) just needs <code>basic.html</code> open
+        in two tabs.
+      </li>
+      <li>
+        <code>http://</code> / <code>https://</code>: served from
+        <code>http://localhost:8888/</code> via <code>node server.mjs</code>. This server doesn't
+        serve <code>https://</code>, so that needs its own setup separately (the §0 https check is
+        out of scope for these fixtures).
+      </li>
+      <li>
+        The <code>file://</code> case (§0) can be checked with the same content by opening each HTML
+        file in this directory directly from disk.
+      </li>
+      <li>WebP (§4 File type) wasn't generated — no local encoder was available.</li>
+      <li>
+        Localization (§13) needs no HTML-side support — check by switching Chrome's language
+        setting.
+      </li>
+    </ul>
+  </body>
+</html>

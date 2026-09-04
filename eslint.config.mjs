@@ -14,6 +14,7 @@ export default [
     ignores: [
       'package/**',
       'coverage/**',
+      'qa/**',
       'eslint.config.mjs',
       'esbuild.config.mjs',
       'vitest.config.mts',

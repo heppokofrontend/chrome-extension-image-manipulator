@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA: basic</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 900px;
+        margin: 2rem auto;
+        line-height: 1.6;
+      }
+      section {
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #ddd;
+      }
+      h2 {
+        font-size: 1rem;
+        color: #333;
+      }
+      p.note {
+        color: #666;
+        font-size: 0.85rem;
+      }
+      .huge-wrap {
+        overflow-x: auto;
+        border: 1px solid #ccc;
+      }
+      .huge-wrap img {
+        display: block;
+        height: 40px;
+      }
+      .pixelart img {
+        width: 200px;
+        height: 200px;
+        image-rendering: pixelated;
+        border: 1px solid #999;
+      }
+      .empty-space {
+        height: 200px;
+        background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 10px, #eee 10px, #eee 20px);
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">&larr; index</a></p>
+    <h1>QA: basic set (covers README.md §1–§8)</h1>
+
+    <section>
+      <h2>1. A regular &lt;img&gt; (JPEG)</h2>
+      <img src="images/photo.jpg" alt="opaque photo" width="480" />
+    </section>
+
+    <section>
+      <h2>2. Inline &lt;svg&gt;</h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="90" fill="#3b82f6" />
+        <polygon points="100,30 170,170 30,170" fill="#f59e0b" />
+      </svg>
+      <p class="note">
+        This SVG gets converted into an img internally when the dialog opens. Use this section for
+        the README.md §11 (search-in-page) check of resolving back from a converted element
+        (SVG-converted-to-img).
+      </p>
+    </section>
+
+    <section>
+      <h2>3. background-image (inline style, url())</h2>
+      <p class="note">
+        The extension's selector is <code>[style*="url("]</code>, so this is expected to match.
+      </p>
+      <div
+        style="
+          width: 320px;
+          height: 180px;
+          background-image: url('images/bg-inline.png');
+          background-size: cover;
+          border: 1px solid #999;
+        "
+      ></div>
+    </section>
+
+    <section>
+      <h2>4. background-image (via external stylesheet/class)</h2>
+      <p class="note">
+        README.md §1: expected behavior is that the menu does <strong>not</strong> appear, since
+        this isn't an inline style.
+      </p>
+      <div class="bg-via-class"></div>
+    </section>
+
+    <section>
+      <h2>5. Aspect ratio variations</h2>
+      <p>Square 1:1</p>
+      <img src="images/square.png" alt="square 1:1" width="200" />
+      <p>4:3</p>
+      <img src="images/ratio-4x3.png" alt="ratio 4:3" width="320" />
+      <p>16:9</p>
+      <img src="images/photo.jpg" alt="ratio 16:9" width="320" />
+    </section>
+
+    <section>
+      <h2>6. Transparent PNG (checkerboard pattern, for background-color checks)</h2>
+      <img src="images/transparent-check.png" alt="transparent checker" width="300" />
+    </section>
+
+    <section class="pixelart">
+      <h2>7. Pixel-art style (8x8, for render-mode comparison)</h2>
+      <img src="images/pixelart.png" alt="pixel art 8x8" />
+      <p class="note">
+        Cycle through the dialog's render-mode select (crisp-edges/pixelated/smooth/high-quality)
+        and confirm the visible difference.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. Tiny image (1x1 tracking pixel)</h2>
+      <img
+        src="images/tracking-pixel.png"
+        alt=""
+        width="50"
+        height="50"
+        style="border: 1px dashed #999"
+      />
+    </section>
+
+    <section>
+      <h2>9. Huge image (8200 x 40 px)</h2>
+      <div class="huge-wrap">
+        <img src="images/huge.png" alt="huge image" />
+      </div>
+    </section>
+
+    <section>
+      <h2>10. Degenerate case (0-height SVG)</h2>
+      <img src="images/degenerate.svg" alt="degenerate zero-height" width="100" />
+      <p class="note">Confirm the aspect-ratio GCD calculation doesn't produce NaN/Infinity.</p>
+    </section>
+
+    <section>
+      <h2>11. File type roundup (JPEG/PNG/GIF/SVG)</h2>
+      <p class="note">
+        WebP is omitted from this fixture set — no local encoder was available. Prepare one
+        separately (e.g. Canva or an online converter) if needed.
+      </p>
+      <img src="images/photo.jpg" alt="jpeg" width="120" />
+      <img src="images/square.png" alt="png" width="120" />
+      <img src="images/photo.gif" alt="gif" width="120" />
+      <img src="images/icon.svg" alt="svg" width="120" />
+    </section>
+
+    <section>
+      <h2>12. Empty space for right-clicking</h2>
+      <p class="note">
+        README.md §1: on this page that does contain images, confirm the menu still appears when
+        right-clicking a spot with no image.
+      </p>
+      <div class="empty-space"></div>
+    </section>
+  </body>
+</html>
