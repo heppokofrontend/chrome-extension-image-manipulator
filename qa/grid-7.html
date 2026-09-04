@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA: grid-7</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 900px;
+        margin: 2rem auto;
+      }
+      .grid img {
+        margin: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">&larr; index</a></p>
+    <h1>QA: 7 images (8-column grid boundary check)</h1>
+    <p>
+      README.md §10: 7 images against IMAGE_LIST_COLS=8 (under 8). Confirm the image list wraps
+      correctly.
+    </p>
+    <div class="grid">
+      <img src="images/photo.jpg?i=1" alt="grid item 1" width="120" />
+      <img src="images/square.png?i=2" alt="grid item 2" width="120" />
+      <img src="images/ratio-4x3.png?i=3" alt="grid item 3" width="120" />
+      <img src="images/transparent-check.png?i=4" alt="grid item 4" width="120" />
+      <img src="images/pixelart.png?i=5" alt="grid item 5" width="120" />
+      <img src="images/photo.jpg?i=6" alt="grid item 6" width="120" />
+      <img src="images/square.png?i=7" alt="grid item 7" width="120" />
+    </div>
+  </body>
+</html>

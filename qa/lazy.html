@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA: lazy</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 700px;
+        margin: 2rem auto;
+      }
+      .spacer {
+        height: 1600px;
+        background: linear-gradient(#fafafa, #eee);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">&larr; index</a></p>
+    <h1>QA: lazily-loaded image</h1>
+    <p>
+      README.md §10: scroll down to bring the <code>loading="lazy"</code> image into the viewport,
+      then confirm the dialog's image list picks it up (updated via the <code>load</code> event).
+    </p>
+    <div class="spacer">Scroll down ↓</div>
+    <img src="images/lazy-target.png" alt="lazy target" loading="lazy" width="400" />
+    <div class="spacer">Still more ↓</div>
+  </body>
+</html>
