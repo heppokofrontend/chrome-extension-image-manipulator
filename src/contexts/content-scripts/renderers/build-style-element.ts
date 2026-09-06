@@ -74,7 +74,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
       'box-shadow': '0 0 0 2px #fff',
     },
     dialog: {
-      'font-size': '14px',
+      'font-size': 'max(14px, 0.875rem)',
       position: 'fixed',
       inset: '0px',
       margin: 'auto',
@@ -203,7 +203,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
       'border-radius': '4px',
     },
     '#details .row .field button': {
-      'font-size': '11px',
+      'font-size': 'max(11px, 0.6875rem)',
       'font-family': 'monospace',
       'min-width': '37px',
       'border-radius': '4px',
@@ -400,7 +400,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
     },
     '#image-list-buttons button': {
       width: '100%',
-      'font-size': '11px',
+      'font-size': 'max(11px, 0.6875rem)',
       'font-family': 'monospace',
       'min-width': '40px',
       padding: '5px 0 4px',
@@ -481,7 +481,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
     },
     '#search': {
       width: '100%',
-      'font-size': '12px',
+      'font-size': 'max(12px, 0.75rem)',
       'font-family': 'monospace',
       padding: '7px 0 6px',
       margin: '4px 0',
@@ -494,7 +494,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
       top: '16px',
       left: 0,
       right: 0,
-      'font-size': '0.75rem',
+      'font-size': 'max(12px, 0.75rem)',
       padding: '5px 10px',
       margin: '0 auto',
       'border-radius': '16px',
