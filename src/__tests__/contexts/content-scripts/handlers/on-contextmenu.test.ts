@@ -72,6 +72,20 @@ describe('onContextmenu', () => {
     expect(STATE.currentImageElement).toBeInstanceOf(HTMLImageElement);
   });
 
+  it('does not resolve an image when an ancestor matches multiple candidates', async () => {
+    const { onContextmenu, STATE } = await importOnContextmenu();
+    const ancestor = document.createElement('div');
+    const target = document.createElement('span');
+    const first = document.createElement('img');
+    const second = document.createElement('img');
+    ancestor.append(target, first, second);
+    document.body.appendChild(ancestor);
+
+    onContextmenu({ target } as unknown as MouseEvent);
+
+    expect(STATE.currentImageElement).toBeNull();
+  });
+
   it('resolves an image via a focusable/semantic ancestor when the image sits in a sibling branch', async () => {
     const { onContextmenu, STATE } = await importOnContextmenu();
     const roleAncestor = document.createElement('div');

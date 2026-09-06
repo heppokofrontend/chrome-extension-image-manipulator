@@ -35,7 +35,7 @@ const getElement = (target: EventTarget | null) => {
 
     const imagesFromParent = currentNode.querySelectorAll(SELECTOR);
 
-    if (imagesFromParent.length !== 0) {
+    if (imagesFromParent.length === 1) {
       return imagesFromParent[0];
     }
 
