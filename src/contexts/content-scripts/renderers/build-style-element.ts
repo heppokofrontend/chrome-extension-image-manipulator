@@ -352,11 +352,10 @@ export const buildStyleElement = (): HTMLStyleElement => {
     },
     '#details #color .control': {
       'grid-template-columns': 'auto auto 1fr',
+      'align-items': 'center',
     },
     '#details #color #background-bright, #details #color #background-dark, #details #color #background-custom':
       {
-        width: '44px',
-        height: '44px',
         display: 'block',
         color: 'transparent',
         'user-select': 'none',
@@ -364,16 +363,9 @@ export const buildStyleElement = (): HTMLStyleElement => {
         padding: 0,
         'border-radius': '4px',
       },
-    '#details #color #background-bright, #details #color #background-dark': {
-      border: '2px solid #000',
-    },
-    '#details #color #background-bright': {
-      background: '#fff',
-    },
-    '#details #color #background-dark': {
-      background: '#202124',
-    },
     '#details #color #background-custom': {
+      width: '44px',
+      height: '44px',
       border: '4px double #6a6a6a',
     },
     '#details #color #background-custom::-webkit-color-swatch-wrapper': {
@@ -381,6 +373,20 @@ export const buildStyleElement = (): HTMLStyleElement => {
     },
     '#details #color #background-custom::-webkit-color-swatch': {
       border: 0,
+    },
+    '#details #color #background-bright, #details #color #background-dark': {
+      width: '36px',
+      height: '36px',
+      border: '2px solid #000',
+      'border-radius': '50%',
+      'box-shadow': '0 0 0 2px #fff',
+      'outline-offset': '4px',
+    },
+    '#details #color #background-bright': {
+      background: '#fff',
+    },
+    '#details #color #background-dark': {
+      background: '#202124',
     },
     '#image-list-section': {
       display: 'grid',
