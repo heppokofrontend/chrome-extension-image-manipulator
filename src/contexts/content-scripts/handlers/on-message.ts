@@ -1,7 +1,9 @@
+import { renderToast } from '@/contexts/content-scripts/components/toast';
 import { resetAll, resetCurrent } from '@/contexts/content-scripts/features';
 import { showDialog } from '@/contexts/content-scripts/show-dialog';
 import { STATE } from '@/contexts/content-scripts/state';
 import { applyImageStyle, getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import { getMessage } from '@/utils';
 
 export const onMessage = (
   message: ContextMenuMessage,
@@ -25,6 +27,7 @@ export const onMessage = (
   const targetElement = STATE.currentImageElement;
 
   if (targetElement === null) {
+    renderToast({ message: getMessage('error_targetImageNotDetected') });
     return true;
   }
 

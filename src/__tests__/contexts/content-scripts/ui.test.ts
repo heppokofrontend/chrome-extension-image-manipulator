@@ -8,6 +8,14 @@ const importBuildDialogElement = async () => {
   return { buildDialogElement };
 };
 
+const importBuildToastContainer = async () => {
+  vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
+
+  const { buildToastContainer } = await import('@/contexts/content-scripts/ui');
+
+  return { buildToastContainer };
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -51,5 +59,16 @@ describe('buildDialogElement', () => {
     dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
     expect(close).not.toHaveBeenCalled();
+  });
+});
+
+describe('buildToastContainer', () => {
+  it('announces its content to assistive technology as a polite status region', async () => {
+    const { buildToastContainer } = await importBuildToastContainer();
+
+    const toastContainer = buildToastContainer();
+
+    expect(toastContainer.role).toBe('status');
+    expect(toastContainer.ariaLive).toBe('polite');
   });
 });

@@ -489,6 +489,23 @@ export const buildStyleElement = (): HTMLStyleElement => {
       background: '#f0f0f0',
       border: '2px solid #1d1d1e',
     },
+    '.toast': {
+      position: 'fixed',
+      top: '16px',
+      left: 0,
+      right: 0,
+      'font-size': '0.75rem',
+      padding: '5px 10px',
+      margin: '0 auto',
+      'border-radius': '16px',
+      color: '#333',
+      'text-align': 'center',
+      width: 'fit-content',
+      background: '#f0f0f0',
+      'box-shadow': '0 0 10px 0 rgb(0 0 0 / 80%)',
+      opacity: 0,
+      animation: 'toast-fade 2500ms ease forwards',
+    },
   });
   element.textContent += convertToCSSText(
     {
@@ -525,6 +542,16 @@ export const buildStyleElement = (): HTMLStyleElement => {
       },
     },
     '@media (orientation: landscape)',
+  );
+
+  element.textContent += convertToCSSText(
+    {
+      '0%': { opacity: 0 },
+      '10%': { opacity: 1 },
+      '90%': { opacity: 1 },
+      '100%': { opacity: 0 },
+    },
+    '@keyframes toast-fade',
   );
 
   return element;

@@ -72,6 +72,15 @@ export const buildDialogElement = () => {
 
 const dialog = buildDialogElement();
 
+export const buildToastContainer = () => {
+  const element = document.createElement('div');
+
+  element.role = 'status';
+  element.ariaLive = 'polite';
+
+  return element;
+};
+
 export const CONTENT_UI = {
   imageViewer: document.createElement('heppokofrontend-imagemanipulator'),
   dialog,
@@ -90,4 +99,5 @@ export const CONTENT_UI = {
     dialog,
   ),
   searchButton: nonNullableQuerySelector<HTMLButtonElement>('#search', dialog),
+  toastContainer: buildToastContainer(),
 };

@@ -66,6 +66,18 @@ describe('onMessage', () => {
     expect(setImageData).not.toHaveBeenCalled();
   });
 
+  it('shows a localized toast when there is no tracked image and the action is not reset-all', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const { CONTENT_UI } = await import('@/contexts/content-scripts/ui');
+    STATE.currentImageElement = null;
+
+    onMessage({ actionId: 'reverse' }, sender, vi.fn());
+
+    expect(CONTENT_UI.toastContainer.querySelector('.toast')?.textContent).toBe(
+      'error_targetImageNotDetected',
+    );
+  });
+
   it('sets scale from a scale message', async () => {
     const { onMessage, STATE } = await importOnMessage();
     const img = document.createElement('img');

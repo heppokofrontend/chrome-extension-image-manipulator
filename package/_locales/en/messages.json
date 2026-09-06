@@ -26,6 +26,9 @@
   "error_imageNotDetected": {
     "message": "Image could not be detected"
   },
+  "error_targetImageNotDetected": {
+    "message": "Target image could not be detected"
+  },
   "readOnly_naturalWidth": {
     "message": "Natural width"
   },
