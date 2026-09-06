@@ -502,7 +502,7 @@ export const buildStyleElement = (): HTMLStyleElement => {
       'text-align': 'center',
       width: 'fit-content',
       background: '#f0f0f0',
-      'box-shadow': '0 0 10px 0 rgb(0 0 0 / 80%)',
+      'box-shadow': '0 0 8px 2px rgb(0 0 0 / 20%)',
       opacity: 0,
       animation: 'toast-fade 2500ms ease forwards',
     },
