@@ -8,7 +8,8 @@ import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import { buildStyleElement } from './build-style-element';
 
 export const renderExtension = () => {
-  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton } = CONTENT_UI;
+  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton, toastContainer } =
+    CONTENT_UI;
   const style = buildStyleElement();
   const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
 
@@ -23,5 +24,6 @@ export const renderExtension = () => {
 
   shadowRoot.appendChild(style);
   shadowRoot.appendChild(dialog);
+  shadowRoot.appendChild(toastContainer);
   document.body.appendChild(imageViewer);
 };

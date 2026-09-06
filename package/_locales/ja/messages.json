@@ -26,6 +26,9 @@
   "error_imageNotDetected": {
     "message": "画像が検出できませんでした"
   },
+  "error_targetImageNotDetected": {
+    "message": "対象の画像を検出できませんでした"
+  },
   "readOnly_naturalWidth": {
     "message": "元々の横幅"
   },
