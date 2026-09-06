@@ -16,7 +16,7 @@ vi.mock('@/contexts/content-scripts/components/image-controller', () => ({
 const importEffects = async () => {
   vi.stubGlobal('chrome', { i18n: { getMessage: (key: string) => key } });
 
-  return import('@/contexts/content-scripts/utils/effects');
+  return import('@/contexts/content-scripts/effects');
 };
 
 afterEach(() => {

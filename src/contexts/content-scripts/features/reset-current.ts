@@ -1,10 +1,6 @@
+import { applyImageStyle, restoreOriginalElement } from '@/contexts/content-scripts/effects';
 import { STATE } from '@/contexts/content-scripts/state';
-import {
-  applyImageStyle,
-  defaultState,
-  getImageData,
-  setImageData,
-} from '@/contexts/content-scripts/utils';
+import { defaultState, getImageData, setImageData } from '@/contexts/content-scripts/utils';
 
 export const resetCurrent = (isInDialog: boolean) => {
   const targetElement = STATE.currentImageElement;
@@ -62,4 +58,6 @@ export const resetCurrent = (isInDialog: boolean) => {
   if (typeof targetElement.dataset['imageManipulatorDefaultStyle'] === 'string') {
     targetElement.setAttribute('style', targetElement.dataset['imageManipulatorDefaultStyle']);
   }
+
+  restoreOriginalElement(targetElement);
 };

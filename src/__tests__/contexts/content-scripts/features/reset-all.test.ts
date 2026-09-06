@@ -65,6 +65,26 @@ describe('resetAll', () => {
     expect(other.getAttribute('style')).toBe('width: 20px;');
   });
 
+  it('removes an inserted pseudo image and re-shows the original svg outside a dialog', async () => {
+    const { resetAll, defaultState, STATE } = await importResetAll();
+    const { convertSVGToImg } = await import('@/contexts/content-scripts/utils');
+    const { ensurePseudoImageVisible } = await import('@/contexts/content-scripts/effects');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svg);
+    const pseudoImage = convertSVGToImg(svg);
+
+    ensurePseudoImageVisible(pseudoImage);
+    expect(svg.style.display).toBe('none');
+
+    STATE.currentImageElement = pseudoImage;
+    getImageData.mockReturnValue({ ...defaultState, clonedImage: null });
+
+    resetAll();
+
+    expect(svg.style.display).toBe('');
+    expect(pseudoImage.isConnected).toBe(false);
+  });
+
   it('does not reset a cloned image when the source image is itself in a dialog', async () => {
     const { resetAll, defaultState, STATE } = await importResetAll();
     const img = document.createElement('img');

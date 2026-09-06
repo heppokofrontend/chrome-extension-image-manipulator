@@ -1,17 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { applyImageStyle, getFileSize, getImageData, setImageData, applyZoomAndScroll } = vi.hoisted(
-  () => ({
-    applyImageStyle: vi.fn(),
-    getFileSize: vi.fn(),
-    getImageData: vi.fn(),
-    setImageData: vi.fn(),
-    applyZoomAndScroll: vi.fn(),
-  }),
-);
+const {
+  applyImageStyle,
+  ensurePseudoImageVisible,
+  getFileSize,
+  getImageData,
+  setImageData,
+  applyZoomAndScroll,
+} = vi.hoisted(() => ({
+  applyImageStyle: vi.fn(),
+  ensurePseudoImageVisible: vi.fn(),
+  getFileSize: vi.fn(),
+  getImageData: vi.fn(),
+  setImageData: vi.fn(),
+  applyZoomAndScroll: vi.fn(),
+}));
 
 vi.mock('@/contexts/content-scripts/utils/get-file-size', () => ({ getFileSize }));
-vi.mock('@/contexts/content-scripts/utils/effects', () => ({ applyImageStyle }));
+vi.mock('@/contexts/content-scripts/effects', () => ({
+  applyImageStyle,
+  ensurePseudoImageVisible,
+}));
 vi.mock('@/contexts/content-scripts/utils/image-data', () => ({
   getImageData,
   setImageData,
@@ -70,6 +79,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
   applyImageStyle.mockReset();
+  ensurePseudoImageVisible.mockReset();
   getFileSize.mockReset();
   getImageData.mockReset();
   setImageData.mockReset();

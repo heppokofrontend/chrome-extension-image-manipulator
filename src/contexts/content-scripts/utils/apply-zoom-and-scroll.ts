@@ -1,5 +1,5 @@
+import { applyImageStyle } from '@/contexts/content-scripts/effects';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
-import { applyImageStyle } from '@/contexts/content-scripts/utils/effects';
 import { getImageData, setImageData } from '@/contexts/content-scripts/utils/image-data';
 
 type ScaleValue = number | 'init' | 'fit';
