@@ -29,6 +29,9 @@
   "error_targetImageNotDetected": {
     "message": "Target image could not be detected"
   },
+  "error_backgroundImageQuickActionUnsupported": {
+    "message": "This looks like a background image. Please use \"View the details\" to edit it."
+  },
   "readOnly_naturalWidth": {
     "message": "Natural width"
   },

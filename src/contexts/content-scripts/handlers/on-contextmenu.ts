@@ -85,6 +85,7 @@ const resolveTarget = (target: EventTarget | null) => {
   if (img instanceof HTMLImageElement) {
     return img;
   }
+
   if (img instanceof SVGElement) {
     return convertSVGToImg(img);
   }

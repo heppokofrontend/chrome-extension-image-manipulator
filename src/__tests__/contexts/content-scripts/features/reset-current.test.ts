@@ -8,9 +8,15 @@ const { applyImageStyle, getImageData, setImageData } = vi.hoisted(() => ({
 
 vi.mock('@/contexts/content-scripts/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/contexts/content-scripts/utils')>()),
-  applyImageStyle,
   getImageData,
   setImageData,
+}));
+
+vi.mock('@/contexts/content-scripts/effects', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@/contexts/content-scripts/effects/apply-image-style')
+  >()),
+  applyImageStyle,
 }));
 
 const importResetCurrent = async () => {
@@ -128,6 +134,27 @@ describe('resetCurrent', () => {
       },
     });
     expect(applyImageStyle).toHaveBeenCalledWith(clone);
+  });
+
+  it('removes an inserted pseudo image and re-shows the original svg outside a dialog', async () => {
+    const { resetCurrent, defaultState, STATE } = await importResetCurrent();
+    const { convertSVGToImg } = await import('@/contexts/content-scripts/utils');
+    const { ensurePseudoImageVisible } = await import('@/contexts/content-scripts/effects');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    document.body.appendChild(svg);
+    const pseudoImage = convertSVGToImg(svg);
+
+    ensurePseudoImageVisible(pseudoImage);
+    expect(svg.style.display).toBe('none');
+    expect(pseudoImage.isConnected).toBe(true);
+
+    STATE.currentImageElement = pseudoImage;
+    getImageData.mockReturnValue({ ...defaultState, clonedImage: null });
+
+    resetCurrent(false);
+
+    expect(svg.style.display).toBe('');
+    expect(pseudoImage.isConnected).toBe(false);
   });
 
   it('does nothing to the inline style outside a dialog when the image has no recorded default style', async () => {

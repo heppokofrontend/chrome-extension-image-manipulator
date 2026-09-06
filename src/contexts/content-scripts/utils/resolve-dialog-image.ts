@@ -1,8 +1,8 @@
+import { applyImageStyle, ensurePseudoImageVisible } from '@/contexts/content-scripts/effects';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 
 import { applyZoomAndScroll } from './apply-zoom-and-scroll';
-import { applyImageStyle } from './effects';
 import { getFileSize } from './get-file-size';
 import { getImageData, setImageData } from './image-data';
 
@@ -63,6 +63,7 @@ const createClonedImage = async (
       clonedImage,
     },
   });
+  ensurePseudoImageVisible(originalImage);
   applyImageStyle(originalImage);
 
   // クローン生成直後に代入しないと、getFileSize 待機中は STATE.currentImageElement が

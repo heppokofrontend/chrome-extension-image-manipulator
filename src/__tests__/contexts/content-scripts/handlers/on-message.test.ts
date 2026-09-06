@@ -100,6 +100,44 @@ describe('onMessage', () => {
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { rotate: 90 } });
   });
 
+  it('propagates rotate to the associated clone when editing outside a dialog', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const img = document.createElement('img');
+    const clone = document.createElement('img');
+    STATE.currentImageElement = img;
+    getImageData.mockReturnValue({ isInDialog: false, clonedImage: clone });
+
+    onMessage({ actionId: 'rotate', value: 90 }, sender, vi.fn());
+
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { rotate: 90 } });
+    expect(setImageData).toHaveBeenCalledWith({ image: clone, options: { rotate: 90 } });
+  });
+
+  it('does not touch the clone when rotating an image that is itself in the dialog', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const clone = document.createElement('img');
+    STATE.currentImageElement = clone;
+    getImageData.mockReturnValue({ isInDialog: true, clonedImage: null });
+
+    onMessage({ actionId: 'rotate', value: 90 }, sender, vi.fn());
+
+    expect(setImageData).toHaveBeenCalledTimes(1);
+    expect(setImageData).toHaveBeenCalledWith({ image: clone, options: { rotate: 90 } });
+  });
+
+  it('does not propagate scale to the associated clone, since dialog zoom is tracked separately', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const img = document.createElement('img');
+    const clone = document.createElement('img');
+    STATE.currentImageElement = img;
+    getImageData.mockReturnValue({ isInDialog: false, clonedImage: clone });
+
+    onMessage({ actionId: 'scale', value: 150 }, sender, vi.fn());
+
+    expect(setImageData).toHaveBeenCalledTimes(1);
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { scale: 150 } });
+  });
+
   it('delegates reset to resetCurrent with the current isInDialog flag', async () => {
     const { onMessage, STATE } = await importOnMessage();
     const img = document.createElement('img');
@@ -120,6 +158,72 @@ describe('onMessage', () => {
     onMessage({ actionId: 'reverse' }, sender, vi.fn());
 
     expect(setImageData).toHaveBeenCalledWith({ image: img, options: { isReversed: true } });
+  });
+
+  it('propagates reverse to the associated clone when editing outside a dialog', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const img = document.createElement('img');
+    const clone = document.createElement('img');
+    STATE.currentImageElement = img;
+    getImageData.mockReturnValue({ isInDialog: false, isReversed: false, clonedImage: clone });
+
+    onMessage({ actionId: 'reverse' }, sender, vi.fn());
+
+    expect(setImageData).toHaveBeenCalledWith({ image: img, options: { isReversed: true } });
+    expect(setImageData).toHaveBeenCalledWith({ image: clone, options: { isReversed: true } });
+  });
+
+  it('shows a toast instead of applying scale to a background-image pseudo image', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const { CONTENT_UI } = await import('@/contexts/content-scripts/ui');
+    const { convertDummyElementToImg } = await import('@/contexts/content-scripts/utils');
+    const dummy = document.createElement('div');
+    dummy.style.backgroundImage = 'url("https://example.com/bg.png")';
+    document.body.appendChild(dummy);
+    const pseudoImage = convertDummyElementToImg(dummy);
+    STATE.currentImageElement = pseudoImage;
+    getImageData.mockReturnValue({ isInDialog: false });
+
+    onMessage({ actionId: 'scale', value: 150 }, sender, vi.fn());
+
+    expect(CONTENT_UI.toastContainer.querySelector('.toast')?.textContent).toBe(
+      'error_backgroundImageQuickActionUnsupported',
+    );
+    expect(setImageData).not.toHaveBeenCalled();
+  });
+
+  it('shows a toast instead of rotating a background-image pseudo image', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const { CONTENT_UI } = await import('@/contexts/content-scripts/ui');
+    const { convertDummyElementToImg } = await import('@/contexts/content-scripts/utils');
+    const dummy = document.createElement('div');
+    dummy.style.backgroundImage = 'url("https://example.com/bg.png")';
+    document.body.appendChild(dummy);
+    const pseudoImage = convertDummyElementToImg(dummy);
+    STATE.currentImageElement = pseudoImage;
+    getImageData.mockReturnValue({ isInDialog: false });
+
+    onMessage({ actionId: 'rotate', value: 90 }, sender, vi.fn());
+
+    expect(CONTENT_UI.toastContainer.querySelector('.toast')?.textContent).toBe(
+      'error_backgroundImageQuickActionUnsupported',
+    );
+    expect(setImageData).not.toHaveBeenCalled();
+  });
+
+  it('does not block reset for a background-image pseudo image', async () => {
+    const { onMessage, STATE } = await importOnMessage();
+    const { convertDummyElementToImg } = await import('@/contexts/content-scripts/utils');
+    const dummy = document.createElement('div');
+    dummy.style.backgroundImage = 'url("https://example.com/bg.png")';
+    document.body.appendChild(dummy);
+    const pseudoImage = convertDummyElementToImg(dummy);
+    STATE.currentImageElement = pseudoImage;
+    getImageData.mockReturnValue({ isInDialog: false });
+
+    onMessage({ actionId: 'reset' }, sender, vi.fn());
+
+    expect(resetCurrent).toHaveBeenCalledWith(false);
   });
 
   it('invokes showDialog for the dialog menu item', async () => {

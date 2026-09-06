@@ -293,7 +293,7 @@ describe('contextmenu target resolution', () => {
 });
 
 describe('resolving svg and background-image targets via contextmenu', () => {
-  it('converts a right-clicked svg element into a synthetic image, leaving the svg itself unstyled', async () => {
+  it('converts a right-clicked svg element into a synthetic image and swaps it into the page once a quick action is applied', async () => {
     const { messageListener } = await importContentScripts();
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     document.body.appendChild(svg);
@@ -301,10 +301,19 @@ describe('resolving svg and background-image targets via contextmenu', () => {
     rightClick(svg);
 
     expect(svg.getAttribute('xmlns')).toBe('http://www.w3.org/2000/svg');
+    // synthesizing the pseudo image is not visible by itself; nothing is inserted yet
+    expect(svg.style.display).toBe('');
 
     messageListener({ actionId: 'scale', value: 150 }, {}, vi.fn());
 
-    expect(svg.getAttribute('style')).toBeNull();
+    // the quick action must be visible on the page, so the svg is hidden and replaced in place
+    // by the synthetic <img> that actually carries the transform
+    expect(svg.style.display).toBe('none');
+
+    const pseudoImage = svg.nextElementSibling;
+
+    expect(pseudoImage?.tagName).toBe('IMG');
+    expect((pseudoImage as HTMLImageElement).style.transform).toContain('scale(1.5)');
   });
 
   it('converts a right-clicked background-image element into a synthetic image, leaving its own style untouched', async () => {
