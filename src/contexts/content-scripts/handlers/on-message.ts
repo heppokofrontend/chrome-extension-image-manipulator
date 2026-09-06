@@ -2,7 +2,12 @@ import { renderToast } from '@/contexts/content-scripts/components/toast';
 import { resetAll, resetCurrent } from '@/contexts/content-scripts/features';
 import { showDialog } from '@/contexts/content-scripts/show-dialog';
 import { STATE } from '@/contexts/content-scripts/state';
-import { applyImageStyle, getImageData, setImageData } from '@/contexts/content-scripts/utils';
+import {
+  applyImageStyle,
+  convertedImgToDummyMap,
+  getImageData,
+  setImageData,
+} from '@/contexts/content-scripts/utils';
 import { getMessage } from '@/utils';
 
 export const onMessage = (
@@ -11,6 +16,9 @@ export const onMessage = (
   sendResponse: (response?: boolean) => void,
 ) => {
   sendResponse(true);
+
+  const isEditAction =
+    message.actionId === 'scale' || message.actionId === 'rotate' || message.actionId === 'reverse';
 
   if (message.actionId === 'reset-all') {
     resetAll();
@@ -33,6 +41,15 @@ export const onMessage = (
 
   const imageData = getImageData(targetElement);
   const { isInDialog } = imageData;
+  const isBackgroundImage = convertedImgToDummyMap.has(targetElement);
+
+  // background-image の場合 scale/rotate/reverse を反映しない
+  if (isEditAction && isBackgroundImage) {
+    renderToast({
+      message: getMessage('error_backgroundImageQuickActionUnsupported'),
+    });
+    return true;
+  }
 
   switch (message.actionId) {
     case 'reset':
