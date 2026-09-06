@@ -1,0 +1,11 @@
+/* 外部スタイルシート経由のbackground-image。
+   拡張機能のセレクタ [style*="url("] は inline style しか見ないため、
+   ここで定義した要素にはメニューがマッチ「しない」のが期待挙動 (README.md §1)。 */
+.bg-via-class {
+  width: 320px;
+  height: 180px;
+  background-image: url('images/bg-class.png');
+  background-size: cover;
+  display: inline-block;
+  border: 1px solid #999;
+}

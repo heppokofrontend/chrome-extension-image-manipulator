@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA: no-image</title>
+  </head>
+  <body style="font-family: sans-serif; max-width: 700px; margin: 2rem auto">
+    <p><a href="index.html">&larr; index</a></p>
+    <h1>QA: a page with no images at all</h1>
+    <p>
+      Right-click anywhere: the "Image Manipulator" submenu still appears (it's registered with
+      <code>contexts: 'all'</code>), but choosing Zoom/Rotate/Reverse/Reset with nothing tracked
+      shows a "no target image detected" toast instead of doing anything (see README.md §1).
+    </p>
+    <p>Dummy text. Dummy text. Dummy text. Dummy text.</p>
+  </body>
+</html>
