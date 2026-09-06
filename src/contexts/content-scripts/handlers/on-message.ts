@@ -10,8 +10,6 @@ export const onMessage = (
 ) => {
   sendResponse(true);
 
-  const targetElement = STATE.currentImageElement;
-
   if (message.actionId === 'reset-all') {
     resetAll();
 
@@ -24,7 +22,9 @@ export const onMessage = (
     return true;
   }
 
-  if (!targetElement) {
+  const targetElement = STATE.currentImageElement;
+
+  if (targetElement === null) {
     return true;
   }
 
