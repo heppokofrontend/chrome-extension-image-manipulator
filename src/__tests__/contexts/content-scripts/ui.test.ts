@@ -33,31 +33,36 @@ describe('buildDialogElement', () => {
     expect(dialog.ariaLabel).toBe('extName');
   });
 
-  it('closes the dialog on the legacy "ESC" key value', async () => {
+  it('stops propagation for the Escape key without manually closing the dialog', async () => {
     const { buildDialogElement } = await importBuildDialogElement();
 
     const dialog = buildDialogElement();
     const close = vi.fn();
     dialog.close = close;
 
-    const event = new KeyboardEvent('keydown', { key: 'ESC', cancelable: true, bubbles: true });
+    const event = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true, bubbles: true });
     const stopPropagation = vi.spyOn(event, 'stopPropagation');
     dialog.dispatchEvent(event);
 
-    expect(close).toHaveBeenCalled();
-    expect(event.defaultPrevented).toBe(true);
+    // closedBy="closerequest" によるネイティブクローズに任せるため、
+    // preventDefault/close は呼ばない(呼ぶとネイティブの既定動作を妨げてしまう)
     expect(stopPropagation).toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    expect(close).not.toHaveBeenCalled();
   });
 
-  it('does not close the dialog for any other key', async () => {
+  it('does not stop propagation for any other key', async () => {
     const { buildDialogElement } = await importBuildDialogElement();
 
     const dialog = buildDialogElement();
     const close = vi.fn();
     dialog.close = close;
 
-    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const event = new KeyboardEvent('keydown', { key: 'a', bubbles: true });
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
+    dialog.dispatchEvent(event);
 
+    expect(stopPropagation).not.toHaveBeenCalled();
     expect(close).not.toHaveBeenCalled();
   });
 });
