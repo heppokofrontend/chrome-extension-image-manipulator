@@ -6,13 +6,12 @@ export const buildDialogElement = () => {
   const element = document.createElement('dialog');
 
   element.role = 'dialog';
+  element.closedBy = 'closerequest';
   element.ariaModal = 'true';
   element.ariaLabel = getMessage('extName');
   element.addEventListener('keydown', (e) => {
-    if (e.key === 'ESC') {
-      e.preventDefault();
+    if (e.key === 'Escape') {
       e.stopPropagation();
-      element.close();
     }
   });
 
