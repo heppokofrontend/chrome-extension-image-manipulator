@@ -29,6 +29,9 @@
   "error_targetImageNotDetected": {
     "message": "対象の画像を検出できませんでした"
   },
+  "error_backgroundImageQuickActionUnsupported": {
+    "message": "背景画像のようです。「詳細を表示」から操作してください。"
+  },
   "readOnly_naturalWidth": {
     "message": "元々の横幅"
   },
