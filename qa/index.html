@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>QA index</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 700px;
+        margin: 2rem auto;
+        line-height: 1.7;
+      }
+      li {
+        margin-bottom: 0.5rem;
+      }
+      code {
+        background: #f0f0f0;
+        padding: 0 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Image Manipulator QA fixtures</h1>
+    <p>Dummy pages for running through the manual QA checklist in <code>README.md</code>.</p>
+
+    <ul>
+      <li>
+        <a href="basic.html">basic.html</a> — img / inline svg / background-image / transparent /
+        square / tiny / huge / degenerate cases
+      </li>
+      <li><a href="no-image.html">no-image.html</a> — a page with no images at all</li>
+      <li><a href="lazy.html">lazy.html</a> — a <code>loading="lazy"</code> image</li>
+    </ul>
+
+    <h2>Notes</h2>
+    <ul>
+      <li>
+        Checking that state isn't shared across tabs (§3) just needs <code>basic.html</code> open in
+        two tabs.
+      </li>
+      <li>
+        The <code>file://</code> case (§0) can be checked with the same content by opening each HTML
+        file in this directory directly from disk.
+      </li>
+      <li>
+        Localization (§4) needs no HTML-side support — check by switching Chrome's language setting.
+      </li>
+      <li>
+        Recommended: also run through a basic pass in an Incognito window (enable "Allow in
+        Incognito" for the extension first via <code>chrome://extensions</code> — it's off by
+        default, so this catches gaps that only show up there).
+      </li>
+    </ul>
+  </body>
+</html>

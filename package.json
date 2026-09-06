@@ -49,6 +49,7 @@
     "lint-check": "eslint .",
     "lint-fix": "eslint . --fix",
     "prepare": "husky",
+    "qa": "node qa/server.mjs",
     "test": "vitest run",
     "test-coverage": "vitest run --coverage",
     "test-watch": "vitest",
