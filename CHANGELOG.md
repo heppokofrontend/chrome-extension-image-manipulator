@@ -8,7 +8,7 @@
 - Fix dialog Escape key handling
 - Make background bright/dark swatches circular
 - Block quick actions on background-image pseudo-images
-- Restrict the context menu to unambiguous single image matches
+- Only resolve an ancestor's image when exactly one image candidate is found, to avoid picking the wrong image
 - Respect user font scaling in the UI
 
 ## v1.2.7
