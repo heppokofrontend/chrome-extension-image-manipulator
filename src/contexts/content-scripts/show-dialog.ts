@@ -2,6 +2,10 @@ import { renderCanvas } from '@/contexts/content-scripts/components/canvas';
 import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
 import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
 import { applyImageList } from '@/contexts/content-scripts/components/image-list';
+import {
+  collectImageListEntries,
+  resolveImageElement,
+} from '@/contexts/content-scripts/components/image-list/utils';
 import { STATE } from '@/contexts/content-scripts/state';
 import { CONTENT_UI } from '@/contexts/content-scripts/ui';
 import {
@@ -12,7 +16,25 @@ import {
 
 const { dialog, imageList } = CONTENT_UI;
 
+// 右クリック対象が画像でなかった場合(コンテキストメニューの「詳細を表示」等)、
+// ページ上に検出されている画像の先頭(DOM順)へフォールバックする
+const getFallbackImage = () => {
+  const [firstEntry] = collectImageListEntries(false);
+
+  if (firstEntry === undefined) {
+    return null;
+  }
+
+  const resolved = resolveImageElement(firstEntry.originalElement);
+
+  return resolved ?? null;
+};
+
 const loadImage = async () => {
+  if (!STATE.currentImageElement) {
+    STATE.currentImageElement = getFallbackImage();
+  }
+
   if (!STATE.currentImageElement) {
     return { isSuccess: false } as const;
   }
