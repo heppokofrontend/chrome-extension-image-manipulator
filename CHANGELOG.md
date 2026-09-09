@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v1.2.8
+
+- Change rotate left/right step from 90deg to 45deg
+- Show a message on the canvas when no image is detected
+- Show a toast notification when the tracked image becomes untracked
+- Fix dialog Escape key handling
+- Make background bright/dark swatches circular
+- Block quick actions on background-image pseudo-images
+- Only resolve an ancestor's image when exactly one image candidate is found, to avoid picking the wrong image
+- Respect user font scaling in the UI
+
 ## v1.2.7
 
 - Fix the context menu not responding to images opened as local files

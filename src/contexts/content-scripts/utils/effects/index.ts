@@ -1,0 +1,92 @@
+import { renderImageController } from '@/contexts/content-scripts/components/image-controller';
+import { renderImageInfo } from '@/contexts/content-scripts/components/image-info';
+import { STATE } from '@/contexts/content-scripts/state';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+import { getImageData } from '@/contexts/content-scripts/utils/image-data';
+
+const getSize = ({
+  naturalWidth,
+  naturalHeight,
+  scale,
+}: {
+  naturalWidth: number;
+  naturalHeight: number;
+  scale: number;
+}) => {
+  const { canvas } = CONTENT_UI;
+  const width = naturalWidth * (scale / 100);
+  const height = naturalHeight * (scale / 100);
+  const contentWidth = (canvas.clientWidth + width / 2) * 2 - 10;
+  const contentHeight = (canvas.clientHeight + height / 2) * 2 - 10;
+
+  return {
+    spaceSize: {
+      width: contentWidth,
+      height: contentHeight,
+    },
+  };
+};
+
+export const applyImageStyle = (image: HTMLImageElement) => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- 型上は non-null だが、呼び出し元が誤って null を渡した場合の防御
+  if (!image) {
+    return;
+  }
+
+  const { canvas, spaceElement } = CONTENT_UI;
+  const imageData = getImageData(image);
+
+  // TODO: ダイアログの外でいじったのを中に伝搬させる。内から外は対応しない。
+  const { isInDialog } = imageData;
+  const rotate = `rotateZ(${imageData.rotate}deg)`;
+  const reverse = imageData.isReversed ? 'rotateY(180deg)' : '';
+  const scale = `scale(${imageData.scale / 100})`;
+
+  image.style.transform = `${rotate} ${reverse} ${isInDialog ? '' : scale}`;
+
+  if (STATE.hasBorder) {
+    image.classList.add('has-border');
+  } else {
+    image.classList.remove('has-border');
+  }
+
+  if (!isInDialog) {
+    return;
+  }
+
+  const { naturalWidth, naturalHeight } = image;
+  const { scale: dialogScale, oldScale: dialogOldScale, render } = imageData;
+  const { spaceSize } = getSize({ naturalWidth, naturalHeight, scale: dialogScale });
+  const oldSpaceSize = getSize({
+    naturalWidth,
+    naturalHeight,
+    scale: dialogOldScale,
+  }).spaceSize;
+
+  image.style.width = '';
+  image.style.height = '';
+  image.style.imageRendering = '';
+  image.style.cssText = `
+    ${image.getAttribute('style') ?? ''}
+    width: ${image.naturalWidth * (dialogScale / 100)}px !important;
+    height: ${image.naturalHeight * (dialogScale / 100)}px !important;
+    image-rendering: ${render} !important;
+  `;
+
+  spaceElement.style.cssText = `
+    width: ${spaceSize.width}px !important;
+    height: ${spaceSize.height}px !important;
+  `;
+
+  const diffWidth = (oldSpaceSize.width - spaceSize.width) / 2;
+  const diffHeight = (oldSpaceSize.height - spaceSize.height) / 2;
+  const { scrollTop, scrollLeft } = canvas;
+
+  canvas.scroll({
+    top: scrollTop - diffHeight,
+    left: scrollLeft - diffWidth,
+  });
+
+  renderImageInfo(imageData);
+  renderImageController(imageData);
+};

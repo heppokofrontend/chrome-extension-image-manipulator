@@ -1,0 +1,29 @@
+import { renderCanvas } from '@/contexts/content-scripts/components/canvas';
+import { initImageController } from '@/contexts/content-scripts/components/image-controller';
+import { initImageInfo } from '@/contexts/content-scripts/components/image-info';
+import { addEventImageListControllers } from '@/contexts/content-scripts/components/image-list';
+import { onDetailsClose, onSearchClick } from '@/contexts/content-scripts/handlers';
+import { CONTENT_UI } from '@/contexts/content-scripts/ui';
+
+import { buildStyleElement } from './build-style-element';
+
+export const renderExtension = () => {
+  const { imageViewer, dialog, closeBtn, closeBtnForPortrait, searchButton, toastContainer } =
+    CONTENT_UI;
+  const style = buildStyleElement();
+  const shadowRoot = imageViewer.attachShadow({ mode: 'closed' });
+
+  closeBtn.addEventListener('click', onDetailsClose);
+  closeBtnForPortrait.addEventListener('click', onDetailsClose);
+  searchButton.addEventListener('click', onSearchClick);
+
+  initImageInfo();
+  initImageController();
+  addEventImageListControllers(CONTENT_UI);
+  renderCanvas();
+
+  shadowRoot.appendChild(style);
+  shadowRoot.appendChild(dialog);
+  shadowRoot.appendChild(toastContainer);
+  document.body.appendChild(imageViewer);
+};
