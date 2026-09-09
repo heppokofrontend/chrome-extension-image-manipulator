@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.9
+
+- Fix the details dialog showing an empty state when opened without a tracked image, by defaulting to the first detected image on the page
+
 ## v1.2.8
 
 - Change rotate left/right step from 90deg to 45deg
