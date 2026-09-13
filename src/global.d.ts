@@ -25,6 +25,20 @@ type StyleData =
 type ContextMenuMessage =
   | { actionId: 'scale' | 'rotate'; value: number }
   | { actionId: 'reset-all' | 'reset' | 'reverse' | 'dialog' };
+type GetLocalFileSizeRequest = {
+  type: 'get-local-file-size';
+  url: string;
+};
+type GetLocalFileSizeResponse =
+  | {
+      ok: true;
+      fileSize: number;
+      fileType: string;
+    }
+  | {
+      ok: false;
+      reason: 'file-access-disabled' | 'fetch-failed';
+    };
 type Options = {
   isInDialog?: StyleData['isInDialog'];
   clonedImage?: HTMLImageElement | null;
