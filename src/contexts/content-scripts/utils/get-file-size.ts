@@ -18,7 +18,39 @@ export const getFileSize = (
 
     const { protocol } = new URL(image.src);
 
-    fetch(image.src.replace(protocol, location.protocol), { method: 'HEAD' })
+    if (protocol === 'file:') {
+      const request: GetLocalFileSizeRequest = {
+        type: 'get-local-file-size',
+        url: image.src,
+      };
+
+      void chrome.runtime
+        .sendMessage<GetLocalFileSizeRequest, GetLocalFileSizeResponse>(request)
+        .then((response) => {
+          resolve(
+            response.ok
+              ? {
+                  fileSize: `${response.fileSize} byte`,
+                  fileType: response.fileType,
+                }
+              : {
+                  fileSize: getMessage('error_fileSize'),
+                  fileType: getMessage('error_fileType'),
+                },
+          );
+        })
+        .catch(() => {
+          resolve({
+            fileSize: getMessage('error_fileSize'),
+            fileType: getMessage('error_fileType'),
+          });
+        });
+      return;
+    }
+
+    fetch(image.src.replace(protocol, location.protocol), {
+      method: 'HEAD',
+    })
       .then(({ headers }) => {
         const size = headers.get('Content-Length');
         const type = headers.get('Content-Type');

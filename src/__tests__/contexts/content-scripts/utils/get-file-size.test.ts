@@ -86,4 +86,59 @@ describe('getFileSize', () => {
       fileType: 'error_fileType',
     });
   });
+
+  it('delegates file: images to the worker and resolves the returned size and type', async () => {
+    vi.stubGlobal('chrome', {
+      i18n: { getMessage: (key: string) => key },
+      runtime: {
+        sendMessage: vi
+          .fn()
+          .mockResolvedValue({ ok: true, fileSize: 1131170, fileType: 'image/png' }),
+      },
+    });
+    const { getFileSize } = await import('@/contexts/content-scripts/utils/get-file-size');
+    const img = document.createElement('img');
+    img.src = 'file:///a.png';
+
+    await expect(getFileSize(img)).resolves.toEqual({
+      fileSize: '1131170 byte',
+      fileType: 'image/png',
+    });
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      type: 'get-local-file-size',
+      url: 'file:///a.png',
+    });
+  });
+
+  it('falls back to error messages when the worker reports file access is disabled', async () => {
+    vi.stubGlobal('chrome', {
+      i18n: { getMessage: (key: string) => key },
+      runtime: {
+        sendMessage: vi.fn().mockResolvedValue({ ok: false, reason: 'file-access-disabled' }),
+      },
+    });
+    const { getFileSize } = await import('@/contexts/content-scripts/utils/get-file-size');
+    const img = document.createElement('img');
+    img.src = 'file:///a.png';
+
+    await expect(getFileSize(img)).resolves.toEqual({
+      fileSize: 'error_fileSize',
+      fileType: 'error_fileType',
+    });
+  });
+
+  it('falls back to error messages when sendMessage rejects', async () => {
+    vi.stubGlobal('chrome', {
+      i18n: { getMessage: (key: string) => key },
+      runtime: { sendMessage: vi.fn().mockRejectedValue(new Error('no receiver')) },
+    });
+    const { getFileSize } = await import('@/contexts/content-scripts/utils/get-file-size');
+    const img = document.createElement('img');
+    img.src = 'file:///a.png';
+
+    await expect(getFileSize(img)).resolves.toEqual({
+      fileSize: 'error_fileSize',
+      fileType: 'error_fileType',
+    });
+  });
 });
