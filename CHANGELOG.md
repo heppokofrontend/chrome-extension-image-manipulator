@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.10
+
+- Fix the file size and type not showing for local (`file://`) images when access to file URLs is allowed
+
 ## v1.2.9
 
 - Fix the details dialog showing an empty state when opened without a tracked image, by defaulting to the first detected image on the page
